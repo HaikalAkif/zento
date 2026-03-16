@@ -9,7 +9,7 @@ export default function LenisProvider({ children }: { children: React.ReactNode 
       options={{
         lerp: 0.08,
         smoothWheel: true,
-        touchMultiplier: 2,
+        touchMultiplier: 1.2,
       }}
     >
       {children}

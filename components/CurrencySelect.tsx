@@ -8,9 +8,11 @@ interface Props {
   value: string;
   onChange: (value: string) => void;
   label?: string;
+  /** Which edge the dropdown anchors to. Default: 'left'. Use 'right' for dropdowns near the right edge. */
+  align?: 'left' | 'right';
 }
 
-export default function CurrencySelect({ value, onChange, label }: Props) {
+export default function CurrencySelect({ value, onChange, label, align = 'left' }: Props) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(-1);
@@ -128,12 +130,12 @@ export default function CurrencySelect({ value, onChange, label }: Props) {
         />
       </button>
 
-      {/* Dropdown */}
+      {/* Dropdown — fixed width so it's readable on narrow screens */}
       {open && (
         <div
           role="listbox"
           aria-label="Select a currency"
-          className="absolute top-[calc(100%+6px)] left-0 right-0 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl shadow-black/50 z-100 overflow-hidden"
+          className={`absolute top-[calc(100%+6px)] w-64 max-w-[calc(100vw-2rem)] ${align === 'right' ? 'right-0' : 'left-0'} bg-slate-900 border border-slate-700 rounded-xl shadow-2xl shadow-black/50 z-100 overflow-hidden`}
         >
           {/* Search */}
           <div className="p-2.5 border-b border-slate-800">
@@ -147,7 +149,7 @@ export default function CurrencySelect({ value, onChange, label }: Props) {
                 onKeyDown={handleSearchKeyDown}
                 placeholder="Search currency..."
                 aria-label="Search currencies"
-                className="flex-1 bg-transparent text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none"
+                className="flex-1 bg-transparent text-base leading-tight text-slate-200 placeholder:text-slate-600 focus:outline-none"
               />
               {search && (
                 <button

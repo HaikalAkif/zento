@@ -3,7 +3,7 @@ export default function Footer() {
     <footer className="border-t border-slate-800 bg-slate-900 mt-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
+          <div className="text-center sm:text-left">
             <p className="font-bold text-slate-50">Zento</p>
             <p className="text-sm text-slate-400 mt-0.5">
               Real-time currency converter powered by live exchange rates.

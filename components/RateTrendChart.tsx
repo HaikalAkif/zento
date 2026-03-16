@@ -19,7 +19,7 @@ interface Props {
 }
 
 const PERIODS: { label: string; value: Period }[] = [
-  { label: '1D', value: '1D' },
+  { label: '3D', value: '3D' },
   { label: '7D', value: '7D' },
   { label: '30D', value: '30D' },
   { label: '1Y', value: '1Y' },
@@ -28,7 +28,7 @@ const PERIODS: { label: string; value: Period }[] = [
 function formatXTick(dateStr: string, period: Period): string {
   const d = new Date(dateStr);
   if (period === '1Y') return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-  if (period === '1D') return d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
+  if (period === '3D') return d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
@@ -135,8 +135,8 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
               tick={{ fontSize: 10, fill: '#475569' }}
               axisLine={false}
               tickLine={false}
-              width={62}
-              tickFormatter={(v: number) => v.toFixed(4)}
+              width={52}
+              tickFormatter={(v: number) => v.toFixed(3)}
             />
             <Tooltip
               contentStyle={{

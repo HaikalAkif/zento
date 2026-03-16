@@ -43,7 +43,6 @@ export default function CurrencyConverter({
       setTimeout(() => setCopied(false), 2000);
     } catch {
       setCopied(false);
-      // Silently ignore — clipboard API unavailable (e.g. HTTP context)
     }
   }, [result]);
 
@@ -56,7 +55,7 @@ export default function CurrencyConverter({
       {/* Subtle top accent line */}
       <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-blue-500/50 to-transparent" />
 
-      <div className="p-7 sm:p-9">
+      <div className="p-5 sm:p-9">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -112,7 +111,7 @@ export default function CurrencyConverter({
           </button>
 
           <div className="flex-1 min-w-0">
-            <CurrencySelect value={toCurrency} onChange={onToChange} label="To" />
+            <CurrencySelect value={toCurrency} onChange={onToChange} label="To" align="right" />
           </div>
         </div>
 
@@ -148,7 +147,7 @@ export default function CurrencyConverter({
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div className="min-w-0">
                   <div className="flex items-baseline gap-3 flex-wrap">
-                    <span className="text-5xl sm:text-6xl font-bold text-slate-50 tracking-tighter leading-none tabular-nums">
+                    <span className="text-4xl sm:text-5xl font-bold text-slate-50 tracking-tighter leading-none tabular-nums">
                       <AnimatedNumber value={result} decimals={2} duration={400} />
                     </span>
                     <span className="text-xl font-bold text-blue-400">{toCurrency}</span>

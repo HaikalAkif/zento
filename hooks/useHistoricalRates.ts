@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { getHistoricalRates } from '@/lib/api';
 
-export type Period = '1D' | '7D' | '30D' | '1Y';
+export type Period = '3D' | '7D' | '30D' | '1Y';
 
 const PERIOD_DAYS: Record<Period, number> = {
-  '1D': 3,   // 3 calendar days to capture ~2 business days
+  '3D': 3,
   '7D': 7,
   '30D': 30,
   '1Y': 365,

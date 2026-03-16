@@ -18,7 +18,7 @@ interface Props {
 export default function ConverterSection({
   initialFrom = 'USD',
   initialTo = 'MYR',
-  initialAmount = '100',
+  initialAmount = '1',
   heroMode = false,
 }: Props) {
   const [amount, setAmount] = useState(initialAmount);
