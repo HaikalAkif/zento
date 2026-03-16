@@ -47,11 +47,6 @@ export default function CurrencySelect({ value, onChange, label }: Props) {
     }
   }, [open]);
 
-  // Reset focused index when search query or open state changes
-  useEffect(() => {
-    setFocusedIndex(-1);
-  }, [search, open]);
-
   // Scroll focused option into view
   useEffect(() => {
     if (focusedIndex >= 0 && listRef.current) {
@@ -116,7 +111,7 @@ export default function CurrencySelect({ value, onChange, label }: Props) {
       {/* Trigger */}
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => { setOpen((v) => !v); setFocusedIndex(-1); }}
         onKeyDown={handleTriggerKeyDown}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -148,7 +143,7 @@ export default function CurrencySelect({ value, onChange, label }: Props) {
                 ref={searchRef}
                 type="text"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => { setSearch(e.target.value); setFocusedIndex(-1); }}
                 onKeyDown={handleSearchKeyDown}
                 placeholder="Search currency..."
                 aria-label="Search currencies"
@@ -156,7 +151,7 @@ export default function CurrencySelect({ value, onChange, label }: Props) {
               />
               {search && (
                 <button
-                  onClick={() => setSearch('')}
+                  onClick={() => { setSearch(''); setFocusedIndex(-1); }}
                   className="shrink-0"
                   aria-label="Clear search"
                 >
