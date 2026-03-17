@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import CurrencyConverter from './CurrencyConverter';
-import QuickAmounts from './QuickAmounts';
 import PopularConversions from './PopularConversions';
 import RateTrendChart from './RateTrendChart';
 import MultiCurrencyResults from './MultiCurrencyResults';
+import { CURRENCIES } from '@/lib/currencies';
 
 interface Props {
   initialFrom?: string;
@@ -16,7 +15,7 @@ interface Props {
 }
 
 export default function ConverterSection({
-  initialFrom = 'USD',
+  initialFrom = 'JPY',
   initialTo = 'MYR',
   initialAmount = '1',
   heroMode = false,
@@ -49,7 +48,7 @@ export default function ConverterSection({
   }, []);
 
   const converterCard = (
-    <div className="w-full max-w-xl mx-auto">
+    <div className="w-full max-w-2xl mx-auto">
       <CurrencyConverter
         amount={amount}
         fromCurrency={fromCurrency}
@@ -59,9 +58,6 @@ export default function ConverterSection({
         onToChange={setToCurrency}
         onSwap={handleSwap}
       />
-      <div className="mt-3.5 px-1">
-        <QuickAmounts current={amount} onSelect={setAmount} />
-      </div>
     </div>
   );
 
@@ -77,14 +73,19 @@ export default function ConverterSection({
     return (
       <>
         {/* Viewport-height hero: converter only */}
-        <section className="relative min-h-dvh flex flex-col items-center justify-center px-4 sm:px-6 py-20">
-          {converterCard}
-
-          {/* Scroll cue */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 text-slate-700 select-none">
-            <span className="text-[10px] font-semibold uppercase tracking-widest">Scroll</span>
-            <ChevronDownIcon className="w-4 h-4 animate-bounce" />
+        <section className="relative min-h-dvh flex flex-col px-4 sm:px-6
+          justify-start pt-20 sm:justify-center sm:pt-0 pb-12 sm:pb-0">
+          {/* SEO headline */}
+          <div className="text-center mb-6 sm:mb-10">
+            <h1 className="text-2xl sm:text-4xl font-bold text-slate-50 tracking-tight mb-1.5 sm:mb-2">
+              Convert Currency Instantly
+            </h1>
+            <p className="text-slate-500 text-sm sm:text-base">
+              Live exchange rates for {CURRENCIES.length} currencies
+            </p>
           </div>
+
+          {converterCard}
         </section>
 
         {belowFold}

@@ -118,13 +118,14 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={`Select currency, current: ${selected?.name}`}
-        className="w-full flex items-center gap-3 px-4 py-3.5 bg-slate-800/80 border border-slate-700 rounded-xl hover:border-slate-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="w-full flex items-center gap-2.5 px-4 py-3.5 bg-slate-800/80 border border-slate-700 rounded-xl hover:border-slate-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       >
-        <span className="text-2xl leading-none select-none">{selected?.flag}</span>
-        <div className="flex-1 text-left min-w-0">
-          <div className="font-bold text-slate-50 text-sm leading-tight">{selected?.code}</div>
-          <div className="text-xs text-slate-500 truncate mt-0.5">{selected?.name}</div>
-        </div>
+        <span className="text-xl leading-none select-none shrink-0">{selected?.flag}</span>
+        <span className="font-bold text-sm text-slate-50 shrink-0">{selected?.code}</span>
+        {/* Name hidden on mobile to prevent overflow in narrow viewports */}
+        <span className="text-sm text-slate-400 truncate min-w-0 flex-1 text-left hidden sm:inline">
+          – {selected?.name}
+        </span>
         <ChevronDownIcon
           className={`w-4 h-4 text-slate-500 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
         />
@@ -164,7 +165,8 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
           </div>
 
           {/* Options */}
-          <div ref={listRef} className="overflow-y-auto max-h-56 py-1">
+          {/* data-lenis-prevent stops Lenis from intercepting wheel events inside this list */}
+          <div ref={listRef} className="overflow-y-auto overscroll-contain max-h-56 py-1" data-lenis-prevent>
             {filtered.length === 0 ? (
               <div className="px-4 py-3 text-sm text-slate-500 text-center">No results</div>
             ) : (
