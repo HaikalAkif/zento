@@ -3,7 +3,7 @@ import { MagnifyingGlassIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/ou
 
 export default function NotFound() {
   return (
-    <div className="min-h-dvh flex items-center justify-center px-4">
+    <div className="min-h-dvh flex items-center justify-center px-4 pt-16">
       <div className="text-center max-w-sm">
         <div className="w-14 h-14 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto mb-5">
           <MagnifyingGlassIcon className="w-7 h-7 text-slate-400" />

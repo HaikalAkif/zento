@@ -9,7 +9,7 @@ interface Props {
 
 export default function Error({ error, reset }: Props) {
   return (
-    <div className="min-h-dvh flex items-center justify-center px-4">
+    <div className="min-h-dvh flex items-center justify-center px-4 pt-16">
       <div className="text-center max-w-sm">
         <div className="w-14 h-14 rounded-2xl bg-red-950/50 border border-red-900/50 flex items-center justify-center mx-auto mb-5">
           <ExclamationTriangleIcon className="w-7 h-7 text-red-400" />

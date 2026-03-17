@@ -5,6 +5,7 @@ import CurrencyConverter from './CurrencyConverter';
 import PopularConversions from './PopularConversions';
 import RateTrendChart from './RateTrendChart';
 import MultiCurrencyResults from './MultiCurrencyResults';
+import VantaGlobe from './VantaGlobe';
 import { CURRENCIES } from '@/lib/currencies';
 
 interface Props {
@@ -48,7 +49,7 @@ export default function ConverterSection({
   }, []);
 
   const converterCard = (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-2xl mx-auto bg-slate-900/70 backdrop-blur-md border border-slate-800/50 rounded-2xl shadow-2xl p-6 sm:p-8">
       <CurrencyConverter
         amount={amount}
         fromCurrency={fromCurrency}
@@ -73,11 +74,15 @@ export default function ConverterSection({
     return (
       <>
         {/* Viewport-height hero: converter only */}
-        <section className="relative min-h-dvh flex flex-col px-4 sm:px-6
-          justify-start pt-20 sm:justify-center sm:pt-0 pb-12 sm:pb-0">
+        <section className="relative min-h-dvh flex flex-col items-center justify-center px-4 sm:px-6 py-24">
+          {/* Animated globe background — desktop only, skipped on mobile */}
+          <VantaGlobe />
+          {/* Gradient overlay keeps text legible over the animation */}
+          <div className="absolute inset-0 -z-5 bg-linear-to-b from-slate-950/75 to-slate-950/95 pointer-events-none" />
+
           {/* SEO headline */}
           <div className="text-center mb-6 sm:mb-10">
-            <h1 className="text-2xl sm:text-4xl font-bold text-slate-50 tracking-tight mb-1.5 sm:mb-2">
+            <h1 className="text-2xl sm:text-5xl font-bold text-slate-50 tracking-tight mb-1.5 sm:mb-2">
               Convert Currency Instantly
             </h1>
             <p className="text-slate-500 text-sm sm:text-base">
