@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import ConverterSection from '@/components/ConverterSection';
 import { getCurrency } from '@/lib/currencies';
 import { APP_URL, STATIC_PAIRS } from '@/lib/config';
@@ -72,15 +71,6 @@ export function generateStaticParams() {
   });
 }
 
-function getRelatedPairs(from: string, to: string): string[] {
-  return STATIC_PAIRS.filter((p) => {
-    const [f, , t] = p.split('-');
-    const pFrom = f.toUpperCase();
-    const pTo = t.toUpperCase();
-    if (pFrom === from && pTo === to) return false;
-    return pFrom === from || pTo === to || pFrom === to || pTo === from;
-  }).slice(0, 5);
-}
 
 export default async function PairPage({ params, searchParams }: Props) {
   const [{ pair }, { amount: amountParam }] = await Promise.all([params, searchParams]);
@@ -94,8 +84,6 @@ export default async function PairPage({ params, searchParams }: Props) {
   const pageUrl = `${APP_URL}/${pair}`;
 
   const now = new Date().toISOString();
-  const relatedPairs = getRelatedPairs(parsed.from, parsed.to);
-
   const faqItems = [
     {
       q: `What is the ${parsed.from} to ${parsed.to} exchange rate today?`,
@@ -111,7 +99,7 @@ export default async function PairPage({ params, searchParams }: Props) {
     },
     {
       q: `Is the ${parsed.from} to ${parsed.to} converter free?`,
-      a: `Yes. Zento is entirely free — no sign-up, no ads, no fees. It uses open, publicly available exchange rate data from ExchangeRate-API and the European Central Bank.`,
+      a: `Yes. Zento is entirely free. No sign-up, no ads, no fees. It uses open, publicly available exchange rate data from ExchangeRate-API and the European Central Bank.`,
     },
     {
       q: `What is the mid-market rate for ${parsed.from} to ${parsed.to}?`,
@@ -191,93 +179,53 @@ export default async function PairPage({ params, searchParams }: Props) {
     },
   ];
 
+  const heroContent = (
+    <>
+      <h1 className="text-xl sm:text-4xl font-bold text-slate-50 tracking-tight mb-2">
+        {from?.flag} {parsed.from} to {to?.flag} {parsed.to} | Live Exchange Rate
+      </h1>
+      <p className="text-slate-400 text-sm sm:text-base mt-1">
+        Convert {from?.name} to {to?.name}. Mid-market rate, updated every minute.
+      </p>
+    </>
+  );
+
   return (
-    <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-24 pb-10">
+    <main>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      {/* SEO header */}
-      <div className="mb-8 p-6 bg-slate-900 rounded-2xl border border-slate-800">
-        <h1 className="text-xl font-bold text-slate-50 mb-2">
-          {from?.flag} {parsed.from} to {to?.flag} {parsed.to} — Live Exchange Rate
-        </h1>
-        <p className="text-slate-400 text-sm leading-relaxed mb-4">
-          Convert{' '}
-          <strong className="text-slate-200 font-medium">
-            {from?.name} ({parsed.from})
-          </strong>{' '}
-          to{' '}
-          <strong className="text-slate-200 font-medium">
-            {to?.name} ({parsed.to})
-          </strong>{' '}
-          instantly. Live mid-market rate — updated every minute. No sign-up required.
-        </p>
-        <dl className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-          <div className="bg-slate-800/60 rounded-lg px-3 py-2">
-            <dt className="text-slate-500 mb-0.5">Data source</dt>
-            <dd className="text-slate-300 font-medium">ExchangeRate-API + ECB</dd>
-          </div>
-          <div className="bg-slate-800/60 rounded-lg px-3 py-2">
-            <dt className="text-slate-500 mb-0.5">Rate type</dt>
-            <dd className="text-slate-300 font-medium">Mid-market</dd>
-          </div>
-          <div className="bg-slate-800/60 rounded-lg px-3 py-2">
-            <dt className="text-slate-500 mb-0.5">Update frequency</dt>
-            <dd className="text-slate-300 font-medium">Every minute</dd>
-          </div>
-          <div className="bg-slate-800/60 rounded-lg px-3 py-2">
-            <dt className="text-slate-500 mb-0.5">Cost</dt>
-            <dd className="text-slate-300 font-medium">Free</dd>
-          </div>
-        </dl>
-      </div>
+      <ConverterSection
+        initialFrom={parsed.from}
+        initialTo={parsed.to}
+        initialAmount={initialAmount}
+        heroContent={heroContent}
+      />
 
-      <ConverterSection initialFrom={parsed.from} initialTo={parsed.to} initialAmount={initialAmount} />
-
-      {/* Visible FAQ — content must match FAQPage schema for AEO */}
-      <section className="mt-5 bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-7">
-        <h2 className="text-base font-bold text-slate-50 mb-5">
-          Frequently Asked Questions — {parsed.from} to {parsed.to}
-        </h2>
-        <div className="space-y-0 divide-y divide-slate-800">
-          {faqItems.map(({ q, a }) => (
-            <details key={q} className="group py-4 first:pt-0 last:pb-0">
-              <summary className="flex cursor-pointer items-start justify-between gap-4 list-none text-sm font-semibold text-slate-200 hover:text-slate-50 transition-colors">
-                <span>{q}</span>
-                <span aria-hidden="true" className="shrink-0 text-slate-600 group-open:rotate-180 transition-transform duration-200 mt-0.5">
-                  ▾
-                </span>
-              </summary>
-              <p className="mt-3 text-sm text-slate-400 leading-relaxed">{a}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
-      {/* Related pairs — internal linking for SEO crawl depth */}
-      {relatedPairs.length > 0 && (
-        <section className="mt-5 bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-7">
-          <h2 className="text-base font-bold text-slate-50 mb-4">Related Currency Pairs</h2>
-          <div className="flex flex-wrap gap-2">
-            {relatedPairs.map((p) => {
-              const [f, , t] = p.split('-');
-              const fCur = getCurrency(f.toUpperCase());
-              const tCur = getCurrency(t.toUpperCase());
-              return (
-                <Link
-                  key={p}
-                  href={`/${p}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 rounded-lg text-sm font-medium text-slate-300 hover:text-slate-50 transition-all"
-                >
-                  {fCur?.flag} {f.toUpperCase()} → {tCur?.flag} {t.toUpperCase()}
-                </Link>
-              );
-            })}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-10 space-y-5">
+        {/* Visible FAQ — content must match FAQPage schema for AEO */}
+        <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-7">
+          <h2 className="text-base font-bold text-slate-50 mb-5">
+            Frequently Asked Questions. {parsed.from} to {parsed.to}.
+          </h2>
+          <div className="space-y-0 divide-y divide-slate-800">
+            {faqItems.map(({ q, a }) => (
+              <details key={q} className="group py-4 first:pt-0 last:pb-0">
+                <summary className="flex cursor-pointer items-start justify-between gap-4 list-none text-sm font-semibold text-slate-200 hover:text-slate-50 transition-colors">
+                  <span>{q}</span>
+                  <span aria-hidden="true" className="shrink-0 text-slate-600 group-open:rotate-180 transition-transform duration-200 mt-0.5">
+                    ▾
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm text-slate-400 leading-relaxed">{a}</p>
+              </details>
+            ))}
           </div>
         </section>
-      )}
+
+      </div>
     </main>
   );
 }

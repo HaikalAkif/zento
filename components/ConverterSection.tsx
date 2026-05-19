@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import CurrencyConverter from './CurrencyConverter';
 import PopularConversions from './PopularConversions';
 import RateTrendChart from './RateTrendChart';
 import MultiCurrencyResults from './MultiCurrencyResults';
+import RecentPairs from './RecentPairs';
 import VantaGlobe from './VantaGlobe';
+import { useConversionHistory } from '@/hooks/useConversionHistory';
 import { CURRENCIES } from '@/lib/currencies';
 
 interface Props {
@@ -14,6 +17,8 @@ interface Props {
   initialTo?: string;
   initialAmount?: string;
   heroMode?: boolean;
+  /** Pass JSX from a server component to render inside the Vanta hero on pair pages. */
+  heroContent?: ReactNode;
 }
 
 function buildPairUrl(from: string, to: string, amount: string): string {
@@ -27,11 +32,14 @@ export default function ConverterSection({
   initialTo = 'MYR',
   initialAmount = '1',
   heroMode = false,
+  heroContent,
 }: Props) {
   const router = useRouter();
   const [amount, setAmount] = useState(initialAmount);
   const [fromCurrency, setFromCurrency] = useState(initialFrom);
   const [toCurrency, setToCurrency] = useState(initialTo);
+
+  const { history, add: addToHistory } = useConversionHistory();
 
   // Refs hold previous values to detect real changes vs initial mount
   const prevCurrencyRef = useRef<{ from: string; to: string } | null>(null);
@@ -50,16 +58,18 @@ export default function ConverterSection({
     return () => window.removeEventListener('keydown', handleKey);
   }, [fromCurrency, toCurrency]);
 
-  // Navigate when currencies change — immediate, no debounce
+  // Navigate + save to history when currencies change — immediate, no debounce
   useEffect(() => {
     const prev = prevCurrencyRef.current;
     prevCurrencyRef.current = { from: fromCurrency, to: toCurrency };
     if (!prev || (prev.from === fromCurrency && prev.to === toCurrency)) return;
 
+    if (fromCurrency !== toCurrency) addToHistory(fromCurrency, toCurrency);
+
     const url = buildPairUrl(fromCurrency, toCurrency, amount);
     if (heroMode) router.push(url);
     else router.replace(url);
-  }, [fromCurrency, toCurrency, amount, heroMode, router]);
+  }, [fromCurrency, toCurrency, amount, heroMode, router, addToHistory]);
 
   // Update URL when amount changes — debounced 600ms, pair pages only
   useEffect(() => {
@@ -78,7 +88,7 @@ export default function ConverterSection({
     setToCurrency(fromCurrency);
   }, [fromCurrency, toCurrency]);
 
-  const handlePopularSelect = useCallback((from: string, to: string) => {
+  const handleSelect = useCallback((from: string, to: string) => {
     setFromCurrency(from);
     setToCurrency(to);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -100,25 +110,32 @@ export default function ConverterSection({
 
   const belowFold = (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-16 space-y-5">
-      <PopularConversions onSelect={handlePopularSelect} />
+      <RecentPairs items={history} onSelect={handleSelect} />
+      <PopularConversions onSelect={handleSelect} />
       <RateTrendChart fromCurrency={fromCurrency} toCurrency={toCurrency} />
-      <MultiCurrencyResults fromCurrency={fromCurrency} amount={amount} />
+      <MultiCurrencyResults fromCurrency={fromCurrency} amount={amount} onSelect={handleSelect} />
     </div>
   );
 
-  if (heroMode) {
+  if (heroMode || heroContent != null) {
+    const heroInner = heroContent ?? (
+      <>
+        <h1 className="text-2xl sm:text-5xl font-bold text-slate-50 tracking-tight mb-1.5 sm:mb-2">
+          Convert Currency Instantly
+        </h1>
+        <p className="text-slate-500 text-sm sm:text-base">
+          Live exchange rates for {CURRENCIES.length} currencies
+        </p>
+      </>
+    );
+
     return (
       <>
-        <section className="relative min-h-dvh flex flex-col items-center justify-center px-4 sm:px-6 py-24">
+        <section className="relative min-h-dvh flex flex-col items-center justify-center px-4 sm:px-6 pt-20 pb-16 sm:py-24">
           <VantaGlobe />
           <div className="absolute inset-0 -z-5 bg-linear-to-b from-slate-950/75 to-slate-950/95 pointer-events-none" />
           <div className="text-center mb-6 sm:mb-10">
-            <h1 className="text-2xl sm:text-5xl font-bold text-slate-50 tracking-tight mb-1.5 sm:mb-2">
-              Convert Currency Instantly
-            </h1>
-            <p className="text-slate-500 text-sm sm:text-base">
-              Live exchange rates for {CURRENCIES.length} currencies
-            </p>
+            {heroInner}
           </div>
           {converterCard}
         </section>

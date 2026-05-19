@@ -41,6 +41,7 @@ export const metadata: Metadata = {
     'Zento',
   ],
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  themeColor: '#020617',
   icons: {
     icon: '/favicon.png',
     shortcut: '/favicon.png',

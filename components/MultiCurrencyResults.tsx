@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { ArrowUpRightIcon } from '@heroicons/react/24/outline';
 import { getMultipleRates } from '@/lib/api';
 import { getCurrency, MULTI_CURRENCY_TARGETS } from '@/lib/currencies';
 import AnimatedNumber from './AnimatedNumber';
@@ -8,9 +9,10 @@ import AnimatedNumber from './AnimatedNumber';
 interface Props {
   fromCurrency: string;
   amount: string;
+  onSelect: (from: string, to: string) => void;
 }
 
-export default function MultiCurrencyResults({ fromCurrency, amount }: Props) {
+export default function MultiCurrencyResults({ fromCurrency, amount, onSelect }: Props) {
   const targets = MULTI_CURRENCY_TARGETS.filter((t) => t !== fromCurrency);
   const numAmount = parseFloat(amount) || 1;
   const fromCurrencyData = getCurrency(fromCurrency);
@@ -45,12 +47,14 @@ export default function MultiCurrencyResults({ fromCurrency, amount }: Props) {
           const value = rate != null ? numAmount * rate : null;
 
           return (
-            <div
+            <button
               key={target}
-              className="group relative p-4 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 hover:border-slate-600 rounded-xl transition-all duration-200 overflow-hidden"
+              type="button"
+              onClick={() => onSelect(fromCurrency, target)}
+              className="group relative p-4 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 hover:border-slate-600 rounded-xl transition-all duration-200 text-left focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:ring-offset-2 focus:ring-offset-slate-900 overflow-hidden cursor-pointer"
             >
-              {/* Left accent on hover */}
               <div className="absolute inset-y-0 left-0 w-0.5 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-full" />
+              <ArrowUpRightIcon className="absolute top-2.5 right-2.5 w-3 h-3 text-slate-700 opacity-0 group-hover:opacity-100 group-hover:text-slate-500 transition-all duration-200" />
 
               {isLoading ? (
                 <div className="space-y-2.5">
@@ -84,7 +88,7 @@ export default function MultiCurrencyResults({ fromCurrency, amount }: Props) {
                   )}
                 </>
               )}
-            </div>
+            </button>
           );
         })}
       </div>
