@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import CurrencyConverter from './CurrencyConverter';
 import PopularConversions from './PopularConversions';
 import RateTrendChart from './RateTrendChart';
@@ -15,16 +16,28 @@ interface Props {
   heroMode?: boolean;
 }
 
+function buildPairUrl(from: string, to: string, amount: string): string {
+  const slug = `${from.toLowerCase()}-to-${to.toLowerCase()}`;
+  const n = parseFloat(amount);
+  return !isNaN(n) && amount !== '1' ? `/${slug}?amount=${amount}` : `/${slug}`;
+}
+
 export default function ConverterSection({
   initialFrom = 'JPY',
   initialTo = 'MYR',
   initialAmount = '1',
   heroMode = false,
 }: Props) {
+  const router = useRouter();
   const [amount, setAmount] = useState(initialAmount);
   const [fromCurrency, setFromCurrency] = useState(initialFrom);
   const [toCurrency, setToCurrency] = useState(initialTo);
 
+  // Refs hold previous values to detect real changes vs initial mount
+  const prevCurrencyRef = useRef<{ from: string; to: string } | null>(null);
+  const prevAmountRef = useRef<string | null>(null);
+
+  // Alt+S keyboard shortcut — swap currencies
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.altKey && e.key === 's') {
@@ -36,6 +49,29 @@ export default function ConverterSection({
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, [fromCurrency, toCurrency]);
+
+  // Navigate when currencies change — immediate, no debounce
+  useEffect(() => {
+    const prev = prevCurrencyRef.current;
+    prevCurrencyRef.current = { from: fromCurrency, to: toCurrency };
+    if (!prev || (prev.from === fromCurrency && prev.to === toCurrency)) return;
+
+    const url = buildPairUrl(fromCurrency, toCurrency, amount);
+    if (heroMode) router.push(url);
+    else router.replace(url);
+  }, [fromCurrency, toCurrency, amount, heroMode, router]);
+
+  // Update URL when amount changes — debounced 600ms, pair pages only
+  useEffect(() => {
+    const prev = prevAmountRef.current;
+    prevAmountRef.current = amount;
+    if (heroMode || prev === null || prev === amount) return;
+
+    const timer = setTimeout(() => {
+      router.replace(buildPairUrl(fromCurrency, toCurrency, amount));
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [amount, fromCurrency, toCurrency, heroMode, router]);
 
   const handleSwap = useCallback(() => {
     setFromCurrency(toCurrency);
@@ -73,14 +109,9 @@ export default function ConverterSection({
   if (heroMode) {
     return (
       <>
-        {/* Viewport-height hero: converter only */}
         <section className="relative min-h-dvh flex flex-col items-center justify-center px-4 sm:px-6 py-24">
-          {/* Animated globe background — desktop only, skipped on mobile */}
           <VantaGlobe />
-          {/* Gradient overlay keeps text legible over the animation */}
           <div className="absolute inset-0 -z-5 bg-linear-to-b from-slate-950/75 to-slate-950/95 pointer-events-none" />
-
-          {/* SEO headline */}
           <div className="text-center mb-6 sm:mb-10">
             <h1 className="text-2xl sm:text-5xl font-bold text-slate-50 tracking-tight mb-1.5 sm:mb-2">
               Convert Currency Instantly
@@ -89,10 +120,8 @@ export default function ConverterSection({
               Live exchange rates for {CURRENCIES.length} currencies
             </p>
           </div>
-
           {converterCard}
         </section>
-
         {belowFold}
       </>
     );

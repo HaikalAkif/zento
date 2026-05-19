@@ -72,7 +72,6 @@ export const CURRENCIES: Currency[] = [
   { code: 'RON', name: 'Romanian Leu',                symbol: 'lei',  flag: '🇷🇴' },
   { code: 'BGN', name: 'Bulgarian Lev',               symbol: 'лв',   flag: '🇧🇬' },
   { code: 'ISK', name: 'Icelandic Króna',             symbol: 'kr',   flag: '🇮🇸' },
-  { code: 'HRK', name: 'Croatian Kuna',               symbol: 'kn',   flag: '🇭🇷' },
   { code: 'RSD', name: 'Serbian Dinar',               symbol: 'din',  flag: '🇷🇸' },
   { code: 'UAH', name: 'Ukrainian Hryvnia',           symbol: '₴',    flag: '🇺🇦' },
   { code: 'GEL', name: 'Georgian Lari',               symbol: '₾',    flag: '🇬🇪' },

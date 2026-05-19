@@ -1,7 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { STATIC_PAIRS } from './[pair]/page';
-
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://zento.haikalakif.com';
+import { APP_URL as BASE_URL, STATIC_PAIRS } from '@/lib/config';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const pairPages: MetadataRoute.Sitemap = STATIC_PAIRS.map((pair) => ({

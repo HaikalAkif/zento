@@ -8,7 +8,7 @@ export default function Footer() {
           <div>
             <p className="font-bold text-slate-50">Zento</p>
             <p className="text-sm text-slate-400 mt-0.5">
-              Real-time currency converter — live mid-market rates for {CURRENCIES.length} currencies.
+              Real-time currency converter. Live mid-market rates for {CURRENCIES.length} currencies.
             </p>
           </div>
           <div className="text-xs text-slate-500 space-y-1 sm:text-right">

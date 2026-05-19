@@ -188,11 +188,14 @@ export default function CurrencyConverter({
       {data && !isSame && (
         <p className="text-[11px] text-slate-700 mt-4">
           Updated{' '}
-          {new Date(data.date).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          })}
+          {(() => {
+            const [y, m, d] = data.date.split('-').map(Number);
+            return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            });
+          })()}
         </p>
       )}
     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useId } from 'react';
 import {
   AreaChart,
   Area,
@@ -25,14 +25,24 @@ const PERIODS: { label: string; value: Period }[] = [
   { label: '1Y', value: '1Y' },
 ];
 
+// Parse "YYYY-MM-DD" as local date to avoid UTC-offset day shift
+function parseLocalDate(dateStr: string): Date {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
 function formatXTick(dateStr: string, period: Period): string {
-  const d = new Date(dateStr);
+  const d = parseLocalDate(dateStr);
   if (period === '1Y') return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
   if (period === '3D') return d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
+  const uid = useId();
+  const gradientId = `areaGradient-${uid}`;
+  const filterId = `lineGlow-${uid}`;
+
   const [period, setPeriod] = useState<Period>('30D');
   const { data, isLoading, isError } = useHistoricalRates(fromCurrency, toCurrency, period);
   const toCurrencyData = getCurrency(toCurrency);
@@ -49,7 +59,6 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
 
   const isPositive = changePercent == null || changePercent >= 0;
   const lineColor = isPositive ? '#3b82f6' : '#f87171';
-  const glowColor = isPositive ? '#3b82f6' : '#f87171';
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-7">
@@ -105,16 +114,14 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
         <ResponsiveContainer width="100%" height={224}>
           <AreaChart data={data} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
             <defs>
-              {/* Glow filter */}
-              <filter id="lineGlow" x="-20%" y="-50%" width="140%" height="200%">
+              <filter id={filterId} x="-20%" y="-50%" width="140%" height="200%">
                 <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
                 <feMerge>
                   <feMergeNode in="blur" />
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
-              {/* Area gradient */}
-              <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={lineColor} stopOpacity={0.18} />
                 <stop offset="85%" stopColor={lineColor} stopOpacity={0.02} />
                 <stop offset="100%" stopColor={lineColor} stopOpacity={0} />
@@ -155,7 +162,7 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
                 `1 ${fromCurrency}`,
               ]}
               labelFormatter={(label) =>
-                new Date(label as string).toLocaleDateString('en-US', {
+                parseLocalDate(label as string).toLocaleDateString('en-US', {
                   weekday: 'short',
                   month: 'short',
                   day: 'numeric',
@@ -166,12 +173,12 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
             <Area
               type="monotone"
               dataKey="rate"
-              stroke={glowColor}
+              stroke={lineColor}
               strokeWidth={2}
-              fill="url(#areaGradient)"
+              fill={`url(#${gradientId})`}
               dot={false}
               activeDot={{ r: 4, fill: lineColor, strokeWidth: 0 }}
-              filter="url(#lineGlow)"
+              filter={`url(#${filterId})`}
             />
           </AreaChart>
         </ResponsiveContainer>

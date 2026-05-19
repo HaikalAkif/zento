@@ -11,13 +11,6 @@ export interface RateResponse {
   rates: Record<string, number>;
 }
 
-export interface HistoricalResponse {
-  amount: number;
-  base: string;
-  start_date: string;
-  end_date: string;
-  rates: Record<string, Record<string, number>>;
-}
 
 export interface ChartDataPoint {
   date: string;
@@ -82,29 +75,14 @@ export async function getMultipleRates(base: string, targets: string[]): Promise
   }
 }
 
-// Historical is Frankfurter-only (open.er-api.com requires paid plan for history)
+// Historical data — proxied through /api/historical for server-side caching
 export async function getHistoricalRates(
   base: string,
   target: string,
   days: number,
 ): Promise<ChartDataPoint[]> {
-  const end = new Date();
-  const start = new Date();
-  start.setDate(start.getDate() - days);
-  const startStr = start.toISOString().split('T')[0];
-  const endStr = end.toISOString().split('T')[0];
-
-  const res = await fetch(
-    `${FRANKFURTER}/${startStr}..${endStr}?base=${base}&symbols=${target}`,
-    { next: { revalidate: 3600 } },
-  );
-
+  const res = await fetch(`/api/historical?base=${base}&target=${target}&days=${days}`);
   if (res.status === 429) throw new Error('Rate limited — try again in a moment');
   if (!res.ok) throw new Error(`Chart data unavailable (HTTP ${res.status})`);
-
-  const data: HistoricalResponse = await res.json();
-
-  return Object.entries(data.rates)
-    .map(([date, rates]) => ({ date, rate: rates[target] }))
-    .sort((a, b) => a.date.localeCompare(b.date));
+  return res.json();
 }

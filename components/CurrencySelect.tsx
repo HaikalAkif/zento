@@ -17,6 +17,7 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
   const [search, setSearch] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const selected = getCurrency(value);
@@ -61,6 +62,7 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
     setOpen(false);
     setSearch('');
     setFocusedIndex(-1);
+    triggerRef.current?.focus();
   }, []);
 
   const handleSelect = useCallback(
@@ -112,6 +114,7 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
 
       {/* Trigger */}
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => { setOpen((v) => !v); setFocusedIndex(-1); }}
         onKeyDown={handleTriggerKeyDown}
