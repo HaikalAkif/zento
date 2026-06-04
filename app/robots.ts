@@ -1,6 +1,5 @@
 import type { MetadataRoute } from 'next';
-
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://zento.haikalakif.com';
+import { APP_URL } from '@/lib/config';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -11,7 +10,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/', '/_next/'],
       },
     ],
-    sitemap: `${BASE_URL}/sitemap.xml`,
-    host: BASE_URL,
+    sitemap: `${APP_URL}/sitemap.xml`,
+    host: APP_URL,
   };
 }

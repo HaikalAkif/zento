@@ -75,12 +75,12 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
               >
                 {isPositive ? '▲' : '▼'} {Math.abs(changePercent).toFixed(2)}%
               </span>
-              <span className="text-xs text-slate-500">over {period}</span>
+              <span className="text-xs text-slate-500">past {period}</span>
             </div>
           )}
           {data && data.length > 0 && (
             <p className="text-xs text-slate-600 mt-0.5">
-              Latest: {data[data.length - 1].rate.toFixed(4)} {toCurrency}
+              Now: {data[data.length - 1].rate.toFixed(4)} {toCurrency}
             </p>
           )}
         </div>
@@ -90,8 +90,10 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
           {PERIODS.map(({ label, value }) => (
             <button
               key={value}
+              type="button"
               onClick={() => setPeriod(value)}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-150 focus:outline-none ${
+              aria-pressed={period === value}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-800 ${
                 period === value
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-500 hover:text-slate-200'
@@ -108,7 +110,7 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
         <div className="h-56 rounded-xl bg-slate-800 animate-pulse" />
       ) : isError ? (
         <div className="h-56 flex items-center justify-center text-slate-600 text-sm">
-          Failed to load chart data
+          Chart unavailable for this pair
         </div>
       ) : data && data.length > 0 ? (
         <ResponsiveContainer width="100%" height={224}>
@@ -184,7 +186,7 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
         </ResponsiveContainer>
       ) : (
         <div className="h-56 flex items-center justify-center text-slate-600 text-sm">
-          No data available
+          No history available for this pair
         </div>
       )}
     </div>

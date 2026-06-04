@@ -3,7 +3,7 @@ import { CURRENCIES } from '@/lib/currencies';
 export default function Footer() {
   return (
     <footer className="border-t border-slate-800 bg-slate-900 mt-16">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-4">
         <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:justify-between sm:text-left">
           <div>
             <p className="font-bold text-slate-50">Zento</p>
@@ -13,7 +13,7 @@ export default function Footer() {
           </div>
           <div className="text-xs text-slate-500 space-y-1 sm:text-right">
             <p>
-              Rates sourced from{' '}
+              Rates from{' '}
               <a
                 href="https://www.exchangerate-api.com"
                 target="_blank"
@@ -34,6 +34,21 @@ export default function Footer() {
             </p>
             <p>For informational purposes only. Not financial advice.</p>
           </div>
+        </div>
+
+        <div className="border-t border-slate-800 pt-4 flex flex-col items-center gap-1 text-center sm:flex-row sm:justify-between">
+          <p className="text-xs text-slate-600">© Zento 2026</p>
+          <p className="text-xs text-slate-600">
+            More websites by{' '}
+            <a
+              href="https://haikalakif.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-500 hover:text-slate-300 transition-colors"
+            >
+              iCool
+            </a>
+          </p>
         </div>
       </div>
     </footer>

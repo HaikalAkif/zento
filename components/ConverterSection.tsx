@@ -121,10 +121,10 @@ export default function ConverterSection({
     const heroInner = heroContent ?? (
       <>
         <h1 className="text-2xl sm:text-5xl font-bold text-slate-50 tracking-tight mb-1.5 sm:mb-2">
-          Convert Currency Instantly
+          Currency, converted instantly.
         </h1>
         <p className="text-slate-500 text-sm sm:text-base">
-          Live exchange rates for {CURRENCIES.length} currencies
+          {CURRENCIES.length} currencies. Live rates. Zero fees.
         </p>
       </>
     );
@@ -145,9 +145,11 @@ export default function ConverterSection({
   }
 
   return (
-    <div className="space-y-5">
-      {converterCard}
-      <div className="space-y-5 pt-8">{belowFold}</div>
+    <div className="pt-20 pb-4">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 mb-8">
+        {converterCard}
+      </div>
+      {belowFold}
     </div>
   );
 }

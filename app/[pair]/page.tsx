@@ -15,7 +15,6 @@ function parseAmount(raw: string | undefined): string {
   return !isNaN(n) && n > 0 ? raw : '1';
 }
 
-
 function parsePair(slug: string): { from: string; to: string } | null {
   const match = slug.match(/^([a-z]{3})-to-([a-z]{3})$/);
   if (!match) return null;
@@ -46,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       `${from?.name} to ${to?.name}`,
       `${parsed.from} ${parsed.to} rate today`,
     ],
-    alternates: { canonical: `/${pair}` },
+    alternates: { canonical: `${APP_URL}/${pair}` },
     openGraph: {
       title,
       description,
@@ -181,11 +180,14 @@ export default async function PairPage({ params, searchParams }: Props) {
 
   const heroContent = (
     <>
-      <h1 className="text-xl sm:text-4xl font-bold text-slate-50 tracking-tight mb-2">
-        {from?.flag} {parsed.from} to {to?.flag} {parsed.to} | Live Exchange Rate
+      <h1 className="text-xl sm:text-4xl font-bold text-slate-50 tracking-tight mb-1">
+        {from?.flag} {parsed.from} to {to?.flag} {parsed.to}
+        <span className="block text-sm sm:text-xl font-semibold text-blue-400/80 mt-1 tracking-normal">
+          Live Exchange Rate
+        </span>
       </h1>
-      <p className="text-slate-400 text-sm sm:text-base mt-1">
-        Convert {from?.name} to {to?.name}. Mid-market rate, updated every minute.
+      <p className="text-slate-500 text-sm sm:text-base mt-2">
+        Real-time mid-market rate. Updates every 60 seconds.
       </p>
     </>
   );
@@ -208,7 +210,7 @@ export default async function PairPage({ params, searchParams }: Props) {
         {/* Visible FAQ — content must match FAQPage schema for AEO */}
         <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-7">
           <h2 className="text-base font-bold text-slate-50 mb-5">
-            Frequently Asked Questions. {parsed.from} to {parsed.to}.
+            {parsed.from} to {parsed.to}: FAQ
           </h2>
           <div className="space-y-0 divide-y divide-slate-800">
             {faqItems.map(({ q, a }) => (

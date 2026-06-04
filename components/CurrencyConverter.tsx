@@ -179,7 +179,7 @@ export default function CurrencyConverter({
       </div>
 
       {/* ── Rate + 24h change badge ── */}
-      <div className="flex items-center justify-center min-h-[40px] mb-6">
+      <div className="flex items-center justify-center min-h-10 mb-6">
         {data && !isSame && (
           <div className="inline-flex items-center rounded-full border border-slate-700/60 overflow-hidden text-xs font-semibold">
             <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-800/70">
@@ -223,7 +223,7 @@ export default function CurrencyConverter({
         ) : isLoading ? (
           <div className="h-14 sm:h-20 w-48 bg-slate-800/60 animate-pulse rounded-xl" />
         ) : isError ? (
-          <span className="text-lg text-red-400 font-medium">Failed to fetch rate</span>
+          <span className="text-base text-red-400/80 font-medium">Rate unavailable right now</span>
         ) : (
           <AnimatedNumber
             value={result}
@@ -274,7 +274,7 @@ export default function CurrencyConverter({
       {/* ── Last updated ── */}
       {data && !isSame && (
         <p className="text-[11px] text-slate-700">
-          Updated{' '}
+          Rates as of{' '}
           {(() => {
             const [y, m, d] = data.date.split('-').map(Number);
             return new Date(y, m - 1, d).toLocaleDateString('en-US', {
