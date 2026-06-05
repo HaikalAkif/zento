@@ -1,7 +1,7 @@
+import { use } from 'react';
 import { ImageResponse } from 'next/og';
 import { getCurrency } from '@/lib/currencies';
 
-export const runtime = 'edge';
 export const alt = 'Zento Currency Converter';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
@@ -16,8 +16,8 @@ function parsePair(slug: string): { from: string; to: string } | null {
   return { from: match[1].toUpperCase(), to: match[2].toUpperCase() };
 }
 
-export default async function OgImage({ params }: Props) {
-  const { pair } = await params;
+export default function OgImage({ params }: Props) {
+  const { pair } = use(params);
   const parsed = parsePair(pair);
 
   const from = parsed ? getCurrency(parsed.from) : null;

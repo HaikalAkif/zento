@@ -45,6 +45,16 @@ export default function ConverterSection({
   const prevCurrencyRef = useRef<{ from: string; to: string } | null>(null);
   const prevAmountRef = useRef<string | null>(null);
 
+  // Sync ?amount from URL on first mount (pair pages no longer read searchParams server-side)
+  useEffect(() => {
+    const raw = new URLSearchParams(window.location.search).get('amount');
+    if (!raw) return;
+    const n = parseFloat(raw);
+    if (isNaN(n) || n <= 0 || raw === initialAmount) return;
+    prevAmountRef.current = raw; // prevent URL-update effect from firing a redundant replace
+    setAmount(raw);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Alt+S keyboard shortcut — swap currencies
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {

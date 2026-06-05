@@ -1,3 +1,4 @@
+import { use } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import ConverterSection from '@/components/ConverterSection';
@@ -6,13 +7,6 @@ import { APP_URL, STATIC_PAIRS } from '@/lib/config';
 
 interface Props {
   params: Promise<{ pair: string }>;
-  searchParams: Promise<{ amount?: string }>;
-}
-
-function parseAmount(raw: string | undefined): string {
-  if (!raw) return '1';
-  const n = parseFloat(raw);
-  return !isNaN(n) && n > 0 ? raw : '1';
 }
 
 function parsePair(slug: string): { from: string; to: string } | null {
@@ -71,9 +65,8 @@ export function generateStaticParams() {
 }
 
 
-export default async function PairPage({ params, searchParams }: Props) {
-  const [{ pair }, { amount: amountParam }] = await Promise.all([params, searchParams]);
-  const initialAmount = parseAmount(amountParam);
+export default function PairPage({ params }: Props) {
+  const { pair } = use(params);
   const parsed = parsePair(pair);
   if (!parsed) notFound();
 
@@ -202,7 +195,6 @@ export default async function PairPage({ params, searchParams }: Props) {
       <ConverterSection
         initialFrom={parsed.from}
         initialTo={parsed.to}
-        initialAmount={initialAmount}
         heroContent={heroContent}
       />
 
