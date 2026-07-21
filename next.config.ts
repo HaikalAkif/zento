@@ -1,6 +1,10 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    // A stray lockfile exists in the parent folder; pin the root here.
+    root: __dirname,
+  },
   async headers() {
     return [
       {

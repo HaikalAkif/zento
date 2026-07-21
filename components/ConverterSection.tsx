@@ -52,7 +52,7 @@ export default function ConverterSection({
     const n = parseFloat(raw);
     if (isNaN(n) || n <= 0 || raw === initialAmount) return;
     prevAmountRef.current = raw; // prevent URL-update effect from firing a redundant replace
-    setAmount(raw);
+    setAmount(raw); // eslint-disable-line react-hooks/set-state-in-effect -- hydrates from window.location, unavailable during SSR
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Alt+S keyboard shortcut — swap currencies

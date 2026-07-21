@@ -26,7 +26,7 @@ export function useConversionHistory() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
   useEffect(() => {
-    setHistory(readStorage());
+    setHistory(readStorage()); // eslint-disable-line react-hooks/set-state-in-effect -- hydrates from localStorage, unavailable during SSR
   }, []);
 
   const add = useCallback((from: string, to: string) => {
