@@ -75,11 +75,11 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
               >
                 {isPositive ? '▲' : '▼'} {Math.abs(changePercent).toFixed(2)}%
               </span>
-              <span className="text-xs text-slate-500">past {period}</span>
+              <span className="text-xs text-slate-400">past {period}</span>
             </div>
           )}
           {data && data.length > 0 && (
-            <p className="text-xs text-slate-600 mt-0.5">
+            <p className="text-xs text-slate-400 mt-0.5">
               Now: {data[data.length - 1].rate.toFixed(4)} {toCurrency}
             </p>
           )}
@@ -96,7 +96,7 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
               className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-800 ${
                 period === value
                   ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-500 hover:text-slate-200'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               {label}
@@ -109,7 +109,7 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
       {isLoading ? (
         <div className="h-56 rounded-xl bg-slate-800 animate-pulse" />
       ) : isError ? (
-        <div className="h-56 flex items-center justify-center text-slate-600 text-sm">
+        <div className="h-56 flex items-center justify-center text-slate-400 text-sm">
           Chart unavailable for this pair
         </div>
       ) : data && data.length > 0 ? (
@@ -185,8 +185,12 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
           </AreaChart>
         </ResponsiveContainer>
       ) : (
-        <div className="h-56 flex items-center justify-center text-slate-600 text-sm">
-          No history available for this pair
+        <div className="h-56 flex flex-col items-center justify-center gap-1 px-6 text-center">
+          <p className="text-sm text-slate-300">No rate history for this pair</p>
+          <p className="text-xs text-slate-400">
+            Charts use European Central Bank data, which covers 30 major currencies.
+            Live conversion above still works.
+          </p>
         </div>
       )}
     </div>

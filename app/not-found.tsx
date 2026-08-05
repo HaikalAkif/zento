@@ -8,7 +8,7 @@ export default function NotFound() {
         <div className="w-14 h-14 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto mb-5">
           <MagnifyingGlassIcon className="w-7 h-7 text-slate-400" />
         </div>
-        <p className="text-5xl font-black text-slate-700 mb-3 tracking-tight">404</p>
+        <p className="text-5xl font-black text-slate-500 mb-3 tracking-tight">404</p>
         <h1 className="text-xl font-bold text-slate-50 mb-2">Page not found</h1>
         <p className="text-slate-400 text-sm leading-relaxed mb-8">
           This page doesn&apos;t exist. Try heading back to the converter.

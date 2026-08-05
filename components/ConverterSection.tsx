@@ -3,14 +3,21 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import CurrencyConverter from './CurrencyConverter';
 import PopularConversions from './PopularConversions';
-import RateTrendChart from './RateTrendChart';
 import MultiCurrencyResults from './MultiCurrencyResults';
 import RecentPairs from './RecentPairs';
 import VantaGlobe from './VantaGlobe';
 import { useConversionHistory } from '@/hooks/useConversionHistory';
 import { CURRENCIES } from '@/lib/currencies';
+import { prefersReducedMotion } from '@/lib/motion';
+
+// Recharts is ~450 kB. The chart sits below the fold, so keep it out of the initial bundle.
+const RateTrendChart = dynamic(() => import('./RateTrendChart'), {
+  ssr: false,
+  loading: () => <div className="h-[360px] rounded-2xl bg-slate-900 border border-slate-800" />,
+});
 
 interface Props {
   initialFrom?: string;
@@ -55,9 +62,12 @@ export default function ConverterSection({
     setAmount(raw); // eslint-disable-line react-hooks/set-state-in-effect -- hydrates from window.location, unavailable during SSR
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Alt+S keyboard shortcut — swap currencies
+  // Alt+S keyboard shortcut: swap currencies
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
+      // Don't hijack the shortcut while the user is typing in a field
+      const el = e.target as HTMLElement | null;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
       if (e.altKey && e.key === 's') {
         e.preventDefault();
         setFromCurrency(toCurrency);
@@ -68,7 +78,7 @@ export default function ConverterSection({
     return () => window.removeEventListener('keydown', handleKey);
   }, [fromCurrency, toCurrency]);
 
-  // Navigate + save to history when currencies change — immediate, no debounce
+  // Navigate + save to history when currencies change. Immediate, no debounce.
   useEffect(() => {
     const prev = prevCurrencyRef.current;
     prevCurrencyRef.current = { from: fromCurrency, to: toCurrency };
@@ -81,7 +91,7 @@ export default function ConverterSection({
     else router.replace(url);
   }, [fromCurrency, toCurrency, amount, heroMode, router, addToHistory]);
 
-  // Update URL when amount changes — debounced 600ms, pair pages only
+  // Update URL when amount changes. Debounced 600ms, pair pages only.
   useEffect(() => {
     const prev = prevAmountRef.current;
     prevAmountRef.current = amount;
@@ -101,7 +111,7 @@ export default function ConverterSection({
   const handleSelect = useCallback((from: string, to: string) => {
     setFromCurrency(from);
     setToCurrency(to);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
   }, []);
 
   const converterCard = (
@@ -122,7 +132,9 @@ export default function ConverterSection({
     <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-16 space-y-5">
       <RecentPairs items={history} onSelect={handleSelect} />
       <PopularConversions onSelect={handleSelect} />
-      <RateTrendChart fromCurrency={fromCurrency} toCurrency={toCurrency} />
+      {fromCurrency !== toCurrency && (
+        <RateTrendChart fromCurrency={fromCurrency} toCurrency={toCurrency} />
+      )}
       <MultiCurrencyResults fromCurrency={fromCurrency} amount={amount} onSelect={handleSelect} />
     </div>
   );
@@ -131,9 +143,9 @@ export default function ConverterSection({
     const heroInner = heroContent ?? (
       <>
         <h1 className="text-2xl sm:text-5xl font-bold text-slate-50 tracking-tight mb-1.5 sm:mb-2">
-          Currency, converted instantly.
+          Zento: currency, converted instantly.
         </h1>
-        <p className="text-slate-500 text-sm sm:text-base">
+        <p className="text-slate-400 text-sm sm:text-base">
           {CURRENCIES.length} currencies. Live rates. Zero fees.
         </p>
       </>

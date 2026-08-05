@@ -11,7 +11,7 @@ export default function Footer() {
               Real-time currency converter. Live mid-market rates for {CURRENCIES.length} currencies.
             </p>
           </div>
-          <div className="text-xs text-slate-500 space-y-1 sm:text-right">
+          <div className="text-xs text-slate-400 space-y-1 sm:text-right">
             <p>
               Rates from{' '}
               <a
@@ -37,14 +37,14 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-slate-800 pt-4 flex flex-col items-center gap-1 text-center sm:flex-row sm:justify-between">
-          <p className="text-xs text-slate-600">© Zento 2026</p>
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-slate-400">© Zento 2026</p>
+          <p className="text-xs text-slate-400">
             More websites by{' '}
             <a
               href="https://haikalakif.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-500 hover:text-slate-300 transition-colors"
+              className="text-slate-400 hover:text-slate-300 transition-colors"
             >
               iCool
             </a>

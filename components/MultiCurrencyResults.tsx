@@ -26,16 +26,16 @@ export default function MultiCurrencyResults({ fromCurrency, amount, onSelect }:
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-7">
-      <div className="flex items-center justify-between mb-5">
-        <div>
+      <div className="flex items-center justify-between gap-3 mb-5">
+        <div className="min-w-0">
           <h2 className="text-base font-bold text-slate-50 tracking-tight">
             What {numAmount.toLocaleString()} {fromCurrency} buys today
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-400 mt-0.5">
             {fromCurrencyData?.name} converted to major currencies
           </p>
         </div>
-        <span className="text-[11px] font-semibold text-slate-600 bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-full">
+        <span className="shrink-0 text-[11px] font-semibold text-slate-400 bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-full">
           Live
         </span>
       </div>
@@ -43,8 +43,8 @@ export default function MultiCurrencyResults({ fromCurrency, amount, onSelect }:
       {isError ? (
         <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
           <ExclamationTriangleIcon className="w-6 h-6 text-slate-700" />
-          <p className="text-sm text-slate-600">Rates unavailable right now.</p>
-          <p className="text-xs text-slate-700">Try refreshing in a moment.</p>
+          <p className="text-sm text-slate-400">Rates unavailable right now.</p>
+          <p className="text-xs text-slate-400">Try refreshing in a moment.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
@@ -83,14 +83,14 @@ export default function MultiCurrencyResults({ fromCurrency, amount, onSelect }:
                       {value != null ? (
                         <AnimatedNumber value={value} decimals={2} duration={350} />
                       ) : (
-                        '—'
+                        '–'
                       )}
                     </div>
-                    <div className="text-[11px] text-slate-600 mt-1 truncate font-medium">
+                    <div className="text-[11px] text-slate-400 mt-1 truncate font-medium">
                       {currency?.name}
                     </div>
                     {rate != null && (
-                      <div className="text-[11px] text-slate-600 mt-0.5 tabular-nums">
+                      <div className="text-[11px] text-slate-400 mt-0.5 tabular-nums">
                         1 = {rate.toFixed(4)}
                       </div>
                     )}

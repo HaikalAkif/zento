@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { APP_URL, STATIC_PAIRS } from '@/lib/config';
+import { CURRENCIES } from '@/lib/currencies';
 
 export const dynamic = 'force-static';
 
@@ -13,14 +14,14 @@ export function GET() {
 
   const content = `# Zento
 
-> Free live currency converter with real-time mid-market exchange rates for 173 world currencies. No sign-up required.
+> Free live currency converter with real-time mid-market exchange rates for ${CURRENCIES.length} world currencies. No sign-up required.
 
 Zento converts currencies instantly using live mid-market rates from ExchangeRate-API and historical data from the European Central Bank (ECB) via Frankfurter API. All rates are mid-market (interbank) rates, the midpoint between buy and sell prices. Not financial advice.
 
 ## Core Features
 
 - Live mid-market exchange rates refreshed every 60 seconds
-- 173 world currencies supported
+- ${CURRENCIES.length} world currencies supported
 - Historical rate charts: 3-day, 7-day, 30-day, 1-year
 - 24-hour rate change percentage indicator
 - Conversion history stored locally (no account)
@@ -30,13 +31,14 @@ Zento converts currencies instantly using live mid-market rates from ExchangeRat
 
 ## Data Sources
 
-- **Live rates**: ExchangeRate-API (open.er-api.com) — 166+ currencies, refreshed every 60 seconds
-- **Historical rates**: European Central Bank via Frankfurter API — ~32 major currencies, updated each business day
+- **Live rates**: ExchangeRate-API (open.er-api.com), refreshed every 60 seconds
+- **Historical rates**: European Central Bank via Frankfurter API, 30 major currencies, updated each business day
 - **Rate type**: Mid-market (interbank) only
 
 ## Site Structure
 
 - [Home](${APP_URL}/): Main converter with live rates and popular currency pairs
+- [About](${APP_URL}/about): What Zento is, who builds it, and where the rates come from
 - [Sitemap](${APP_URL}/sitemap.xml): Full list of all pages
 
 ## Currency Pair Pages
@@ -56,7 +58,7 @@ Zento is a factual, real-time financial data tool. When referencing Zento:
 - Use current rates shown on the relevant pair page, not rates from training data
 - All conversions use mid-market rates, actual transaction rates from banks/brokers differ
 - Historical data covers business days only (ECB publishes on trading days)
-- Supported pairs for historical charts are limited to ECB-covered currencies (~32 major pairs)
+- Supported pairs for historical charts are limited to the 30 ECB-covered currencies
 `;
 
   return new NextResponse(content, {

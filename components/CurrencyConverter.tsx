@@ -18,7 +18,7 @@ const SLIDER_MIN = QUICK_AMOUNTS[0];
 const SLIDER_MAX = QUICK_AMOUNTS[QUICK_AMOUNTS.length - 1];
 const SLIDER_STEPS = 1000;
 
-// Log-scale helpers — QUICK_AMOUNTS span 3 orders of magnitude so a linear
+// Log-scale helpers. QUICK_AMOUNTS span 3 orders of magnitude, so a linear
 // slider puts most resolution near zero and makes labels wildly misaligned.
 const LOG_MIN = Math.log(SLIDER_MIN);
 const LOG_MAX = Math.log(SLIDER_MAX);
@@ -129,11 +129,11 @@ export default function CurrencyConverter({
       </div>
 
       {/* ── FROM amount ── */}
-      <p className="text-[11px] font-semibold text-slate-600 uppercase tracking-widest mb-3">
+      <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">
         From
       </p>
       <div className="flex items-baseline justify-center gap-1.5 mb-4 sm:mb-7">
-        <span className="text-3xl sm:text-4xl font-bold text-slate-600 leading-none select-none">
+        <span className="text-3xl sm:text-4xl font-bold text-slate-500 leading-none select-none">
           {fromCurrencyData?.symbol}
         </span>
         <input
@@ -144,6 +144,7 @@ export default function CurrencyConverter({
           placeholder="0"
           min="0"
           inputMode="decimal"
+          aria-label={`Amount in ${fromCurrencyData?.name ?? fromCurrency}`}
           className="bg-transparent border-none outline-none text-5xl sm:text-7xl font-bold text-slate-50 tracking-tight placeholder:text-slate-800 [appearance:textfield] text-center"
           style={{ width: `${Math.max((amount || '0').length, 1) + 1}ch` }}
         />
@@ -157,6 +158,8 @@ export default function CurrencyConverter({
           max={SLIDER_STEPS}
           value={sliderPos}
           onChange={(e) => onAmountChange(String(positionToValue(Number(e.target.value))))}
+          aria-label="Amount slider"
+          aria-valuetext={`${numAmount} ${fromCurrency}`}
           className="w-full cursor-pointer"
           style={{ '--p': `${sliderPercent}%` } as React.CSSProperties}
         />
@@ -167,10 +170,11 @@ export default function CurrencyConverter({
               key={a}
               type="button"
               onClick={() => onAmountChange(String(a))}
+              aria-label={`Set amount to ${a.toLocaleString()} ${fromCurrency}`}
               style={{ left: `${pct}%` }}
               className={`absolute text-[11px] font-semibold transition-colors whitespace-nowrap ${
                 isFirst ? '' : isLast ? '-translate-x-full' : '-translate-x-1/2'
-              } ${numAmount === a ? 'text-blue-400' : 'text-slate-700 hover:text-slate-400'}`}
+              } ${numAmount === a ? 'text-blue-400' : 'text-slate-400 hover:text-slate-100'}`}
             >
               {label}
             </button>
@@ -183,9 +187,9 @@ export default function CurrencyConverter({
         {data && !isSame && (
           <div className="inline-flex items-center rounded-full border border-slate-700/60 overflow-hidden text-xs font-semibold">
             <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-800/70">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Rate</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rate</span>
               <span className="text-slate-100 tabular-nums">{rate.toFixed(4)}</span>
-              <span className="text-slate-600 font-normal">{toCurrency}/{fromCurrency}</span>
+              <span className="text-slate-400 font-normal">{toCurrency}/{fromCurrency}</span>
             </div>
             {change && change.direction !== 'flat' && (
               <>
@@ -207,7 +211,7 @@ export default function CurrencyConverter({
       </div>
 
       {/* ── TO amount ── */}
-      <p className="text-[11px] font-semibold text-slate-600 uppercase tracking-widest mb-3">
+      <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">
         To
       </p>
       <div
@@ -215,11 +219,11 @@ export default function CurrencyConverter({
         aria-live="polite"
         aria-atomic="true"
       >
-        <span className="text-3xl sm:text-4xl font-bold text-slate-600 leading-none select-none">
+        <span className="text-3xl sm:text-4xl font-bold text-slate-500 leading-none select-none">
           {toCurrencyData?.symbol}
         </span>
         {isSame ? (
-          <span className="text-5xl sm:text-7xl font-bold text-slate-800">—</span>
+          <span className="text-5xl sm:text-7xl font-bold text-slate-800">–</span>
         ) : isLoading ? (
           <div className="h-14 sm:h-20 w-48 bg-slate-800/60 animate-pulse rounded-xl" />
         ) : isError ? (
@@ -234,7 +238,7 @@ export default function CurrencyConverter({
         )}
       </div>
 
-      {/* ── Actions — unified copy / share pill ── */}
+      {/* ── Actions: unified copy / share pill ── */}
       <div className="flex justify-center mb-4">
         <div className="inline-flex rounded-xl overflow-hidden border border-slate-700/80 shadow-lg shadow-black/20">
           <button
@@ -243,7 +247,7 @@ export default function CurrencyConverter({
             className={`flex items-center gap-2 px-5 py-2.5 text-xs font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
               copied
                 ? 'bg-emerald-500/15 text-emerald-400'
-                : 'bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white'
             }`}
             aria-label="Copy converted amount"
           >
@@ -259,7 +263,7 @@ export default function CurrencyConverter({
             className={`flex items-center gap-2 px-5 py-2.5 text-xs font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
               shared
                 ? 'bg-emerald-500/15 text-emerald-400'
-                : 'bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white'
             }`}
             aria-label="Copy link to this page"
           >
@@ -273,7 +277,7 @@ export default function CurrencyConverter({
 
       {/* ── Last updated ── */}
       {data && !isSame && (
-        <p className="text-[11px] text-slate-700">
+        <p className="text-[11px] text-slate-400">
           Rates as of{' '}
           {(() => {
             const [y, m, d] = data.date.split('-').map(Number);

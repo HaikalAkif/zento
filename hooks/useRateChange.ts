@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getHistoricalRates } from '@/lib/api';
+import { pairHasHistory } from '@/lib/currencies';
 
 export interface RateChange {
   percent: number;
@@ -19,7 +20,8 @@ export function useRateChange(base: string, target: string) {
       const direction = percent > 0.005 ? 'up' : percent < -0.005 ? 'down' : 'flat';
       return { percent, direction };
     },
-    enabled: base !== target,
+    // The 24h badge is derived from ECB history, so it only exists for those pairs
+    enabled: pairHasHistory(base, target),
     staleTime: 60 * 60 * 1000,
     retry: false,
   });

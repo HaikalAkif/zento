@@ -9,9 +9,17 @@ export default function Navbar() {
           Zento
         </Link>
 
-        <div className="flex items-center gap-1.5 text-sm text-slate-400">
-          <ArrowTrendingUpIcon className="w-4 h-4" />
-          <span className="hidden sm:inline">Live Exchange Rates</span>
+        <div className="flex items-center gap-5 text-sm text-slate-400">
+          <Link
+            href="/about"
+            className="hover:text-slate-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+          >
+            About
+          </Link>
+          <span className="hidden sm:flex items-center gap-1.5">
+            <ArrowTrendingUpIcon className="w-4 h-4" />
+            Live Exchange Rates
+          </span>
         </div>
       </div>
     </nav>

@@ -3,14 +3,14 @@
 
 ---
 
-## 1. OG Image — `public/og.png` (Critical)
+## 1. OG Image, `public/og.png` (Critical)
 
 Pair pages use the dynamic edge OG generator (already built). The home page falls back to `/og.png` which does not exist yet. Every share from the home page on X, WhatsApp, LinkedIn, Telegram shows a broken preview until this is created.
 
 ### Exact specs
 - Size: **1200 × 630px**
 - Format: PNG (optimise with TinyPNG, target under 200KB)
-- Safe zone: Keep all text inside a **1000 × 430px** centre area (100px buffer on each side — some platforms crop the outer edges)
+- Safe zone: Keep all text inside a **1000 × 430px** centre area (100px buffer on each side, some platforms crop the outer edges)
 
 ### Layout blueprint
 ```
@@ -37,7 +37,7 @@ Figma (free), Adobe Express, Canva. Export > PNG > upload to `/public/og.png`.
 
 ---
 
-## 2. PWA Icons — `/public/` (High Priority)
+## 2. PWA Icons, `/public/` (High Priority)
 
 The manifest currently points `favicon.png` for both 192px and 512px which is almost certainly wrong size. Create these files:
 
@@ -93,7 +93,7 @@ Host at `/blog` or a separate `blog.zento.haikalakif.com`. Three posts that rank
 
 **Outline:**
 1. What is the USD to MYR rate right now? (embed live Zento widget or screenshot)
-2. Why does USD/MYR fluctuate? (Fed rate decisions, BNM policy, crude oil prices — Malaysia is oil-linked)
+2. Why does USD/MYR fluctuate? (Fed rate decisions, BNM policy, crude oil prices, Malaysia is oil-linked)
 3. Historical high/low (2015 RM4.47 peak, 2023 RM4.78 weakness, current range)
 4. Banks vs. mid-market: a real example of sending $1,000 USD to Malaysia
 5. Tips: when to exchange, how to minimise fees, use mid-market rate tools
@@ -109,7 +109,7 @@ Host at `/blog` or a separate `blog.zento.haikalakif.com`. Three posts that rank
 **Outline:**
 1. What is the mid-market rate? (simple definition, one sentence)
 2. How banks make money on FX (typically 2–5% margin on top)
-3. Real numbers: sending RM5,000 via Maybank vs. mid-market — the fee in ringgit
+3. Real numbers: sending RM5,000 via Maybank vs. mid-market, the fee in ringgit
 4. Who uses mid-market rates: Wise, Revolut, Zento (informational, not promotional)
 5. When does the margin matter most? (large transfers vs. coffee purchases)
 6. FAQ: "Is the mid-market rate the real exchange rate?", "How do I find the interbank rate?"
@@ -140,21 +140,21 @@ Host at `/blog` or a separate `blog.zento.haikalakif.com`. Three posts that rank
 
 ## 4. Backlink Strategy
 
-### Communities — post genuine value, never spam
+### Communities, post genuine value, never spam
 
 | Where | What to post |
 |-------|-------------|
-| Reddit r/digitalnomad | "I built a currency tool with no ads — useful when moving money between countries" |
-| Reddit r/malaysia | "Free MYR currency converter with live ECB rates — built this for myself" |
+| Reddit r/digitalnomad | "I built a currency tool with no ads, useful when moving money between countries" |
+| Reddit r/malaysia | "Free MYR currency converter with live ECB rates, built this for myself" |
 | Reddit r/singapore | Same angle for SGD/MYR pairs |
 | Reddit r/personalfinance | Reply to "best currency converter" threads with Zento |
 | Reddit r/sideprojects | Full build story (Next.js 16, ECB API, Vanta.js globe, 173 currencies) |
 | ProductHunt | Full launch: tagline "The cleanest free currency converter, no sign-up" |
-| Hacker News | "Show HN: Zento — live currency converter, free, no ads, ECB-powered" |
+| Hacker News | "Show HN: Zento, live currency converter, free, no ads, ECB-powered" |
 | IndieHackers | Build story post with monthly traffic updates |
 | dev.to | Technical post about building the Vanta globe + historical chart with Next.js |
 
-### Directories — one-time submissions
+### Directories, one-time submissions
 
 | Site | Notes |
 |------|-------|
@@ -179,15 +179,15 @@ AEO targets ChatGPT, Perplexity, Gemini, Claude, and voice assistants. These eng
 - WebSite, WebApplication, Organization schema on home page
 
 ### Do next
-1. **Test rich results now** — go to search.google.com/test/rich-results and test 3 pair pages. Fix any errors before they compound.
-2. **Mention site name in FAQ answers** — change "The live rate is shown above" to "On Zento, the live USD to EUR rate is shown above, updated every 60 seconds." AI assistants prefer answers that name the source.
-3. **Submit to Bing Webmaster Tools** — Perplexity indexes from Bing. Submitting the sitemap to Bing is the fastest path to Perplexity answers citing Zento.
-4. **Add more Q variants to FAQ** — current questions are "What is the rate today?" but voice queries sound like "Hey Google, how many euros is 100 dollars?" Consider adding: `How much is {amount} {FROM} in {TO}?` as a FAQ question.
-5. **Add datePublished to FinancialService schema** — tells AI engines the content is fresh.
+1. **Test rich results now**, go to search.google.com/test/rich-results and test 3 pair pages. Fix any errors before they compound.
+2. **Mention site name in FAQ answers**, change "The live rate is shown above" to "On Zento, the live USD to EUR rate is shown above, updated every 60 seconds." AI assistants prefer answers that name the source.
+3. **Submit to Bing Webmaster Tools**, Perplexity indexes from Bing. Submitting the sitemap to Bing is the fastest path to Perplexity answers citing Zento.
+4. **Add more Q variants to FAQ**, current questions are "What is the rate today?" but voice queries sound like "Hey Google, how many euros is 100 dollars?" Consider adding: `How much is {amount} {FROM} in {TO}?` as a FAQ question.
+5. **Add datePublished to FinancialService schema**, tells AI engines the content is fresh.
 
 ---
 
-## 6. Google Search Console (Critical — do this first)
+## 6. Google Search Console (Critical, do this first)
 
 Without this, Google may take 3 to 6 months to discover and rank all 42 pair pages.
 
@@ -196,7 +196,7 @@ Without this, Google may take 3 to 6 months to discover and rank all 42 pair pag
 3. Verify via DNS TXT record (add in your domain registrar's DNS settings)
 4. Submit sitemap: `https://zento.haikalakif.com/sitemap.xml`
 5. In URL Inspection, manually request indexing for: `/`, `/usd-to-myr`, `/usd-to-eur`, `/eur-to-usd`
-6. Check Coverage report after 2 weeks — pair pages should appear as Indexed
+6. Check Coverage report after 2 weeks, pair pages should appear as Indexed
 
 ---
 
@@ -219,7 +219,7 @@ import Script from 'next/script';
 <Script defer data-domain="zento.haikalakif.com" src="https://plausible.io/js/script.js" />
 ```
 
-Use analytics to identify which pairs get organic traffic. Add those pairs to `STATIC_PAIRS` in `lib/config.ts` if they are not already listed — this gives them dedicated SEO-optimised pages.
+Use analytics to identify which pairs get organic traffic. Add those pairs to `STATIC_PAIRS` in `lib/config.ts` if they are not already listed, this gives them dedicated SEO-optimised pages.
 
 ---
 

@@ -107,7 +107,7 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
   return (
     <div ref={containerRef} className="relative">
       {label && (
-        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">
+        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">
           {label}
         </label>
       )}
@@ -130,11 +130,11 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
           – {selected?.name}
         </span>
         <ChevronDownIcon
-          className={`w-4 h-4 text-slate-500 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
         />
       </button>
 
-      {/* Dropdown — fixed width so it's readable on narrow screens */}
+      {/* Dropdown: fixed width so it's readable on narrow screens */}
       {open && (
         <div
           role="listbox"
@@ -167,11 +167,12 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
             </div>
           </div>
 
-          {/* Options */}
+          {/* Options: arrow keys drive this list, so options are tabIndex={-1};
+              Tab would otherwise walk through every currency */}
           {/* data-lenis-prevent stops Lenis from intercepting wheel events inside this list */}
           <div ref={listRef} className="overflow-y-auto overscroll-contain max-h-56 py-1" data-lenis-prevent>
             {filtered.length === 0 ? (
-              <div className="px-4 py-3 text-sm text-slate-500 text-center">No results</div>
+              <div className="px-4 py-3 text-sm text-slate-400 text-center">No results</div>
             ) : (
               filtered.map((c, i) => (
                 <button
@@ -180,6 +181,7 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
                   data-option
                   role="option"
                   aria-selected={c.code === value}
+                  tabIndex={-1}
                   onClick={() => handleSelect(c.code)}
                   className={`w-full flex items-center gap-3 px-4 py-2.5 transition-colors text-left ${
                     i === focusedIndex
@@ -196,7 +198,7 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
                     >
                       {c.code}
                     </span>
-                    <span className="text-xs text-slate-500 truncate">{c.name}</span>
+                    <span className="text-xs text-slate-400 truncate">{c.name}</span>
                   </div>
                   {c.code === value && (
                     <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />

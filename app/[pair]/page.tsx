@@ -25,13 +25,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const from = getCurrency(parsed.from);
   const to = getCurrency(parsed.to);
-  const title = `${parsed.from} to ${parsed.to} — Live Exchange Rate`;
-  const description = `Convert ${from?.name} (${parsed.from}) to ${to?.name} (${parsed.to}) instantly. Live mid-market exchange rates updated in real time. Free currency conversion — no sign-up required.`;
+  const title = `${parsed.from} to ${parsed.to}: Live Exchange Rate`;
+  const description = `Convert ${from?.name} (${parsed.from}) to ${to?.name} (${parsed.to}) instantly. Live mid-market exchange rates updated in real time. Free currency conversion, no sign-up required.`;
 
   return {
     title,
     description,
-    robots: { index: true, follow: true },
+    // Only the curated pairs are indexable. The full currency list would otherwise expose
+    // tens of thousands of near-identical URLs and dilute crawl budget.
+    robots: STATIC_PAIRS.includes(pair as (typeof STATIC_PAIRS)[number])
+      ? { index: true, follow: true }
+      : { index: false, follow: true },
     keywords: [
       `${parsed.from} to ${parsed.to}`,
       `${parsed.from} ${parsed.to} exchange rate`,
@@ -52,7 +56,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: 'summary_large_image',
       title,
       description,
-      site: '@zentoapp',
     },
   };
 }
@@ -87,7 +90,7 @@ export default function PairPage({ params }: Props) {
     },
     {
       q: `How often does the ${parsed.from}/${parsed.to} rate update?`,
-      a: `Live rates refresh every minute from ExchangeRate-API (166+ currencies). Historical chart data is sourced from the European Central Bank and updates on each business day.`,
+      a: `Live rates refresh every minute from ExchangeRate-API. Historical chart data is sourced from the European Central Bank and updates on each business day.`,
     },
     {
       q: `Is the ${parsed.from} to ${parsed.to} converter free?`,
@@ -179,7 +182,7 @@ export default function PairPage({ params }: Props) {
           Live Exchange Rate
         </span>
       </h1>
-      <p className="text-slate-500 text-sm sm:text-base mt-2">
+      <p className="text-slate-400 text-sm sm:text-base mt-2">
         Real-time mid-market rate. Updates every 60 seconds.
       </p>
     </>
@@ -199,7 +202,7 @@ export default function PairPage({ params }: Props) {
       />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-10 space-y-5">
-        {/* Visible FAQ — content must match FAQPage schema for AEO */}
+        {/* Visible FAQ: content must match FAQPage schema for AEO */}
         <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-7">
           <h2 className="text-base font-bold text-slate-50 mb-5">
             {parsed.from} to {parsed.to}: FAQ

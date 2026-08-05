@@ -19,7 +19,7 @@ export default function Error({ error, reset }: Props) {
           {error.message || 'An unexpected error occurred.'}
         </p>
         {error.digest && (
-          <p className="text-slate-600 text-xs mb-6 font-mono">ref: {error.digest}</p>
+          <p className="text-slate-400 text-xs mb-6 font-mono">ref: {error.digest}</p>
         )}
         <button
           onClick={reset}

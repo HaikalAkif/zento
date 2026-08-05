@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { prefersReducedMotion } from '@/lib/motion';
 
 interface Props {
   value: number;
@@ -21,6 +22,12 @@ export default function AnimatedNumber({
 
   useEffect(() => {
     if (frameRef.current) cancelAnimationFrame(frameRef.current);
+
+    if (prefersReducedMotion()) {
+      currentRef.current = value;
+      setDisplay(value); // eslint-disable-line react-hooks/set-state-in-effect -- jump straight to the value instead of animating
+      return;
+    }
 
     const from = currentRef.current;
     const to = value;

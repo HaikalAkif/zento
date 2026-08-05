@@ -13,7 +13,7 @@ export default function RecentPairs({ items, onSelect }: Props) {
 
   return (
     <div>
-      <p className="text-[11px] font-semibold text-slate-600 uppercase tracking-widest mb-3 px-0.5">
+      <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3 px-0.5">
         Recently used
       </p>
       <div className="flex gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none] pb-0.5">

@@ -175,6 +175,20 @@ export const CURRENCIES: Currency[] = [
 export const getCurrency = (code: string): Currency | undefined =>
   CURRENCIES.find((c) => c.code === code);
 
+// Historical rates come from the ECB via Frankfurter, which only publishes these 30.
+// The other ~120 currencies have live rates but no chart and no 24h change. Asking
+// for them returns 404 upstream, so callers must check before requesting.
+const HISTORY_CURRENCIES = new Set([
+  'AUD', 'BRL', 'CAD', 'CHF', 'CNY', 'CZK', 'DKK', 'EUR', 'GBP', 'HKD',
+  'HUF', 'IDR', 'ILS', 'INR', 'ISK', 'JPY', 'KRW', 'MXN', 'MYR', 'NOK',
+  'NZD', 'PHP', 'PLN', 'RON', 'SEK', 'SGD', 'THB', 'TRY', 'USD', 'ZAR',
+]);
+
+export const hasHistory = (code: string): boolean => HISTORY_CURRENCIES.has(code);
+
+export const pairHasHistory = (from: string, to: string): boolean =>
+  from !== to && hasHistory(from) && hasHistory(to);
+
 export const POPULAR_CONVERSIONS = [
   { from: 'JPY', to: 'MYR' },
   { from: 'USD', to: 'MYR' },

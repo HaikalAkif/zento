@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { prefersReducedMotion } from '@/lib/motion';
 
 export default function VantaGlobe() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -8,8 +9,10 @@ export default function VantaGlobe() {
 
   useEffect(() => {
     if (!containerRef.current) return;
-    // Skip on mobile — canvas animation is too costly on low-end devices
+    // Skip on mobile. Canvas animation is too costly on low-end devices.
     if (window.matchMedia('(max-width: 768px)').matches) return;
+    // Skip for users who asked for less motion. This is a constantly moving canvas.
+    if (prefersReducedMotion()) return;
 
     let cancelled = false;
 
@@ -22,7 +25,10 @@ export default function VantaGlobe() {
 
         effectRef.current = GLOBE({
           el: containerRef.current,
-          THREE,
+          // Vanta 0.5.24 predates three r125 and still reads THREE.VertexColors, which was
+          // removed, so it now resolves to undefined and warns on every material it builds.
+          // The globe geometry does set a color attribute, so `true` is the modern spelling.
+          THREE: { ...THREE, VertexColors: true },
           mouseControls: true,
           touchControls: false,
           gyroControls: false,
@@ -37,7 +43,7 @@ export default function VantaGlobe() {
           spacing: 15,
         });
       } catch {
-        // Three.js or Vanta failed to load — page still works without the globe
+        // Three.js or Vanta failed to load. The page still works without the globe.
       }
     })();
 

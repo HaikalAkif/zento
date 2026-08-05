@@ -6,6 +6,9 @@ import LenisProvider from '@/providers/LenisProvider';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { APP_URL } from '@/lib/config';
+import { CURRENCIES } from '@/lib/currencies';
+
+const CURRENCY_COUNT = CURRENCIES.length;
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -21,11 +24,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: 'Free Currency Converter — Live Exchange Rates | Zento',
+    // Brand first: the homepage is what should rank for the query "Zento".
+    // Pair pages keep keyword-first titles via the template.
+    default: 'Zento: Free Currency Converter | Live Exchange Rates',
     template: '%s | Zento',
   },
+  applicationName: 'Zento',
   description:
-    'Convert currencies instantly with live mid-market exchange rates. Free, accurate conversion for 173 world currencies — no sign-up required. Powered by ECB data.',
+    `Convert currencies instantly with live mid-market exchange rates. Free, accurate conversion for ${CURRENCY_COUNT} world currencies, no sign-up required. Powered by ECB data.`,
   keywords: [
     'currency converter',
     'exchange rate',
@@ -39,6 +45,9 @@ export const metadata: Metadata = {
     'USD to MYR',
     'currency exchange',
     'Zento',
+    'Zento currency converter',
+    'Zento app',
+    'Zento exchange rates',
   ],
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
   icons: {
@@ -50,22 +59,23 @@ export const metadata: Metadata = {
     canonical: APP_URL,
   },
   openGraph: {
-    title: 'Free Currency Converter — Live Exchange Rates | Zento',
+    title: 'Zento: Free Currency Converter | Live Exchange Rates',
     description:
-      'Convert currencies instantly with live mid-market exchange rates. Free for 173 world currencies — no sign-up required.',
+      `Convert currencies instantly with live mid-market exchange rates. Free for ${CURRENCY_COUNT} world currencies, no sign-up required.`,
     type: 'website',
     url: APP_URL,
     siteName: 'Zento',
     locale: 'en_US',
-    images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Zento Currency Converter' }],
+    images: [{ url: '/og.png', width: 1800, height: 945, alt: 'Zento Currency Converter' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Free Currency Converter — Live Exchange Rates | Zento',
+    title: 'Zento: Free Currency Converter | Live Exchange Rates',
     description:
-      'Convert currencies instantly with live mid-market exchange rates. Free for 173 world currencies — no sign-up required.',
+      `Convert currencies instantly with live mid-market exchange rates. Free for ${CURRENCY_COUNT} world currencies, no sign-up required.`,
     images: ['/og.png'],
-    site: '@zentoapp',
+    // No `site` handle. @zentoapp is not a Zento account, and claiming it would
+    // attribute every shared card to a stranger. Add it back if the handle is registered.
   },
 };
 
@@ -77,10 +87,14 @@ const jsonLd = [
   {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
+    '@id': `${APP_URL}/#website`,
     name: 'Zento',
+    alternateName: ['Zento Currency Converter', 'Zento App'],
     url: APP_URL,
+    inLanguage: 'en',
+    publisher: { '@id': `${APP_URL}/#organization` },
     description:
-      'Free live currency converter with mid-market exchange rates for 173 currencies.',
+      `Free live currency converter with mid-market exchange rates for ${CURRENCY_COUNT} currencies.`,
     potentialAction: {
       '@type': 'SearchAction',
       target: {
@@ -93,8 +107,11 @@ const jsonLd = [
   {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
-    name: 'Zento Currency Converter',
+    '@id': `${APP_URL}/#webapp`,
+    name: 'Zento',
+    alternateName: 'Zento Currency Converter',
     url: APP_URL,
+    publisher: { '@id': `${APP_URL}/#organization` },
     applicationCategory: 'FinanceApplication',
     operatingSystem: 'All',
     offers: {
@@ -103,10 +120,10 @@ const jsonLd = [
       priceCurrency: 'USD',
     },
     description:
-      'Free real-time currency converter supporting 173 currencies with live mid-market exchange rates from ExchangeRate-API and ECB data via Frankfurter.',
+      `Free real-time currency converter supporting ${CURRENCY_COUNT} currencies with live mid-market exchange rates from ExchangeRate-API and ECB data via Frankfurter.`,
     featureList: [
       'Live mid-market exchange rates',
-      '173 world currencies',
+      `${CURRENCY_COUNT} world currencies`,
       'Historical rate charts (up to 1 year)',
       'No sign-up required',
       'Mobile-friendly',
@@ -129,11 +146,16 @@ const jsonLd = [
   {
     '@context': 'https://schema.org',
     '@type': 'Organization',
+    '@id': `${APP_URL}/#organization`,
     name: 'Zento',
+    alternateName: 'Zento Currency Converter',
     url: APP_URL,
     logo: `${APP_URL}/favicon.png`,
+    // sameAs is how Google resolves "Zento" to this entity rather than a same-named
+    // company. Every additional verifiable profile added here strengthens that link.
+    sameAs: ['https://github.com/HaikalAkif/zento'],
     description:
-      'Zento provides free real-time currency conversion for 173 world currencies using live mid-market exchange rates from ExchangeRate-API and European Central Bank data.',
+      `Zento provides free real-time currency conversion for ${CURRENCY_COUNT} world currencies using live mid-market exchange rates from ExchangeRate-API and European Central Bank data.`,
     foundingDate: '2024',
     serviceArea: { '@type': 'Place', name: 'Worldwide' },
   },
