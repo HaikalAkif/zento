@@ -1,4 +1,4 @@
-# Zento, Currency Converter
+# Zento: Currency Converter
 
 A fast, minimal currency converter with live exchange rates, built with Next.js 16 App Router.
 

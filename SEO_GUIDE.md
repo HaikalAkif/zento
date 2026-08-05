@@ -3,7 +3,7 @@
 
 ---
 
-## 1. OG Image, `public/og.png` (Critical)
+## 1. OG Image: `public/og.png` (Critical)
 
 Pair pages use the dynamic edge OG generator (already built). The home page falls back to `/og.png` which does not exist yet. Every share from the home page on X, WhatsApp, LinkedIn, Telegram shows a broken preview until this is created.
 
@@ -37,7 +37,7 @@ Figma (free), Adobe Express, Canva. Export > PNG > upload to `/public/og.png`.
 
 ---
 
-## 2. PWA Icons, `/public/` (High Priority)
+## 2. PWA Icons: `/public/` (High Priority)
 
 The manifest currently points `favicon.png` for both 192px and 512px which is almost certainly wrong size. Create these files:
 
@@ -140,7 +140,7 @@ Host at `/blog` or a separate `blog.zento.haikalakif.com`. Three posts that rank
 
 ## 4. Backlink Strategy
 
-### Communities, post genuine value, never spam
+### Communities: post genuine value, never spam
 
 | Where | What to post |
 |-------|-------------|
@@ -154,7 +154,7 @@ Host at `/blog` or a separate `blog.zento.haikalakif.com`. Three posts that rank
 | IndieHackers | Build story post with monthly traffic updates |
 | dev.to | Technical post about building the Vanta globe + historical chart with Next.js |
 
-### Directories, one-time submissions
+### Directories: one-time submissions
 
 | Site | Notes |
 |------|-------|
@@ -187,7 +187,7 @@ AEO targets ChatGPT, Perplexity, Gemini, Claude, and voice assistants. These eng
 
 ---
 
-## 6. Google Search Console (Critical, do this first)
+## 6. Google Search Console (Critical: do this first)
 
 Without this, Google may take 3 to 6 months to discover and rank all 42 pair pages.
 
