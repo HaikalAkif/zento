@@ -35,7 +35,7 @@ function buildPairUrl(from: string, to: string, amount: string): string {
 }
 
 export default function ConverterSection({
-  initialFrom = 'JPY',
+  initialFrom = 'USD',
   initialTo = 'MYR',
   initialAmount = '1',
   heroMode = false,
