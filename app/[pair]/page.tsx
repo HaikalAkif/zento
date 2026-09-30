@@ -67,7 +67,6 @@ export function generateStaticParams() {
   });
 }
 
-
 export default function PairPage({ params }: Props) {
   const { pair } = use(params);
   const parsed = parsePair(pair);
@@ -78,7 +77,6 @@ export default function PairPage({ params }: Props) {
 
   const pageUrl = `${APP_URL}/${pair}`;
 
-  const now = new Date().toISOString();
   const faqItems = [
     {
       q: `What is the ${parsed.from} to ${parsed.to} exchange rate today?`,
@@ -162,7 +160,6 @@ export default function PairPage({ params }: Props) {
       '@type': 'FinancialService',
       name: `${parsed.from} to ${parsed.to} Currency Converter`,
       url: pageUrl,
-      dateModified: now,
       description: `Convert ${from?.name ?? parsed.from} (${parsed.from}) to ${to?.name ?? parsed.to} (${parsed.to}) using live mid-market exchange rates.`,
       serviceType: 'Currency Conversion',
       areaServed: 'Worldwide',
@@ -176,13 +173,13 @@ export default function PairPage({ params }: Props) {
 
   const heroContent = (
     <>
-      <h1 className="text-xl sm:text-4xl font-bold text-slate-50 tracking-tight mb-1">
+      <h1 className="mb-1 text-xl font-bold tracking-tight text-slate-50 sm:text-4xl">
         {from?.flag} {parsed.from} to {to?.flag} {parsed.to}
-        <span className="block text-sm sm:text-xl font-semibold text-blue-400/80 mt-1 tracking-normal">
+        <span className="mt-1 block text-sm font-semibold tracking-normal text-blue-400/80 sm:text-xl">
           Live Exchange Rate
         </span>
       </h1>
-      <p className="text-slate-400 text-sm sm:text-base mt-2">
+      <p className="mt-2 text-sm text-slate-400 sm:text-base">
         Real-time mid-market rate. Updates every 60 seconds.
       </p>
     </>
@@ -195,33 +192,31 @@ export default function PairPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <ConverterSection
-        initialFrom={parsed.from}
-        initialTo={parsed.to}
-        heroContent={heroContent}
-      />
+      <ConverterSection initialFrom={parsed.from} initialTo={parsed.to} heroContent={heroContent} />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-10 space-y-5">
+      <div className="mx-auto max-w-5xl space-y-5 px-4 pb-10 sm:px-6">
         {/* Visible FAQ: content must match FAQPage schema for AEO */}
-        <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-7">
-          <h2 className="text-base font-bold text-slate-50 mb-5">
+        <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6 sm:p-7">
+          <h2 className="mb-5 text-base font-bold text-slate-50">
             {parsed.from} to {parsed.to}: FAQ
           </h2>
           <div className="space-y-0 divide-y divide-slate-800">
             {faqItems.map(({ q, a }) => (
               <details key={q} className="group py-4 first:pt-0 last:pb-0">
-                <summary className="flex cursor-pointer items-start justify-between gap-4 list-none text-sm font-semibold text-slate-200 hover:text-slate-50 transition-colors">
+                <summary className="flex cursor-pointer list-none items-start justify-between gap-4 text-sm font-semibold text-slate-200 transition-colors hover:text-slate-50">
                   <span>{q}</span>
-                  <span aria-hidden="true" className="shrink-0 text-slate-600 group-open:rotate-180 transition-transform duration-200 mt-0.5">
+                  <span
+                    aria-hidden="true"
+                    className="mt-0.5 shrink-0 text-slate-600 transition-transform duration-200 group-open:rotate-180"
+                  >
                     ▾
                   </span>
                 </summary>
-                <p className="mt-3 text-sm text-slate-400 leading-relaxed">{a}</p>
+                <p className="mt-3 text-sm leading-relaxed text-slate-400">{a}</p>
               </details>
             ))}
           </div>
         </section>
-
       </div>
     </main>
   );

@@ -74,65 +74,66 @@ export default function AboutPage() {
   ];
 
   return (
-    <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-28 pb-16">
+    <main className="mx-auto max-w-3xl px-4 pt-28 pb-16 sm:px-6">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <h1 className="text-3xl sm:text-4xl font-bold text-slate-50 tracking-tight">About Zento</h1>
-      <p className="mt-4 text-base text-slate-300 leading-relaxed">
+      <h1 className="text-3xl font-bold tracking-tight text-slate-50 sm:text-4xl">About Zento</h1>
+      <p className="mt-4 text-base leading-relaxed text-slate-300">
         Zento is a free currency converter. It shows live mid-market exchange rates for{' '}
         {CURRENCIES.length} world currencies, with no sign-up, no ads, and no fees.
       </p>
 
       <section className="mt-10">
         <h2 className="text-lg font-bold text-slate-50">Why it exists</h2>
-        <p className="mt-3 text-sm text-slate-300 leading-relaxed">
-          Most currency converters bury the number you came for under ads, cookie walls, and
-          upsells to a transfer service. Zento does one thing: it converts, fast, and gets out
-          of the way. The mid-market rate it shows is the honest reference rate, the midpoint
-          between the buy and sell prices in global currency markets, not a marked-up rate
-          quoted to sell you something.
+        <p className="mt-3 text-sm leading-relaxed text-slate-300">
+          Most currency converters bury the number you came for under ads, cookie walls, and upsells
+          to a transfer service. Zento does one thing: it converts, fast, and gets out of the way.
+          The mid-market rate it shows is the honest reference rate, the midpoint between the buy
+          and sell prices in global currency markets, not a marked-up rate quoted to sell you
+          something.
         </p>
       </section>
 
       <section className="mt-10">
         <h2 className="text-lg font-bold text-slate-50">Where the rates come from</h2>
         <dl className="mt-3 divide-y divide-slate-800 border-y border-slate-800">
-          <div className="flex flex-col sm:flex-row sm:gap-6 py-3">
-            <dt className="text-xs font-semibold uppercase tracking-widest text-slate-400 sm:w-44 shrink-0">
+          <div className="flex flex-col py-3 sm:flex-row sm:gap-6">
+            <dt className="shrink-0 text-xs font-semibold tracking-widest text-slate-400 uppercase sm:w-44">
               Live rates
             </dt>
-            <dd className="text-sm text-slate-300 mt-1 sm:mt-0">
+            <dd className="mt-1 text-sm text-slate-300 sm:mt-0">
               ExchangeRate-API, refreshed every 60 seconds
             </dd>
           </div>
-          <div className="flex flex-col sm:flex-row sm:gap-6 py-3">
-            <dt className="text-xs font-semibold uppercase tracking-widest text-slate-400 sm:w-44 shrink-0">
+          <div className="flex flex-col py-3 sm:flex-row sm:gap-6">
+            <dt className="shrink-0 text-xs font-semibold tracking-widest text-slate-400 uppercase sm:w-44">
               Historical charts
             </dt>
-            <dd className="text-sm text-slate-300 mt-1 sm:mt-0">
-              European Central Bank via Frankfurter. {HISTORY_COUNT} currencies, updated each business day
+            <dd className="mt-1 text-sm text-slate-300 sm:mt-0">
+              European Central Bank via Frankfurter. {HISTORY_COUNT} currencies, updated each
+              business day
             </dd>
           </div>
-          <div className="flex flex-col sm:flex-row sm:gap-6 py-3">
-            <dt className="text-xs font-semibold uppercase tracking-widest text-slate-400 sm:w-44 shrink-0">
+          <div className="flex flex-col py-3 sm:flex-row sm:gap-6">
+            <dt className="shrink-0 text-xs font-semibold tracking-widest text-slate-400 uppercase sm:w-44">
               Rate type
             </dt>
-            <dd className="text-sm text-slate-300 mt-1 sm:mt-0">Mid-market (interbank) only</dd>
+            <dd className="mt-1 text-sm text-slate-300 sm:mt-0">Mid-market (interbank) only</dd>
           </div>
-          <div className="flex flex-col sm:flex-row sm:gap-6 py-3">
-            <dt className="text-xs font-semibold uppercase tracking-widest text-slate-400 sm:w-44 shrink-0">
+          <div className="flex flex-col py-3 sm:flex-row sm:gap-6">
+            <dt className="shrink-0 text-xs font-semibold tracking-widest text-slate-400 uppercase sm:w-44">
               Cost
             </dt>
-            <dd className="text-sm text-slate-300 mt-1 sm:mt-0">Free, no account required</dd>
+            <dd className="mt-1 text-sm text-slate-300 sm:mt-0">Free, no account required</dd>
           </div>
         </dl>
-        <p className="mt-4 text-xs text-slate-400 leading-relaxed">
+        <p className="mt-4 text-xs leading-relaxed text-slate-400">
           Zento is a reference tool, not a financial service. It does not transfer or exchange
-          money, and the rate a bank or transfer service gives you will include a margin above
-          the mid-market rate shown here. Not financial advice.
+          money, and the rate a bank or transfer service gives you will include a margin above the
+          mid-market rate shown here. Not financial advice.
         </p>
       </section>
 
@@ -142,7 +143,7 @@ export default function AboutPage() {
           {brandFaq.map(({ q, a }) => (
             <div key={q} className="py-4 first:pt-0">
               <h3 className="text-sm font-semibold text-slate-200">{q}</h3>
-              <p className="mt-2 text-sm text-slate-400 leading-relaxed">{a}</p>
+              <p className="mt-2 text-sm leading-relaxed text-slate-400">{a}</p>
             </div>
           ))}
         </div>
@@ -157,7 +158,7 @@ export default function AboutPage() {
               <li key={pair}>
                 <Link
                   href={`/${pair}`}
-                  className="inline-block px-3 py-1.5 text-xs font-semibold text-slate-300 bg-slate-800/60 border border-slate-700/60 rounded-full hover:bg-slate-800 hover:text-slate-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  className="inline-block rounded-full border border-slate-700/60 bg-slate-800/60 px-3 py-1.5 text-xs font-semibold text-slate-300 transition-colors hover:bg-slate-800 hover:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 >
                   {from.toUpperCase()} → {to.toUpperCase()}
                 </Link>
@@ -170,7 +171,7 @@ export default function AboutPage() {
       <div className="mt-10">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
         >
           Open the converter
         </Link>

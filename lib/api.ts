@@ -26,7 +26,10 @@ export function getLatestRate(base: string, target: string): Promise<RateRespons
 }
 
 export function getMultipleRates(base: string, targets: string[]): Promise<RateResponse> {
-  return fetchRates(base, targets.filter((t) => t !== base));
+  return fetchRates(
+    base,
+    targets.filter((t) => t !== base),
+  );
 }
 
 export async function getHistoricalRates(

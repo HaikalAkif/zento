@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #020617;
@@ -24,7 +24,7 @@ body {
 }
 
 /* Custom range slider: thin track + white thumb with blue border */
-input[type="range"] {
+input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
   background: transparent;
@@ -33,13 +33,13 @@ input[type="range"] {
 }
 
 /* --p is set via inline style from the component, enabling a filled left track */
-input[type="range"]::-webkit-slider-runnable-track {
+input[type='range']::-webkit-slider-runnable-track {
   height: 2px;
   background: linear-gradient(to right, #3b82f6 var(--p, 0%), #1e293b var(--p, 0%));
   border-radius: 9999px;
 }
 
-input[type="range"]::-moz-range-track {
+input[type='range']::-moz-range-track {
   height: 2px;
   background: #1e293b;
   border-radius: 9999px;
@@ -47,13 +47,13 @@ input[type="range"]::-moz-range-track {
 }
 
 /* Firefox native filled-track support */
-input[type="range"]::-moz-range-progress {
+input[type='range']::-moz-range-progress {
   height: 2px;
   background: #3b82f6;
   border-radius: 9999px;
 }
 
-input[type="range"]::-webkit-slider-thumb {
+input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 18px;
@@ -66,7 +66,7 @@ input[type="range"]::-webkit-slider-thumb {
   transition: box-shadow 0.15s;
 }
 
-input[type="range"]::-moz-range-thumb {
+input[type='range']::-moz-range-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -76,31 +76,31 @@ input[type="range"]::-moz-range-thumb {
   transition: box-shadow 0.15s;
 }
 
-input[type="range"]:hover::-webkit-slider-thumb {
+input[type='range']:hover::-webkit-slider-thumb {
   box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.2);
 }
 
-input[type="range"]:hover::-moz-range-thumb {
+input[type='range']:hover::-moz-range-thumb {
   box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.2);
 }
 
 /* Remove number input spinners */
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-input[type="number"] {
+input[type='number'] {
   -moz-appearance: textfield;
 }
 
 /* Keyboard focus for the slider. outline:none above kills the native ring. */
-input[type="range"]:focus-visible::-webkit-slider-thumb {
+input[type='range']:focus-visible::-webkit-slider-thumb {
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.6);
 }
 
-input[type="range"]:focus-visible::-moz-range-thumb {
+input[type='range']:focus-visible::-moz-range-thumb {
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.6);
 }
 

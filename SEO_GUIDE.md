@@ -1,4 +1,5 @@
 # Zento Growth Guide
+
 ## SEO · GEO · AEO · PWA · Backlinks
 
 ---
@@ -8,11 +9,13 @@
 Pair pages use the dynamic edge OG generator (already built). The home page falls back to `/og.png` which does not exist yet. Every share from the home page on X, WhatsApp, LinkedIn, Telegram shows a broken preview until this is created.
 
 ### Exact specs
+
 - Size: **1200 × 630px**
 - Format: PNG (optimise with TinyPNG, target under 200KB)
 - Safe zone: Keep all text inside a **1000 × 430px** centre area (100px buffer on each side, some platforms crop the outer edges)
 
 ### Layout blueprint
+
 ```
 ┌─────────────────────────────────────────────────────┐
 │ Zento                              [● Live Rates]   │
@@ -26,6 +29,7 @@ Pair pages use the dynamic edge OG generator (already built). The home page fall
 ```
 
 ### Colours (match app)
+
 - Background: `#020617`
 - Primary text: `#f1f5f9`
 - Accent blue: `#3b82f6`
@@ -33,6 +37,7 @@ Pair pages use the dynamic edge OG generator (already built). The home page fall
 - Live dot: `#22c55e`
 
 ### Tools
+
 Figma (free), Adobe Express, Canva. Export > PNG > upload to `/public/og.png`.
 
 ---
@@ -41,20 +46,22 @@ Figma (free), Adobe Express, Canva. Export > PNG > upload to `/public/og.png`.
 
 The manifest currently points `favicon.png` for both 192px and 512px which is almost certainly wrong size. Create these files:
 
-| Filename | Size | Used for |
-|----------|------|---------|
-| `icon-192.png` | 192×192px | Android home screen icon |
-| `icon-512.png` | 512×512px | Android splash screen + maskable |
-| `apple-touch-icon.png` | 180×180px | iOS "Add to Home Screen" |
-| `favicon-32.png` | 32×32px | Browser tab (sharp) |
-| `favicon-16.png` | 16×16px | Browser tab (fallback) |
+| Filename               | Size      | Used for                         |
+| ---------------------- | --------- | -------------------------------- |
+| `icon-192.png`         | 192×192px | Android home screen icon         |
+| `icon-512.png`         | 512×512px | Android splash screen + maskable |
+| `apple-touch-icon.png` | 180×180px | iOS "Add to Home Screen"         |
+| `favicon-32.png`       | 32×32px   | Browser tab (sharp)              |
+| `favicon-16.png`       | 16×16px   | Browser tab (fallback)           |
 
 ### Maskable icon rules (Android)
+
 Start with 512×512 canvas. Background must be **solid `#020617`**, full bleed to edges. Your logo/icon must fit entirely inside the centre **80% safe circle (409px diameter)**. Anything outside that circle may be cropped on certain Android launchers.
 
 ### After creating icons, update two files
 
 `app/layout.tsx` icons field:
+
 ```typescript
 icons: {
   icon: [
@@ -67,6 +74,7 @@ icons: {
 ```
 
 `app/manifest.ts` icons array:
+
 ```typescript
 icons: [
   { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
@@ -76,6 +84,7 @@ icons: [
 ```
 
 ### Test PWA installation
+
 Chrome DevTools > Application > Manifest. It should show all icons, no errors, and an "Install" prompt.
 
 ---
@@ -87,11 +96,13 @@ Host at `/blog` or a separate `blog.zento.haikalakif.com`. Three posts that rank
 ---
 
 ### Post 1: "USD to MYR Exchange Rate Today"
+
 **URL:** `/blog/usd-to-myr-exchange-rate`
 **Target keywords:** `usd to myr today`, `1 usd to myr`, `dollar to ringgit`, `usd myr rate`
 **Estimated monthly searches:** 60,000+ (Malaysia-heavy)
 
 **Outline:**
+
 1. What is the USD to MYR rate right now? (embed live Zento widget or screenshot)
 2. Why does USD/MYR fluctuate? (Fed rate decisions, BNM policy, crude oil prices, Malaysia is oil-linked)
 3. Historical high/low (2015 RM4.47 peak, 2023 RM4.78 weakness, current range)
@@ -102,11 +113,13 @@ Host at `/blog` or a separate `blog.zento.haikalakif.com`. Three posts that rank
 ---
 
 ### Post 2: "Mid-Market Rate vs. Bank Rate: Why You Always Overpay"
+
 **URL:** `/blog/mid-market-rate-vs-bank-rate`
 **Target keywords:** `mid-market exchange rate`, `interbank rate`, `bank exchange rate margin`
 **Estimated monthly searches:** 8,000+
 
 **Outline:**
+
 1. What is the mid-market rate? (simple definition, one sentence)
 2. How banks make money on FX (typically 2–5% margin on top)
 3. Real numbers: sending RM5,000 via Maybank vs. mid-market, the fee in ringgit
@@ -117,19 +130,22 @@ Host at `/blog` or a separate `blog.zento.haikalakif.com`. Three posts that rank
 ---
 
 ### Post 3: "Best Free Currency Converters in 2026: Compared"
+
 **URL:** `/blog/best-currency-converters-2026`
 **Target keywords:** `best currency converter`, `free currency converter`, `xe.com alternative`
 **Estimated monthly searches:** 12,000+
 
 **Comparison table:**
-| Tool | Real-time | Historical chart | Ad-free | 173+ currencies |
-|------|-----------|-----------------|---------|----------------|
-| Zento | Yes | Yes (1Y) | Yes | Yes |
-| XE | Delayed | No | No | Yes |
-| Google | Yes | No | Yes | Limited |
-| Wise | Yes | No | Yes | Limited |
+
+| Tool   | Real-time | Historical chart | Ad-free | 173+ currencies |
+| ------ | --------- | ---------------- | ------- | --------------- |
+| Zento  | Yes       | Yes (1Y)         | Yes     | Yes             |
+| XE     | Delayed   | No               | No      | Yes             |
+| Google | Yes       | No               | Yes     | Limited         |
+| Wise   | Yes       | No               | Yes     | Limited         |
 
 **Outline:**
+
 1. The comparison table (above)
 2. Rate accuracy test: check each tool vs ECB reference at same moment
 3. Feature breakdown: charts, multi-currency view, mobile PWA
@@ -142,28 +158,28 @@ Host at `/blog` or a separate `blog.zento.haikalakif.com`. Three posts that rank
 
 ### Communities: post genuine value, never spam
 
-| Where | What to post |
-|-------|-------------|
-| Reddit r/digitalnomad | "I built a currency tool with no ads, useful when moving money between countries" |
-| Reddit r/malaysia | "Free MYR currency converter with live ECB rates, built this for myself" |
-| Reddit r/singapore | Same angle for SGD/MYR pairs |
-| Reddit r/personalfinance | Reply to "best currency converter" threads with Zento |
-| Reddit r/sideprojects | Full build story (Next.js 16, ECB API, Vanta.js globe, 173 currencies) |
-| ProductHunt | Full launch: tagline "The cleanest free currency converter, no sign-up" |
-| Hacker News | "Show HN: Zento, live currency converter, free, no ads, ECB-powered" |
-| IndieHackers | Build story post with monthly traffic updates |
-| dev.to | Technical post about building the Vanta globe + historical chart with Next.js |
+| Where                    | What to post                                                                      |
+| ------------------------ | --------------------------------------------------------------------------------- |
+| Reddit r/digitalnomad    | "I built a currency tool with no ads, useful when moving money between countries" |
+| Reddit r/malaysia        | "Free MYR currency converter with live ECB rates, built this for myself"          |
+| Reddit r/singapore       | Same angle for SGD/MYR pairs                                                      |
+| Reddit r/personalfinance | Reply to "best currency converter" threads with Zento                             |
+| Reddit r/sideprojects    | Full build story (Next.js 16, ECB API, Vanta.js globe, 173 currencies)            |
+| ProductHunt              | Full launch: tagline "The cleanest free currency converter, no sign-up"           |
+| Hacker News              | "Show HN: Zento, live currency converter, free, no ads, ECB-powered"              |
+| IndieHackers             | Build story post with monthly traffic updates                                     |
+| dev.to                   | Technical post about building the Vanta globe + historical chart with Next.js     |
 
 ### Directories: one-time submissions
 
-| Site | Notes |
-|------|-------|
-| alternativeto.net | Add Zento as an alternative to XE Currency |
-| toolify.ai | Submit under Finance > Currency Converters |
-| theresanaiforthat.com | Finance tools category |
-| saasworthy.com | Add and ask users to review |
-| g2.com | Create a free listing under Currency Conversion |
-| capterra.com | Finance software category |
+| Site                  | Notes                                           |
+| --------------------- | ----------------------------------------------- |
+| alternativeto.net     | Add Zento as an alternative to XE Currency      |
+| toolify.ai            | Submit under Finance > Currency Converters      |
+| theresanaiforthat.com | Finance tools category                          |
+| saasworthy.com        | Add and ask users to review                     |
+| g2.com                | Create a free listing under Currency Conversion |
+| capterra.com          | Finance software category                       |
 
 ---
 
@@ -172,6 +188,7 @@ Host at `/blog` or a separate `blog.zento.haikalakif.com`. Three posts that rank
 AEO targets ChatGPT, Perplexity, Gemini, Claude, and voice assistants. These engines extract answers from structured data and clearly written factual content.
 
 ### Already implemented
+
 - FAQ schema on all 42 pair pages (5 Q&As per page, visible accordion matches JSON-LD exactly)
 - HowTo schema (4 steps per pair page)
 - BreadcrumbList and FinancialService schema
@@ -179,6 +196,7 @@ AEO targets ChatGPT, Perplexity, Gemini, Claude, and voice assistants. These eng
 - WebSite, WebApplication, Organization schema on home page
 
 ### Do next
+
 1. **Test rich results now**, go to search.google.com/test/rich-results and test 3 pair pages. Fix any errors before they compound.
 2. **Mention site name in FAQ answers**, change "The live rate is shown above" to "On Zento, the live USD to EUR rate is shown above, updated every 60 seconds." AI assistants prefer answers that name the source.
 3. **Submit to Bing Webmaster Tools**, Perplexity indexes from Bing. Submitting the sitemap to Bing is the fastest path to Perplexity answers citing Zento.
@@ -205,18 +223,21 @@ Without this, Google may take 3 to 6 months to discover and rank all 42 pair pag
 Pick one and add it to `app/layout.tsx`:
 
 **Vercel Analytics (free on Vercel, zero-config):**
+
 ```bash
 pnpm add @vercel/analytics
 ```
+
 ```tsx
 import { Analytics } from '@vercel/analytics/react';
 // Add <Analytics /> inside <body> in layout.tsx
 ```
 
 **Plausible (privacy-first, $9/month, no cookie banner needed):**
+
 ```tsx
 import Script from 'next/script';
-<Script defer data-domain="zento.haikalakif.com" src="https://plausible.io/js/script.js" />
+<Script defer data-domain="zento.haikalakif.com" src="https://plausible.io/js/script.js" />;
 ```
 
 Use analytics to identify which pairs get organic traffic. Add those pairs to `STATIC_PAIRS` in `lib/config.ts` if they are not already listed, this gives them dedicated SEO-optimised pages.

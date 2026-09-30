@@ -61,15 +61,15 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
   const lineColor = isPositive ? '#3b82f6' : '#f87171';
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-7">
+    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 sm:p-7">
       {/* Header */}
-      <div className="flex items-start justify-between flex-wrap gap-4 mb-7">
+      <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-base font-bold text-slate-50 tracking-tight">
+          <h2 className="text-base font-bold tracking-tight text-slate-50">
             {fromCurrency} / {toCurrency}
           </h2>
           {changePercent != null && (
-            <div className="flex items-center gap-1.5 mt-1">
+            <div className="mt-1 flex items-center gap-1.5">
               <span
                 className={`text-sm font-bold ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}
               >
@@ -79,21 +79,21 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
             </div>
           )}
           {data && data.length > 0 && (
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="mt-0.5 text-xs text-slate-400">
               Now: {data[data.length - 1].rate.toFixed(4)} {toCurrency}
             </p>
           )}
         </div>
 
         {/* Period toggle */}
-        <div className="flex gap-1 p-1 bg-slate-800 border border-slate-700/60 rounded-lg">
+        <div className="flex gap-1 rounded-lg border border-slate-700/60 bg-slate-800 p-1">
           {PERIODS.map(({ label, value }) => (
             <button
               key={value}
               type="button"
               onClick={() => setPeriod(value)}
               aria-pressed={period === value}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-800 ${
+              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-800 ${
                 period === value
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
@@ -107,9 +107,9 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
 
       {/* Chart */}
       {isLoading ? (
-        <div className="h-56 rounded-xl bg-slate-800 animate-pulse" />
+        <div className="h-56 animate-pulse rounded-xl bg-slate-800" />
       ) : isError ? (
-        <div className="h-56 flex items-center justify-center text-slate-400 text-sm">
+        <div className="flex h-56 items-center justify-center text-sm text-slate-400">
           Chart unavailable for this pair
         </div>
       ) : data && data.length > 0 ? (
@@ -185,11 +185,11 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
           </AreaChart>
         </ResponsiveContainer>
       ) : (
-        <div className="h-56 flex flex-col items-center justify-center gap-1 px-6 text-center">
+        <div className="flex h-56 flex-col items-center justify-center gap-1 px-6 text-center">
           <p className="text-sm text-slate-300">No rate history for this pair</p>
           <p className="text-xs text-slate-400">
-            Charts use European Central Bank data, which covers 30 major currencies.
-            Live conversion above still works.
+            Charts use European Central Bank data, which covers 30 major currencies. Live conversion
+            above still works.
           </p>
         </div>
       )}

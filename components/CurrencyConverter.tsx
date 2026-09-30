@@ -107,10 +107,9 @@ export default function CurrencyConverter({
 
   return (
     <div className="w-full text-center">
-
       {/* ── Currency pair selector ── */}
-      <div className="flex items-center justify-center gap-3 mb-6 sm:mb-10">
-        <div className="flex-1 min-w-0">
+      <div className="mb-6 flex items-center justify-center gap-3 sm:mb-10">
+        <div className="min-w-0 flex-1">
           <CurrencySelect value={fromCurrency} onChange={onFromChange} />
         </div>
 
@@ -118,22 +117,22 @@ export default function CurrencyConverter({
           onClick={onSwap}
           title="Swap currencies (Alt+S)"
           aria-label="Swap currencies"
-          className="shrink-0 w-11 h-11 rounded-full border border-slate-700 bg-slate-800/60 hover:bg-blue-600 hover:border-blue-600 text-slate-400 hover:text-white hover:rotate-180 transition-all duration-300 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-950"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-700 bg-slate-800/60 text-slate-400 transition-all duration-300 hover:rotate-180 hover:border-blue-600 hover:bg-blue-600 hover:text-white focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-950 focus:outline-none"
         >
-          <ArrowsRightLeftIcon className="w-4.5 h-4.5" />
+          <ArrowsRightLeftIcon className="h-4.5 w-4.5" />
         </button>
 
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <CurrencySelect value={toCurrency} onChange={onToChange} align="right" />
         </div>
       </div>
 
       {/* ── FROM amount ── */}
-      <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">
+      <p className="mb-3 text-[11px] font-semibold tracking-widest text-slate-400 uppercase">
         From
       </p>
-      <div className="flex items-baseline justify-center gap-1.5 mb-4 sm:mb-7">
-        <span className="text-3xl sm:text-4xl font-bold text-slate-500 leading-none select-none">
+      <div className="mb-4 flex items-baseline justify-center gap-1.5 sm:mb-7">
+        <span className="text-3xl leading-none font-bold text-slate-500 select-none sm:text-4xl">
           {fromCurrencyData?.symbol}
         </span>
         <input
@@ -145,7 +144,7 @@ export default function CurrencyConverter({
           min="0"
           inputMode="decimal"
           aria-label={`Amount in ${fromCurrencyData?.name ?? fromCurrency}`}
-          className="bg-transparent border-none outline-none text-5xl sm:text-7xl font-bold text-slate-50 tracking-tight placeholder:text-slate-800 [appearance:textfield] text-center"
+          className="[appearance:textfield] border-none bg-transparent text-center text-5xl font-bold tracking-tight text-slate-50 outline-none placeholder:text-slate-800 sm:text-7xl"
           style={{ width: `${Math.max((amount || '0').length, 1) + 1}ch` }}
         />
       </div>
@@ -172,7 +171,7 @@ export default function CurrencyConverter({
               onClick={() => onAmountChange(String(a))}
               aria-label={`Set amount to ${a.toLocaleString()} ${fromCurrency}`}
               style={{ left: `${pct}%` }}
-              className={`absolute text-[11px] font-semibold transition-colors whitespace-nowrap ${
+              className={`absolute text-[11px] font-semibold whitespace-nowrap transition-colors ${
                 isFirst ? '' : isLast ? '-translate-x-full' : '-translate-x-1/2'
               } ${numAmount === a ? 'text-blue-400' : 'text-slate-400 hover:text-slate-100'}`}
             >
@@ -183,26 +182,33 @@ export default function CurrencyConverter({
       </div>
 
       {/* ── Rate + 24h change badge ── */}
-      <div className="flex items-center justify-center min-h-10 mb-6">
+      <div className="mb-6 flex min-h-10 items-center justify-center">
         {data && !isSame && (
-          <div className="inline-flex items-center rounded-full border border-slate-700/60 overflow-hidden text-xs font-semibold">
-            <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-800/70">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rate</span>
+          <div className="inline-flex items-center overflow-hidden rounded-full border border-slate-700/60 text-xs font-semibold">
+            <div className="flex items-center gap-2 bg-slate-800/70 px-4 py-1.5">
+              <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                Rate
+              </span>
               <span className="text-slate-100 tabular-nums">{rate.toFixed(4)}</span>
-              <span className="text-slate-400 font-normal">{toCurrency}/{fromCurrency}</span>
+              <span className="font-normal text-slate-400">
+                {toCurrency}/{fromCurrency}
+              </span>
             </div>
             {change && change.direction !== 'flat' && (
               <>
-                <div className="w-px h-4 bg-slate-700/80 shrink-0" />
+                <div className="h-4 w-px shrink-0 bg-slate-700/80" />
                 <div
                   className={`flex items-center gap-1 px-3 py-1.5 tabular-nums ${
                     change.direction === 'up'
-                      ? 'text-emerald-400 bg-emerald-500/10'
-                      : 'text-red-400 bg-red-500/10'
+                      ? 'bg-emerald-500/10 text-emerald-400'
+                      : 'bg-red-500/10 text-red-400'
                   }`}
                 >
                   <span>{change.direction === 'up' ? '↑' : '↓'}</span>
-                  <span>{change.percent > 0 ? '+' : ''}{change.percent.toFixed(2)}%</span>
+                  <span>
+                    {change.percent > 0 ? '+' : ''}
+                    {change.percent.toFixed(2)}%
+                  </span>
                 </div>
               </>
             )}
@@ -211,65 +217,67 @@ export default function CurrencyConverter({
       </div>
 
       {/* ── TO amount ── */}
-      <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">
-        To
-      </p>
+      <p className="mb-3 text-[11px] font-semibold tracking-widest text-slate-400 uppercase">To</p>
       <div
-        className="flex items-baseline justify-center gap-1.5 mb-5 sm:mb-8"
+        className="mb-5 flex items-baseline justify-center gap-1.5 sm:mb-8"
         aria-live="polite"
         aria-atomic="true"
       >
-        <span className="text-3xl sm:text-4xl font-bold text-slate-500 leading-none select-none">
+        <span className="text-3xl leading-none font-bold text-slate-500 select-none sm:text-4xl">
           {toCurrencyData?.symbol}
         </span>
         {isSame ? (
-          <span className="text-5xl sm:text-7xl font-bold text-slate-800">–</span>
+          <span className="text-5xl font-bold text-slate-800 sm:text-7xl">–</span>
         ) : isLoading ? (
-          <div className="h-14 sm:h-20 w-48 bg-slate-800/60 animate-pulse rounded-xl" />
+          <div className="h-14 w-48 animate-pulse rounded-xl bg-slate-800/60 sm:h-20" />
         ) : isError ? (
-          <span className="text-base text-red-400/80 font-medium">Rate unavailable right now</span>
+          <span className="text-base font-medium text-red-400/80">Rate unavailable right now</span>
         ) : (
           <AnimatedNumber
             value={result}
             decimals={2}
             duration={400}
-            className="text-5xl sm:text-7xl font-bold text-slate-50 tracking-tight tabular-nums"
+            className="text-5xl font-bold tracking-tight text-slate-50 tabular-nums sm:text-7xl"
           />
         )}
       </div>
 
       {/* ── Actions: unified copy / share pill ── */}
-      <div className="flex justify-center mb-4">
-        <div className="inline-flex rounded-xl overflow-hidden border border-slate-700/80 shadow-lg shadow-black/20">
+      <div className="mb-4 flex justify-center">
+        <div className="inline-flex overflow-hidden rounded-xl border border-slate-700/80 shadow-lg shadow-black/20">
           <button
             type="button"
             onClick={handleCopy}
             className={`flex items-center gap-2 px-5 py-2.5 text-xs font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
               copied
                 ? 'bg-emerald-500/15 text-emerald-400'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white'
+                : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
             }`}
             aria-label="Copy converted amount"
           >
-            {copied
-              ? <CheckIcon className="w-3.5 h-3.5 shrink-0" />
-              : <ClipboardDocumentIcon className="w-3.5 h-3.5 shrink-0" />}
+            {copied ? (
+              <CheckIcon className="h-3.5 w-3.5 shrink-0" />
+            ) : (
+              <ClipboardDocumentIcon className="h-3.5 w-3.5 shrink-0" />
+            )}
             {copied ? 'Copied!' : 'Copy'}
           </button>
-          <div className="w-px bg-slate-700/80 shrink-0" />
+          <div className="w-px shrink-0 bg-slate-700/80" />
           <button
             type="button"
             onClick={handleShare}
             className={`flex items-center gap-2 px-5 py-2.5 text-xs font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
               shared
                 ? 'bg-emerald-500/15 text-emerald-400'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white'
+                : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
             }`}
             aria-label="Copy link to this page"
           >
-            {shared
-              ? <CheckIcon className="w-3.5 h-3.5 shrink-0" />
-              : <ArrowUpRightIcon className="w-3.5 h-3.5 shrink-0" />}
+            {shared ? (
+              <CheckIcon className="h-3.5 w-3.5 shrink-0" />
+            ) : (
+              <ArrowUpRightIcon className="h-3.5 w-3.5 shrink-0" />
+            )}
             {shared ? 'Copied!' : 'Share'}
           </button>
         </div>

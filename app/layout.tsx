@@ -20,7 +20,6 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
@@ -30,8 +29,7 @@ export const metadata: Metadata = {
     template: '%s | Zento',
   },
   applicationName: 'Zento',
-  description:
-    `Convert currencies instantly with live mid-market exchange rates. Free, accurate conversion for ${CURRENCY_COUNT} world currencies, no sign-up required. Powered by ECB data.`,
+  description: `Convert currencies instantly with live mid-market exchange rates. Free, accurate conversion for ${CURRENCY_COUNT} world currencies, no sign-up required. Powered by ECB data.`,
   keywords: [
     'currency converter',
     'exchange rate',
@@ -60,8 +58,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Zento: Free Currency Converter | Live Exchange Rates',
-    description:
-      `Convert currencies instantly with live mid-market exchange rates. Free for ${CURRENCY_COUNT} world currencies, no sign-up required.`,
+    description: `Convert currencies instantly with live mid-market exchange rates. Free for ${CURRENCY_COUNT} world currencies, no sign-up required.`,
     type: 'website',
     url: APP_URL,
     siteName: 'Zento',
@@ -71,8 +68,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Zento: Free Currency Converter | Live Exchange Rates',
-    description:
-      `Convert currencies instantly with live mid-market exchange rates. Free for ${CURRENCY_COUNT} world currencies, no sign-up required.`,
+    description: `Convert currencies instantly with live mid-market exchange rates. Free for ${CURRENCY_COUNT} world currencies, no sign-up required.`,
     images: ['/og.png'],
     // No `site` handle. @zentoapp is not a Zento account, and claiming it would
     // attribute every shared card to a stranger. Add it back if the handle is registered.
@@ -93,8 +89,7 @@ const jsonLd = [
     url: APP_URL,
     inLanguage: 'en',
     publisher: { '@id': `${APP_URL}/#organization` },
-    description:
-      `Free live currency converter with mid-market exchange rates for ${CURRENCY_COUNT} currencies.`,
+    description: `Free live currency converter with mid-market exchange rates for ${CURRENCY_COUNT} currencies.`,
     potentialAction: {
       '@type': 'SearchAction',
       target: {
@@ -119,8 +114,7 @@ const jsonLd = [
       price: '0',
       priceCurrency: 'USD',
     },
-    description:
-      `Free real-time currency converter supporting ${CURRENCY_COUNT} currencies with live mid-market exchange rates from ExchangeRate-API and ECB data via Frankfurter.`,
+    description: `Free real-time currency converter supporting ${CURRENCY_COUNT} currencies with live mid-market exchange rates from ExchangeRate-API and ECB data via Frankfurter.`,
     featureList: [
       'Live mid-market exchange rates',
       `${CURRENCY_COUNT} world currencies`,
@@ -154,8 +148,7 @@ const jsonLd = [
     // sameAs is how Google resolves "Zento" to this entity rather than a same-named
     // company. Every additional verifiable profile added here strengthens that link.
     sameAs: ['https://github.com/HaikalAkif/zento'],
-    description:
-      `Zento provides free real-time currency conversion for ${CURRENCY_COUNT} world currencies using live mid-market exchange rates from ExchangeRate-API and European Central Bank data.`,
+    description: `Zento provides free real-time currency conversion for ${CURRENCY_COUNT} world currencies using live mid-market exchange rates from ExchangeRate-API and European Central Bank data.`,
     foundingDate: '2024',
     serviceArea: { '@type': 'Place', name: 'Worldwide' },
   },
@@ -171,7 +164,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-slate-950 text-slate-50 min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col bg-slate-950 font-sans text-slate-50 antialiased`}
       >
         <LenisProvider>
           <QueryProvider>

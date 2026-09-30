@@ -8,7 +8,7 @@ export default function LenisProvider({ children }: { children: React.ReactNode 
   const [reduced, setReduced] = useState(false);
 
   useEffect(() => {
-    setReduced(prefersReducedMotion()); // eslint-disable-line react-hooks/set-state-in-effect -- matchMedia is unavailable during SSR
+    setReduced(prefersReducedMotion()); // oxlint-disable-line react/set-state-in-effect -- matchMedia is unavailable during SSR
   }, []);
 
   return (

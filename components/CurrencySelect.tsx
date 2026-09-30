@@ -107,7 +107,7 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
   return (
     <div ref={containerRef} className="relative">
       {label && (
-        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">
+        <label className="mb-2 block text-xs font-semibold tracking-widest text-slate-400 uppercase">
           {label}
         </label>
       )}
@@ -116,21 +116,24 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
       <button
         ref={triggerRef}
         type="button"
-        onClick={() => { setOpen((v) => !v); setFocusedIndex(-1); }}
+        onClick={() => {
+          setOpen((v) => !v);
+          setFocusedIndex(-1);
+        }}
         onKeyDown={handleTriggerKeyDown}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={`Select currency, current: ${selected?.name}`}
-        className="w-full flex items-center gap-2.5 px-4 py-3.5 bg-slate-800/80 border border-slate-700 rounded-xl hover:border-slate-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="flex w-full items-center gap-2.5 rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3.5 transition-all duration-200 hover:border-slate-500 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
       >
-        <span className="text-xl leading-none select-none shrink-0">{selected?.flag}</span>
-        <span className="font-bold text-sm text-slate-50 shrink-0">{selected?.code}</span>
+        <span className="shrink-0 text-xl leading-none select-none">{selected?.flag}</span>
+        <span className="shrink-0 text-sm font-bold text-slate-50">{selected?.code}</span>
         {/* Name hidden on mobile to prevent overflow in narrow viewports */}
-        <span className="text-sm text-slate-400 truncate min-w-0 flex-1 text-left hidden sm:inline">
+        <span className="hidden min-w-0 flex-1 truncate text-left text-sm text-slate-400 sm:inline">
           – {selected?.name}
         </span>
         <ChevronDownIcon
-          className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          className={`h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
         />
       </button>
 
@@ -139,17 +142,20 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
         <div
           role="listbox"
           aria-label="Select a currency"
-          className={`absolute top-[calc(100%+6px)] w-64 max-w-[calc(100vw-2rem)] ${align === 'right' ? 'right-0' : 'left-0'} bg-slate-900 border border-slate-700 rounded-xl shadow-2xl shadow-black/50 z-100 overflow-hidden`}
+          className={`absolute top-[calc(100%+6px)] w-64 max-w-[calc(100vw-2rem)] ${align === 'right' ? 'right-0' : 'left-0'} z-100 overflow-hidden rounded-xl border border-slate-700 bg-slate-900 shadow-2xl shadow-black/50`}
         >
           {/* Search */}
-          <div className="p-2.5 border-b border-slate-800">
-            <div className="flex items-center gap-2 px-3 py-2 bg-slate-800 rounded-lg border border-slate-700 focus-within:border-blue-500 transition">
-              <MagnifyingGlassIcon className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+          <div className="border-b border-slate-800 p-2.5">
+            <div className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 transition focus-within:border-blue-500">
+              <MagnifyingGlassIcon className="h-3.5 w-3.5 shrink-0 text-slate-500" />
               <input
                 ref={searchRef}
                 type="text"
                 value={search}
-                onChange={(e) => { setSearch(e.target.value); setFocusedIndex(-1); }}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setFocusedIndex(-1);
+                }}
                 onKeyDown={handleSearchKeyDown}
                 placeholder="Search currency..."
                 aria-label="Search currencies"
@@ -157,11 +163,14 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
               />
               {search && (
                 <button
-                  onClick={() => { setSearch(''); setFocusedIndex(-1); }}
+                  onClick={() => {
+                    setSearch('');
+                    setFocusedIndex(-1);
+                  }}
                   className="shrink-0"
                   aria-label="Clear search"
                 >
-                  <XMarkIcon className="w-3.5 h-3.5 text-slate-500 hover:text-slate-300 transition" />
+                  <XMarkIcon className="h-3.5 w-3.5 text-slate-500 transition hover:text-slate-300" />
                 </button>
               )}
             </div>
@@ -170,9 +179,13 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
           {/* Options: arrow keys drive this list, so options are tabIndex={-1};
               Tab would otherwise walk through every currency */}
           {/* data-lenis-prevent stops Lenis from intercepting wheel events inside this list */}
-          <div ref={listRef} className="overflow-y-auto overscroll-contain max-h-56 py-1" data-lenis-prevent>
+          <div
+            ref={listRef}
+            className="max-h-56 overflow-y-auto overscroll-contain py-1"
+            data-lenis-prevent
+          >
             {filtered.length === 0 ? (
-              <div className="px-4 py-3 text-sm text-slate-400 text-center">No results</div>
+              <div className="px-4 py-3 text-center text-sm text-slate-400">No results</div>
             ) : (
               filtered.map((c, i) => (
                 <button
@@ -183,7 +196,7 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
                   aria-selected={c.code === value}
                   tabIndex={-1}
                   onClick={() => handleSelect(c.code)}
-                  className={`w-full flex items-center gap-3 px-4 py-2.5 transition-colors text-left ${
+                  className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors ${
                     i === focusedIndex
                       ? 'bg-slate-700'
                       : c.code === value
@@ -192,16 +205,16 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
                   }`}
                 >
                   <span className="text-lg leading-none select-none">{c.flag}</span>
-                  <div className="flex items-baseline gap-2 min-w-0">
+                  <div className="flex min-w-0 items-baseline gap-2">
                     <span
-                      className={`font-bold text-sm shrink-0 ${c.code === value ? 'text-blue-400' : 'text-slate-200'}`}
+                      className={`shrink-0 text-sm font-bold ${c.code === value ? 'text-blue-400' : 'text-slate-200'}`}
                     >
                       {c.code}
                     </span>
-                    <span className="text-xs text-slate-400 truncate">{c.name}</span>
+                    <span className="truncate text-xs text-slate-400">{c.name}</span>
                   </div>
                   {c.code === value && (
-                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
+                    <div className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400" />
                   )}
                 </button>
               ))

@@ -1,0 +1,85 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "oxc", "typescript", "react", "nextjs", "jsx-a11y", "import"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2024": true
+  },
+  "settings": {
+    "react": { "version": "19" }
+  },
+  "ignorePatterns": [
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    ".open-next/**",
+    ".wrangler/**",
+    "cloudflare-env.d.ts"
+  ],
+  "rules": {
+    // Carried over from eslint-config-next (core-web-vitals + typescript)
+    "no-unused-vars": "warn",
+    "no-unused-expressions": "warn",
+    "typescript/no-explicit-any": "error",
+    "typescript/ban-ts-comment": "error",
+    "typescript/no-require-imports": "error",
+    "typescript/prefer-as-const": "error",
+    "typescript/triple-slash-reference": "error",
+
+    "nextjs/no-html-link-for-pages": "error",
+    "nextjs/no-sync-scripts": "error",
+    "nextjs/no-img-element": "warn",
+    "nextjs/no-head-element": "warn",
+    "nextjs/no-css-tags": "warn",
+    "nextjs/google-font-display": "warn",
+    "nextjs/no-page-custom-font": "warn",
+    "nextjs/no-async-client-component": "warn",
+    "nextjs/inline-script-id": "error",
+    "nextjs/no-assign-module-variable": "error",
+    "nextjs/no-typos": "warn",
+
+    "react/jsx-key": "error",
+    "react/jsx-no-duplicate-props": "error",
+    "react/jsx-no-comment-textnodes": "error",
+    "react/no-children-prop": "error",
+    "react/no-danger-with-children": "error",
+    "react/no-unescaped-entities": "error",
+    "react/react-in-jsx-scope": "off",
+
+    // React hooks + React Compiler rules (eslint-plugin-react-hooks v7)
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "warn",
+    "react/set-state-in-effect": "error",
+    "react/set-state-in-render": "error",
+    "react/static-components": "error",
+    "react/use-memo": "error",
+    "react/preserve-manual-memoization": "error",
+    "react/immutability": "error",
+    "react/globals": "error",
+    "react/refs": "error",
+    "react/purity": "error",
+    "react/error-boundaries": "error",
+    "react/incompatible-library": "warn",
+    "react/unsupported-syntax": "warn",
+
+    // CurrencySelect is a searchable ARIA combobox (role=listbox/option), which a native
+    // <select> can't do, and <form role="search"> is the widely supported spelling.
+    "jsx-a11y/prefer-tag-over-role": "off",
+    "jsx-a11y/alt-text": "warn",
+    "jsx-a11y/aria-props": "warn",
+    "jsx-a11y/aria-proptypes": "warn",
+    "jsx-a11y/aria-unsupported-elements": "warn",
+    "jsx-a11y/role-has-required-aria-props": "warn",
+    "jsx-a11y/role-supports-aria-props": "warn",
+
+    "import/no-anonymous-default-export": "warn",
+    // Side-effect imports are how global stylesheets load
+    "import/no-unassigned-import": ["warn", { "allow": ["**/*.css"] }]
+  }
+}

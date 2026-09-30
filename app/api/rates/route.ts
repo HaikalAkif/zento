@@ -45,10 +45,9 @@ async function fetchRates(base: string, symbols: string[]): Promise<Response> {
   }
 
   try {
-    const res = await fetch(
-      `${FRANKFURTER}/latest?base=${base}&symbols=${symbols.join(',')}`,
-      { next: { revalidate: 3600 } },
-    );
+    const res = await fetch(`${FRANKFURTER}/latest?base=${base}&symbols=${symbols.join(',')}`, {
+      next: { revalidate: 3600 },
+    });
     if (res.status === 429) {
       return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
     }
@@ -64,10 +63,7 @@ async function fetchRates(base: string, symbols: string[]): Promise<Response> {
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const base = (searchParams.get('base') ?? '').toUpperCase();
-  const symbols = (searchParams.get('symbols') ?? '')
-    .toUpperCase()
-    .split(',')
-    .filter(Boolean);
+  const symbols = (searchParams.get('symbols') ?? '').toUpperCase().split(',').filter(Boolean);
 
   // Validate before anything reaches the upstream URL
   if (!/^[A-Z]{3}$/.test(base) || !getCurrency(base)) {

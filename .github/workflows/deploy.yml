@@ -23,16 +23,15 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
+        # Version comes from the packageManager field in package.json
+        uses: pnpm/action-setup@v6
 
       - name: Set up Node
         # @opennextjs/cloudflare requires Node >=22.
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -51,3 +50,25 @@ jobs:
           # Baked into the bundle at build time: canonical URLs, sitemap.xml,
           # robots.txt and JSON-LD all read this via lib/config.ts.
           NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+
+      - name: Smoke test live API
+        # `next build` passes even when a route only breaks inside workerd, so check
+        # the deployed Worker itself. The _smoke param makes each run a cache miss,
+        # forcing the full handler path rather than a cached edge response.
+        env:
+          APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL || 'https://zento.haikalakif.com' }}
+        run: |
+          check() {
+            for attempt in 1 2 3 4 5; do
+              status=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$APP_URL$1")
+              [ "$status" = "200" ] && { echo "OK   $1"; return 0; }
+              echo "Attempt $attempt: HTTP $status for $1"
+              sleep 5
+            done
+            echo "::error::$1 returned HTTP $status after deploy"
+            return 1
+          }
+          check "/"
+          check "/usd-to-myr"
+          check "/api/rates?base=USD&symbols=MYR&_smoke=${{ github.run_id }}"
+          check "/api/historical?base=USD&target=EUR&days=7&_smoke=${{ github.run_id }}"

@@ -1,11 +1,19 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "zento",
+  // The logged-in Cloudflare user has several accounts; without this, local
+  // `wrangler tail` / `deploy` refuse to pick one. Not a secret.
+  "account_id": "625555aab5f95dd0bbbfbed8e3a3e107",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-07-21",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": ".open-next/assets",
-    "binding": "ASSETS"
-  }
+    "binding": "ASSETS",
+  },
+  // Persist console output and uncaught exceptions to Workers Logs so failures
+  // are visible in the dashboard after the fact, not only via a live `wrangler tail`.
+  "observability": {
+    "enabled": true,
+  },
 }

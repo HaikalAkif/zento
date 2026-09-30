@@ -2,16 +2,17 @@ import { CURRENCIES } from '@/lib/currencies';
 
 export default function Footer() {
   return (
-    <footer className="border-t border-slate-800 bg-slate-900 mt-16">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-4">
+    <footer className="mt-16 border-t border-slate-800 bg-slate-900">
+      <div className="mx-auto max-w-5xl space-y-4 px-4 py-8 sm:px-6">
         <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:justify-between sm:text-left">
           <div>
             <p className="font-bold text-slate-50">Zento</p>
-            <p className="text-sm text-slate-400 mt-0.5">
-              Real-time currency converter. Live mid-market rates for {CURRENCIES.length} currencies.
+            <p className="mt-0.5 text-sm text-slate-400">
+              Real-time currency converter. Live mid-market rates for {CURRENCIES.length}{' '}
+              currencies.
             </p>
           </div>
-          <div className="text-xs text-slate-400 space-y-1 sm:text-right">
+          <div className="space-y-1 text-xs text-slate-400 sm:text-right">
             <p>
               Rates from{' '}
               <a
@@ -21,8 +22,8 @@ export default function Footer() {
                 className="text-blue-400 hover:text-blue-300 hover:underline"
               >
                 ExchangeRate-API
-              </a>
-              {' '}·{' '}
+              </a>{' '}
+              ·{' '}
               <a
                 href="https://www.frankfurter.app"
                 target="_blank"
@@ -36,7 +37,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-slate-800 pt-4 flex flex-col items-center gap-1 text-center sm:flex-row sm:justify-between">
+        <div className="flex flex-col items-center gap-1 border-t border-slate-800 pt-4 text-center sm:flex-row sm:justify-between">
           <p className="text-xs text-slate-400">© Zento 2026</p>
           <p className="text-xs text-slate-400">
             More websites by{' '}
@@ -44,7 +45,7 @@ export default function Footer() {
               href="https://haikalakif.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-400 hover:text-slate-300 transition-colors"
+              className="text-slate-400 transition-colors hover:text-slate-300"
             >
               iCool
             </a>

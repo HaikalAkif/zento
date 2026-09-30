@@ -10,12 +10,7 @@ interface Props {
   className?: string;
 }
 
-export default function AnimatedNumber({
-  value,
-  decimals = 2,
-  duration = 500,
-  className,
-}: Props) {
+export default function AnimatedNumber({ value, decimals = 2, duration = 500, className }: Props) {
   const [display, setDisplay] = useState(value);
   const frameRef = useRef<number | null>(null);
   const currentRef = useRef(value);
@@ -25,7 +20,7 @@ export default function AnimatedNumber({
 
     if (prefersReducedMotion()) {
       currentRef.current = value;
-      setDisplay(value); // eslint-disable-line react-hooks/set-state-in-effect -- jump straight to the value instead of animating
+      setDisplay(value); // oxlint-disable-line react/set-state-in-effect -- jump straight to the value instead of animating
       return;
     }
 

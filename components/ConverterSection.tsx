@@ -16,7 +16,7 @@ import { prefersReducedMotion } from '@/lib/motion';
 // Recharts is ~450 kB. The chart sits below the fold, so keep it out of the initial bundle.
 const RateTrendChart = dynamic(() => import('./RateTrendChart'), {
   ssr: false,
-  loading: () => <div className="h-[360px] rounded-2xl bg-slate-900 border border-slate-800" />,
+  loading: () => <div className="h-[360px] rounded-2xl border border-slate-800 bg-slate-900" />,
 });
 
 interface Props {
@@ -59,15 +59,16 @@ export default function ConverterSection({
     const n = parseFloat(raw);
     if (isNaN(n) || n <= 0 || raw === initialAmount) return;
     prevAmountRef.current = raw; // prevent URL-update effect from firing a redundant replace
-    setAmount(raw); // eslint-disable-line react-hooks/set-state-in-effect -- hydrates from window.location, unavailable during SSR
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    setAmount(raw); // oxlint-disable-line react/set-state-in-effect -- hydrates from window.location, unavailable during SSR
+  }, []); // oxlint-disable-line react/exhaustive-deps, react/exhaustive-effect-dependencies
 
   // Alt+S keyboard shortcut: swap currencies
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       // Don't hijack the shortcut while the user is typing in a field
       const el = e.target as HTMLElement | null;
-      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable))
+        return;
       if (e.altKey && e.key === 's') {
         e.preventDefault();
         setFromCurrency(toCurrency);
@@ -115,7 +116,7 @@ export default function ConverterSection({
   }, []);
 
   const converterCard = (
-    <div className="w-full max-w-2xl mx-auto bg-slate-900/70 backdrop-blur-md border border-slate-800/50 rounded-2xl shadow-2xl p-6 sm:p-8">
+    <div className="mx-auto w-full max-w-2xl rounded-2xl border border-slate-800/50 bg-slate-900/70 p-6 shadow-2xl backdrop-blur-md sm:p-8">
       <CurrencyConverter
         amount={amount}
         fromCurrency={fromCurrency}
@@ -129,7 +130,7 @@ export default function ConverterSection({
   );
 
   const belowFold = (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-16 space-y-5">
+    <div className="mx-auto max-w-5xl space-y-5 px-4 pb-16 sm:px-6">
       <RecentPairs items={history} onSelect={handleSelect} />
       <PopularConversions onSelect={handleSelect} />
       {fromCurrency !== toCurrency && (
@@ -142,10 +143,10 @@ export default function ConverterSection({
   if (heroMode || heroContent != null) {
     const heroInner = heroContent ?? (
       <>
-        <h1 className="text-2xl sm:text-5xl font-bold text-slate-50 tracking-tight mb-1.5 sm:mb-2">
+        <h1 className="mb-1.5 text-2xl font-bold tracking-tight text-slate-50 sm:mb-2 sm:text-5xl">
           Zento: currency, converted instantly.
         </h1>
-        <p className="text-slate-400 text-sm sm:text-base">
+        <p className="text-sm text-slate-400 sm:text-base">
           {CURRENCIES.length} currencies. Live rates. Zero fees.
         </p>
       </>
@@ -153,12 +154,10 @@ export default function ConverterSection({
 
     return (
       <>
-        <section className="relative min-h-dvh flex flex-col items-center justify-center px-4 sm:px-6 pt-20 pb-16 sm:py-24">
+        <section className="relative flex min-h-dvh flex-col items-center justify-center px-4 pt-20 pb-16 sm:px-6 sm:py-24">
           <VantaGlobe />
-          <div className="absolute inset-0 -z-5 bg-linear-to-b from-slate-950/75 to-slate-950/95 pointer-events-none" />
-          <div className="text-center mb-6 sm:mb-10">
-            {heroInner}
-          </div>
+          <div className="pointer-events-none absolute inset-0 -z-5 bg-linear-to-b from-slate-950/75 to-slate-950/95" />
+          <div className="mb-6 text-center sm:mb-10">{heroInner}</div>
           {converterCard}
         </section>
         {belowFold}
@@ -168,9 +167,7 @@ export default function ConverterSection({
 
   return (
     <div className="pt-20 pb-4">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 mb-8">
-        {converterCard}
-      </div>
+      <div className="mx-auto mb-8 max-w-2xl px-4 sm:px-6">{converterCard}</div>
       {belowFold}
     </div>
   );
