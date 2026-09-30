@@ -90,14 +90,6 @@ const jsonLd = [
     inLanguage: 'en',
     publisher: { '@id': `${APP_URL}/#organization` },
     description: `Free live currency converter with mid-market exchange rates for ${CURRENCY_COUNT} currencies.`,
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${APP_URL}/{search_term_string}-to-{search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
-    },
   },
   {
     '@context': 'https://schema.org',

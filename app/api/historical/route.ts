@@ -1,47 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrency, hasHistory } from '@/lib/currencies';
-import { withEdgeCache } from '@/lib/edge-cache';
-
-// Canonical host. api.frankfurter.app 301s here, costing a redirect on every call.
-const FRANKFURTER = 'https://api.frankfurter.dev/v1';
-
-interface FrankfurterHistorical {
-  rates: Record<string, Record<string, number>>;
-}
-
-async function fetchHistorical(base: string, target: string, days: number): Promise<Response> {
-  const now = new Date();
-  const start = new Date(now);
-  start.setUTCDate(now.getUTCDate() - days);
-  const startStr = start.toISOString().split('T')[0];
-  const endStr = now.toISOString().split('T')[0];
-
-  try {
-    const res = await fetch(
-      `${FRANKFURTER}/${startStr}..${endStr}?base=${base}&symbols=${target}`,
-      { next: { revalidate: 3600 } },
-    );
-
-    if (res.status === 429) {
-      return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
-    }
-    if (!res.ok) {
-      return NextResponse.json({ error: `Upstream error: HTTP ${res.status}` }, { status: 502 });
-    }
-
-    const data: FrankfurterHistorical = await res.json();
-    const points = Object.entries(data.rates)
-      .map(([date, rates]) => ({ date, rate: rates[target] }))
-      .filter((p) => p.rate != null)
-      .sort((a, b) => a.date.localeCompare(b.date));
-
-    return NextResponse.json(points, {
-      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200' },
-    });
-  } catch {
-    return NextResponse.json({ error: 'Failed to fetch historical data' }, { status: 502 });
-  }
-}
+import { getHistory, UpstreamError } from '@/lib/rates';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -76,5 +35,16 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  return withEdgeCache(request, () => fetchHistorical(base, target, days));
+  try {
+    const points = await getHistory(base, target, days);
+    return NextResponse.json(points, {
+      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200' },
+    });
+  } catch (err) {
+    const status = err instanceof UpstreamError ? err.status : 502;
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'Failed to fetch historical data' },
+      { status },
+    );
+  }
 }

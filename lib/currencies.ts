@@ -215,27 +215,3 @@ export const hasHistory = (code: string): boolean => HISTORY_CURRENCIES.has(code
 
 export const pairHasHistory = (from: string, to: string): boolean =>
   from !== to && hasHistory(from) && hasHistory(to);
-
-export const POPULAR_CONVERSIONS = [
-  { from: 'JPY', to: 'MYR' },
-  { from: 'USD', to: 'MYR' },
-  { from: 'MYR', to: 'USD' },
-  { from: 'EUR', to: 'USD' },
-  { from: 'SGD', to: 'MYR' },
-  { from: 'USD', to: 'EUR' },
-  { from: 'GBP', to: 'USD' },
-  { from: 'USD', to: 'JPY' },
-];
-
-export const MULTI_CURRENCY_TARGETS = [
-  'USD',
-  'EUR',
-  'GBP',
-  'MYR',
-  'SGD',
-  'AUD',
-  'CAD',
-  'CHF',
-  'HKD',
-  'INR',
-];

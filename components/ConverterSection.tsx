@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
@@ -11,6 +11,8 @@ import RecentPairs from './RecentPairs';
 import VantaGlobe from './VantaGlobe';
 import { useConversionHistory } from '@/hooks/useConversionHistory';
 import { CURRENCIES } from '@/lib/currencies';
+import { PAIR_COOKIE, multiTargetsFor, popularPairsFor } from '@/lib/region';
+import type { RateResponse } from '@/lib/api';
 import { prefersReducedMotion } from '@/lib/motion';
 
 // Recharts is ~450 kB. The chart sits below the fold, so keep it out of the initial bundle.
@@ -26,6 +28,16 @@ interface Props {
   heroMode?: boolean;
   /** Pass JSX from a server component to render inside the Vanta hero on pair pages. */
   heroContent?: ReactNode;
+  /** Visitor's home currency, detected server-side from their region. */
+  localCurrency?: string;
+  /** Server-fetched rates for the initial pair, so the result is in the first HTML. */
+  seedRates?: RateResponse;
+}
+
+/** Remember the pair so the home page opens on it next visit. Read server-side. */
+function rememberPair(from: string, to: string): void {
+  if (from === to) return;
+  document.cookie = `${PAIR_COOKIE}=${from}-${to}; path=/; max-age=31536000; samesite=lax`;
 }
 
 function buildPairUrl(from: string, to: string, amount: string): string {
@@ -36,10 +48,12 @@ function buildPairUrl(from: string, to: string, amount: string): string {
 
 export default function ConverterSection({
   initialFrom = 'USD',
-  initialTo = 'MYR',
+  initialTo = 'EUR',
   initialAmount = '1',
   heroMode = false,
   heroContent,
+  localCurrency = 'USD',
+  seedRates,
 }: Props) {
   const router = useRouter();
   const [amount, setAmount] = useState(initialAmount);
@@ -47,6 +61,14 @@ export default function ConverterSection({
   const [toCurrency, setToCurrency] = useState(initialTo);
 
   const { history, add: addToHistory } = useConversionHistory();
+
+  const popularPairs = useMemo(() => popularPairsFor(localCurrency), [localCurrency]);
+  const multiTargets = useMemo(() => multiTargetsFor(localCurrency), [localCurrency]);
+
+  // Landing on a pair page (often straight from search) counts as using that pair
+  useEffect(() => {
+    if (!heroMode) rememberPair(initialFrom, initialTo);
+  }, []); // oxlint-disable-line react/exhaustive-deps, react/exhaustive-effect-dependencies
 
   // Refs hold previous values to detect real changes vs initial mount
   const prevCurrencyRef = useRef<{ from: string; to: string } | null>(null);
@@ -86,6 +108,7 @@ export default function ConverterSection({
     if (!prev || (prev.from === fromCurrency && prev.to === toCurrency)) return;
 
     if (fromCurrency !== toCurrency) addToHistory(fromCurrency, toCurrency);
+    rememberPair(fromCurrency, toCurrency);
 
     const url = buildPairUrl(fromCurrency, toCurrency, amount);
     if (heroMode) router.push(url);
@@ -125,6 +148,7 @@ export default function ConverterSection({
         onFromChange={setFromCurrency}
         onToChange={setToCurrency}
         onSwap={handleSwap}
+        seedRates={seedRates}
       />
     </div>
   );
@@ -132,11 +156,16 @@ export default function ConverterSection({
   const belowFold = (
     <div className="mx-auto max-w-5xl space-y-5 px-4 pb-16 sm:px-6">
       <RecentPairs items={history} onSelect={handleSelect} />
-      <PopularConversions onSelect={handleSelect} />
+      <PopularConversions pairs={popularPairs} onSelect={handleSelect} />
       {fromCurrency !== toCurrency && (
         <RateTrendChart fromCurrency={fromCurrency} toCurrency={toCurrency} />
       )}
-      <MultiCurrencyResults fromCurrency={fromCurrency} amount={amount} onSelect={handleSelect} />
+      <MultiCurrencyResults
+        fromCurrency={fromCurrency}
+        amount={amount}
+        targets={multiTargets}
+        onSelect={handleSelect}
+      />
     </div>
   );
 

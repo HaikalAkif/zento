@@ -3,17 +3,24 @@
 import { useQuery } from '@tanstack/react-query';
 import { ArrowUpRightIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { getMultipleRates } from '@/lib/api';
-import { getCurrency, MULTI_CURRENCY_TARGETS } from '@/lib/currencies';
+import { getCurrency } from '@/lib/currencies';
 import AnimatedNumber from './AnimatedNumber';
 
 interface Props {
   fromCurrency: string;
   amount: string;
+  /** Currencies to convert into, visitor's own first. */
+  targets: string[];
   onSelect: (from: string, to: string) => void;
 }
 
-export default function MultiCurrencyResults({ fromCurrency, amount, onSelect }: Props) {
-  const targets = MULTI_CURRENCY_TARGETS.filter((t) => t !== fromCurrency);
+export default function MultiCurrencyResults({
+  fromCurrency,
+  amount,
+  targets: allTargets,
+  onSelect,
+}: Props) {
+  const targets = allTargets.filter((t) => t !== fromCurrency);
   const numAmount = parseFloat(amount) || 1;
   const fromCurrencyData = getCurrency(fromCurrency);
 

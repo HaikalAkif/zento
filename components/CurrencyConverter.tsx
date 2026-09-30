@@ -10,6 +10,7 @@ import {
 import { useCurrencyRate } from '@/hooks/useCurrencyRate';
 import { useRateChange } from '@/hooks/useRateChange';
 import { getCurrency } from '@/lib/currencies';
+import type { RateResponse } from '@/lib/api';
 import CurrencySelect from './CurrencySelect';
 import AnimatedNumber from './AnimatedNumber';
 
@@ -54,6 +55,8 @@ interface Props {
   onFromChange: (v: string) => void;
   onToChange: (v: string) => void;
   onSwap: () => void;
+  /** Server-fetched rates, so the result renders without waiting for the client fetch. */
+  seedRates?: RateResponse;
 }
 
 export default function CurrencyConverter({
@@ -64,11 +67,12 @@ export default function CurrencyConverter({
   onFromChange,
   onToChange,
   onSwap,
+  seedRates,
 }: Props) {
   const [copied, setCopied] = useState(false);
   const [shared, setShared] = useState(false);
 
-  const { data, isLoading, isError } = useCurrencyRate(fromCurrency, toCurrency);
+  const { data, isLoading, isError } = useCurrencyRate(fromCurrency, toCurrency, seedRates);
   const { data: change } = useRateChange(fromCurrency, toCurrency);
 
   const rate = data?.rates[toCurrency] ?? 0;

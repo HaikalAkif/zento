@@ -2,18 +2,21 @@
 
 import { useQueries } from '@tanstack/react-query';
 import { getMultipleRates } from '@/lib/api';
-import { getCurrency, POPULAR_CONVERSIONS } from '@/lib/currencies';
+import { getCurrency } from '@/lib/currencies';
 import { ArrowRightIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 interface Props {
+  /** Pairs to show, already personalised to the visitor's region. */
+  pairs: { from: string; to: string }[];
   onSelect: (from: string, to: string) => void;
 }
 
-const FROM_GROUPS = POPULAR_CONVERSIONS.reduce<Record<string, string[]>>((acc, { from, to }) => {
-  (acc[from] ??= []).push(to);
-  return acc;
-}, {});
-const GROUP_ENTRIES = Object.entries(FROM_GROUPS);
+/** One rates request per base currency instead of one per card. */
+function groupByBase(pairs: { from: string; to: string }[]): [string, string[]][] {
+  const groups: Record<string, string[]> = {};
+  for (const { from, to } of pairs) (groups[from] ??= []).push(to);
+  return Object.entries(groups);
+}
 
 interface CardProps {
   from: string;
@@ -70,9 +73,10 @@ function ConversionCard({ from, to, rate, isLoading, onSelect }: CardProps) {
   );
 }
 
-export default function PopularConversions({ onSelect }: Props) {
+export default function PopularConversions({ pairs, onSelect }: Props) {
+  const groupEntries = groupByBase(pairs);
   const results = useQueries({
-    queries: GROUP_ENTRIES.map(([from, targets]) => ({
+    queries: groupEntries.map(([from, targets]) => ({
       queryKey: ['pop-rates', from, targets.join(',')],
       queryFn: () => getMultipleRates(from, targets),
       staleTime: 60 * 1000,
@@ -84,7 +88,7 @@ export default function PopularConversions({ onSelect }: Props) {
 
   const rateMap: Record<string, number | undefined> = {};
   const loadingSet = new Set<string>();
-  GROUP_ENTRIES.forEach(([from, targets], i) => {
+  groupEntries.forEach(([from, targets], i) => {
     if (results[i].isLoading) loadingSet.add(from);
     targets.forEach((to) => {
       rateMap[`${from}-${to}`] = results[i].data?.rates[to];
@@ -106,7 +110,7 @@ export default function PopularConversions({ onSelect }: Props) {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-          {POPULAR_CONVERSIONS.map(({ from, to }) => (
+          {pairs.map(({ from, to }) => (
             <ConversionCard
               key={`${from}-${to}`}
               from={from}

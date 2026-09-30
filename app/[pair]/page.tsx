@@ -1,9 +1,15 @@
-import { use } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import ConverterSection from '@/components/ConverterSection';
+import PairInsights from '@/components/PairInsights';
 import { getCurrency } from '@/lib/currencies';
 import { APP_URL, STATIC_PAIRS } from '@/lib/config';
+import { getPairSnapshot } from '@/lib/rates';
+import { detectLocalCurrency } from '@/lib/region-server';
+import { formatAmount, formatDate, formatRate } from '@/lib/format';
+
+// Rendered per request rather than prerendered: the page states the live rate in its
+// HTML, and a build-time snapshot would go stale. Upstream data is cached in lib/rates.
 
 interface Props {
   params: Promise<{ pair: string }>;
@@ -21,12 +27,19 @@ function parsePair(slug: string): { from: string; to: string } | null {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { pair } = await params;
   const parsed = parsePair(pair);
-  if (!parsed) return {};
+  // Throwing here, not just in the page: Next resolves metadata before streaming for
+  // crawlers, so this is what gives bots a real 404 instead of a soft-404 200.
+  if (!parsed) notFound();
 
   const from = getCurrency(parsed.from);
   const to = getCurrency(parsed.to);
   const title = `${parsed.from} to ${parsed.to}: Live Exchange Rate`;
-  const description = `Convert ${from?.name} (${parsed.from}) to ${to?.name} (${parsed.to}) instantly. Live mid-market exchange rates updated in real time. Free currency conversion, no sign-up required.`;
+  const snapshot = await getPairSnapshot(parsed.from, parsed.to);
+  // Lead with the number: it's what the searcher wants, and it lifts click-through.
+  const ratePrefix = snapshot
+    ? `1 ${parsed.from} = ${formatRate(snapshot.rate)} ${parsed.to} today. `
+    : '';
+  const description = `${ratePrefix}Convert ${from?.name} (${parsed.from}) to ${to?.name} (${parsed.to}) at the live mid-market rate, with conversion tables and rate history. Free, no sign-up.`;
 
   return {
     title,
@@ -60,28 +73,53 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export function generateStaticParams() {
-  return STATIC_PAIRS.map((pair) => {
-    const [from, , to] = pair.split('-');
-    return { pair: `${from}-to-${to}` };
-  });
-}
-
-export default function PairPage({ params }: Props) {
-  const { pair } = use(params);
+export default async function PairPage({ params }: Props) {
+  const { pair } = await params;
   const parsed = parsePair(pair);
   if (!parsed) notFound();
 
   const from = getCurrency(parsed.from);
   const to = getCurrency(parsed.to);
+  const [snapshot, localCurrency] = await Promise.all([
+    getPairSnapshot(parsed.from, parsed.to),
+    detectLocalCurrency(),
+  ]);
+  const seedRates = snapshot && {
+    amount: 1,
+    base: parsed.from,
+    date: snapshot.date,
+    rates: { [parsed.to]: snapshot.rate },
+  };
 
   const pageUrl = `${APP_URL}/${pair}`;
 
+  const fromName = from?.name ?? parsed.from;
+  const toName = to?.name ?? parsed.to;
+  // Answers state the actual numbers when we have them. The FAQPage schema below is
+  // built from the same array, so visible text and structured data always agree.
   const faqItems = [
     {
       q: `What is the ${parsed.from} to ${parsed.to} exchange rate today?`,
-      a: `The live ${parsed.from} to ${parsed.to} mid-market exchange rate is shown above, sourced from ExchangeRate-API and updated every minute. Historical rate trends (3 days to 1 year) use European Central Bank (ECB) reference data via Frankfurter.`,
+      a: snapshot
+        ? `As of ${formatDate(snapshot.date)}, 1 ${parsed.from} = ${formatRate(snapshot.rate)} ${parsed.to} and 1 ${parsed.to} = ${formatRate(snapshot.inverse)} ${parsed.from} at the mid-market rate, sourced from ExchangeRate-API and refreshed every minute on this page.`
+        : `The live ${parsed.from} to ${parsed.to} mid-market exchange rate is shown above, sourced from ExchangeRate-API and updated every minute. Historical rate trends (3 days to 1 year) use European Central Bank (ECB) reference data via Frankfurter.`,
     },
+    ...(snapshot
+      ? [
+          {
+            q: `How much is 100 ${parsed.from} in ${parsed.to}?`,
+            a: `100 ${fromName} is ${formatAmount(100 * snapshot.rate)} ${toName} at today's mid-market rate. 1,000 ${parsed.from} is ${formatAmount(1000 * snapshot.rate)} ${parsed.to}. Banks and card providers usually add a margin, so expect to receive slightly less.`,
+          },
+        ]
+      : []),
+    ...(snapshot?.month
+      ? [
+          {
+            q: `Is ${parsed.from} going up or down against ${parsed.to}?`,
+            a: `Over the past 30 days ${parsed.from}/${parsed.to} moved ${snapshot.month.changePct > 0 ? '+' : ''}${snapshot.month.changePct.toFixed(2)}%, trading between ${formatRate(snapshot.month.low)} and ${formatRate(snapshot.month.high)}.${snapshot.year ? ` Its 1-year range is ${formatRate(snapshot.year.low)} to ${formatRate(snapshot.year.high)}.` : ''} Past movement does not predict future rates.`,
+          },
+        ]
+      : []),
     {
       q: `How do I convert ${from?.name ?? parsed.from} to ${to?.name ?? parsed.to}?`,
       a: `Enter any amount in the converter above and select ${parsed.from} as source and ${parsed.to} as target. The result updates instantly. You can also use the slider to quickly select common amounts between 10 and 10,000.`,
@@ -160,6 +198,8 @@ export default function PairPage({ params }: Props) {
       '@type': 'FinancialService',
       name: `${parsed.from} to ${parsed.to} Currency Converter`,
       url: pageUrl,
+      // The rate's publication date. Omitted when rates are unavailable.
+      ...(snapshot && { dateModified: snapshot.date }),
       description: `Convert ${from?.name ?? parsed.from} (${parsed.from}) to ${to?.name ?? parsed.to} (${parsed.to}) using live mid-market exchange rates.`,
       serviceType: 'Currency Conversion',
       areaServed: 'Worldwide',
@@ -180,7 +220,9 @@ export default function PairPage({ params }: Props) {
         </span>
       </h1>
       <p className="mt-2 text-sm text-slate-400 sm:text-base">
-        Real-time mid-market rate. Updates every 60 seconds.
+        {snapshot
+          ? `1 ${parsed.from} = ${formatRate(snapshot.rate)} ${parsed.to} · mid-market, updates every 60 seconds`
+          : 'Real-time mid-market rate. Updates every 60 seconds.'}
       </p>
     </>
   );
@@ -192,9 +234,17 @@ export default function PairPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <ConverterSection initialFrom={parsed.from} initialTo={parsed.to} heroContent={heroContent} />
+      <ConverterSection
+        initialFrom={parsed.from}
+        initialTo={parsed.to}
+        heroContent={heroContent}
+        localCurrency={localCurrency}
+        seedRates={seedRates}
+      />
 
       <div className="mx-auto max-w-5xl space-y-5 px-4 pb-10 sm:px-6">
+        {snapshot && <PairInsights snapshot={snapshot} />}
+
         {/* Visible FAQ: content must match FAQPage schema for AEO */}
         <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6 sm:p-7">
           <h2 className="mb-5 text-base font-bold text-slate-50">
