@@ -4,7 +4,8 @@
   // The logged-in Cloudflare user has several accounts; without this, local
   // `wrangler tail` / `deploy` refuse to pick one. Not a secret.
   "account_id": "625555aab5f95dd0bbbfbed8e3a3e107",
-  "main": ".open-next/worker.js",
+  // Wraps OpenNext's generated handler to add the alerts cron and Durable Object
+  "main": "worker/index.ts",
   "compatibility_date": "2026-07-21",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
@@ -15,5 +16,32 @@
   // are visible in the dashboard after the fact, not only via a live `wrangler tail`.
   "observability": {
     "enabled": true,
+  },
+  // Price scanner: reads prices from photos
+  "ai": {
+    "binding": "AI",
+  },
+  // Price scanner abuse guard, per visitor IP, counted per Cloudflare location
+  "ratelimits": [
+    {
+      "name": "SCAN_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 5, "period": 60 },
+    },
+  ],
+  // Rate alerts: one SQLite-backed Durable Object holds every alert
+  "durable_objects": {
+    "bindings": [{ "name": "ALERTS", "class_name": "AlertStore" }],
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["AlertStore"] }],
+  // Hourly alert check. Upstream rates publish daily, so hourly is plenty.
+  "triggers": {
+    "crons": ["15 * * * *"],
+  },
+  // Web Push (VAPID). The public key is public by design. The private key is a
+  // secret: `wrangler secret put VAPID_PRIVATE_KEY`, and .dev.vars locally.
+  "vars": {
+    "VAPID_PUBLIC_KEY": "BBm_469i9zArT0AuOBsFOGOJkryLM04vSzPulCczT-jyKqQQNSo5J1xKDcqorW-_cSaW5IX1fzRDY22Mhrqpprw",
+    "VAPID_SUBJECT": "https://zento.haikalakif.com",
   },
 }

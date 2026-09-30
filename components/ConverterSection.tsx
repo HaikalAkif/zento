@@ -10,6 +10,7 @@ import MultiCurrencyResults from './MultiCurrencyResults';
 import RecentPairs from './RecentPairs';
 import VantaGlobe from './VantaGlobe';
 import CommandBar from './CommandBar';
+import PriceScanner from './PriceScanner';
 import TimeMachine from './TimeMachine';
 import CurrencyGlobe from './CurrencyGlobe';
 import { useConversionHistory } from '@/hooks/useConversionHistory';
@@ -154,6 +155,14 @@ export default function ConverterSection({
       amount={amount}
       localCurrency={localCurrency}
       onApply={handleCommand}
+      trailing={
+        <PriceScanner
+          from={fromCurrency}
+          to={toCurrency}
+          localCurrency={localCurrency}
+          onApply={handleCommand}
+        />
+      }
     />
   );
 

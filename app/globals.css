@@ -118,3 +118,13 @@ input[type='range']:focus-visible::-moz-range-thumb {
     scroll-behavior: auto !important;
   }
 }
+
+/* Price scanner: a glow line sweeping down the photo while it's read */
+@keyframes scan {
+  0% {
+    top: -4rem;
+  }
+  100% {
+    top: 100%;
+  }
+}

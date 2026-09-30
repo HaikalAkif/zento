@@ -50,7 +50,12 @@ ${pairLines}
 ## Structured Data (Schema.org)
 
 - Home: WebSite, WebApplication, FinancialService, Organization
-- Pair pages: BreadcrumbList, FAQPage (5 Q&As), HowTo (4 steps), FinancialService
+- Pair pages: BreadcrumbList, FAQPage (up to 8 Q&As with live figures), HowTo (4 steps), FinancialService
+
+## MCP Server
+
+AI assistants can query live data directly: ${APP_URL}/mcp (Model Context Protocol, Streamable HTTP, no auth).
+Tools: convert, get_rates, rate_history, rate_on_date, list_currencies.
 
 ## Intended Use for AI Systems
 

@@ -155,6 +155,10 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
       }
     };
 
+    // Only render while on screen. Scrolled past, the globe costs nothing.
+    let visible = true;
+    let running = false;
+
     (async () => {
       const { default: createGlobe } = await import('cobe');
       if (cancelled) return;
@@ -180,22 +184,37 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
         markerElevation: ELEVATION,
       });
 
-      const loop = () => {
-        const target = focusRef.current && CURRENCY_LOCATIONS[focusRef.current];
-        if (target) {
-          // Ease round to the currency being hovered in the list, the short way
-          let delta = phiFacing(target[1]) - phi;
-          delta = Math.atan2(Math.sin(delta), Math.cos(delta));
-          phi += reduced ? delta : delta * 0.08;
-        } else if (!dragging && !hovering && !reduced) {
-          phi += SPIN;
-        }
-        globe!.update({ phi, theta });
-        place();
-        frame = requestAnimationFrame(loop);
-      };
-      loop();
+      start();
     })();
+
+    function loop() {
+      if (!visible || !globe) {
+        running = false;
+        return;
+      }
+      const target = focusRef.current && CURRENCY_LOCATIONS[focusRef.current];
+      if (target) {
+        // Ease round to the currency being hovered in the list, the short way
+        let delta = phiFacing(target[1]) - phi;
+        delta = Math.atan2(Math.sin(delta), Math.cos(delta));
+        phi += reduced ? delta : delta * 0.08;
+      } else if (!dragging && !hovering && !reduced) {
+        phi += SPIN;
+      }
+      globe.update({ phi, theta });
+      place();
+      frame = requestAnimationFrame(loop);
+    }
+    function start() {
+      if (running) return;
+      running = true;
+      loop();
+    }
+    const visibility = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible) start();
+    });
+    visibility.observe(wrap);
 
     const onDown = (e: PointerEvent) => {
       dragging = { x: e.clientX, y: e.clientY, phi, theta };
@@ -239,6 +258,7 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
     return () => {
       cancelled = true;
       cancelAnimationFrame(frame);
+      visibility.disconnect();
       ro.disconnect();
       globe?.destroy();
       host.replaceChildren();

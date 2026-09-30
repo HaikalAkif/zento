@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { SparklesIcon } from '@heroicons/react/24/outline';
 import { parseCommand, resolveCommand } from '@/lib/command';
 import { getCurrency } from '@/lib/currencies';
@@ -15,6 +15,8 @@ interface Props {
   amount: string;
   localCurrency: string;
   onApply: (from: string, to: string, amount: string) => void;
+  /** Extra controls on the right of the bar, e.g. the price scanner */
+  trailing?: ReactNode;
 }
 
 const STATIC_PLACEHOLDER = 'Try "150 euro in ringgit"';
@@ -37,7 +39,7 @@ function money(code: string, value: number): string {
   return `${symbol}${formatAmount(value)} ${code}`;
 }
 
-export default function CommandBar({ from, to, amount, localCurrency, onApply }: Props) {
+export default function CommandBar({ from, to, amount, localCurrency, onApply, trailing }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState('');
   const [focused, setFocused] = useState(false);
@@ -147,6 +149,7 @@ export default function CommandBar({ from, to, amount, localCurrency, onApply }:
             </span>
           )}
         </div>
+        {trailing}
         {resolved && value.trim() ? (
           <button
             type="submit"

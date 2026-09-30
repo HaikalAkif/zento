@@ -6,6 +6,7 @@ import {
   ClipboardDocumentIcon,
   CheckIcon,
   ArrowUpRightIcon,
+  BellIcon,
 } from '@heroicons/react/24/outline';
 import { useCurrencyRate } from '@/hooks/useCurrencyRate';
 import { useRateChange } from '@/hooks/useRateChange';
@@ -13,6 +14,7 @@ import { getCurrency } from '@/lib/currencies';
 import type { RateResponse } from '@/lib/api';
 import CurrencySelect from './CurrencySelect';
 import AnimatedNumber from './AnimatedNumber';
+import RateAlert from './RateAlert';
 
 const QUICK_AMOUNTS = [10, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
 const SLIDER_MIN = QUICK_AMOUNTS[0];
@@ -71,6 +73,7 @@ export default function CurrencyConverter({
 }: Props) {
   const [copied, setCopied] = useState(false);
   const [shared, setShared] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
 
   const { data, isLoading, isError } = useCurrencyRate(fromCurrency, toCurrency, seedRates);
   const { data: change } = useRateChange(fromCurrency, toCurrency);
@@ -284,8 +287,34 @@ export default function CurrencyConverter({
             )}
             {shared ? 'Copied!' : 'Share'}
           </button>
+          <div className="w-px shrink-0 bg-slate-700/80" />
+          <button
+            type="button"
+            onClick={() => setAlertOpen((o) => !o)}
+            disabled={isSame || !rate}
+            aria-expanded={alertOpen}
+            className={`flex items-center gap-2 px-5 py-2.5 text-xs font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 ${
+              alertOpen
+                ? 'bg-amber-500/15 text-amber-300'
+                : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+            }`}
+            aria-label="Set a rate alert for this pair"
+          >
+            <BellIcon className="h-3.5 w-3.5 shrink-0" />
+            Alert
+          </button>
         </div>
       </div>
+
+      {alertOpen && !isSame && rate > 0 && (
+        // Keyed on the pair so switching currencies resets the suggested threshold
+        <RateAlert
+          key={`${fromCurrency}-${toCurrency}`}
+          base={fromCurrency}
+          target={toCurrency}
+          rate={rate}
+        />
+      )}
 
       {/* ── Last updated ── */}
       {data && !isSame && (

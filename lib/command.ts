@@ -252,3 +252,10 @@ export function resolveCommand(
   if (to === from) to = from === localCurrency ? (from === 'USD' ? 'EUR' : 'USD') : localCurrency;
   return { from, to, amount: parsed.amount ?? current.amount, splitBy: parsed.splitBy };
 }
+
+/** A currency from a symbol, code or name as written ("¥", "RM", "baht"), if we know it. */
+export function currencyFromText(value: string | null | undefined): string | undefined {
+  if (!value) return undefined;
+  const key = value.toLowerCase().normalize('NFKC').trim();
+  return ALIASES.get(key) ?? ALIASES.get(key.replace(/[.\s]+$/, ''));
+}

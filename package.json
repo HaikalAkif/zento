@@ -10,13 +10,15 @@
     "lint": "oxlint",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "type-check": "tsc --noEmit",
+    "type-check": "wrangler types worker/worker-configuration.d.ts > /dev/null && tsc --noEmit && tsc --noEmit -p worker",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "cf-typegen": "wrangler types worker/worker-configuration.d.ts"
   },
   "dependencies": {
+    "@block65/webcrypto-web-push": "^2.0.0",
     "@heroicons/react": "^2.2.0",
+    "@modelcontextprotocol/sdk": "^1.31.0",
     "@opennextjs/cloudflare": "^1.20.7",
     "@tanstack/react-query": "^5.104.0",
     "cobe": "^2.0.1",
@@ -26,7 +28,8 @@
     "react-dom": "19.3.0",
     "recharts": "^3.10.1",
     "three": "^0.186.1",
-    "vanta": "^0.5.24"
+    "vanta": "^0.5.24",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",

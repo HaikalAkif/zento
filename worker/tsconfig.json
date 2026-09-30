@@ -1,0 +1,18 @@
+{
+  // The Worker entry and Durable Object run on workerd, not in a browser, so they're
+  // checked against the Workers runtime types that `wrangler types` generates into
+  // worker-configuration.d.ts, and without the DOM lib the Next app uses.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2024"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    // nodejs_compat provides process.env, which lib/config.ts reads
+    "types": ["node"]
+  },
+  "include": ["./**/*.ts"]
+}

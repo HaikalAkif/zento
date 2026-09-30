@@ -86,3 +86,27 @@ export interface StrengthResponse {
 export function getStrength(base: string): Promise<StrengthResponse> {
   return getJson(`/api/strength?base=${base}`, 'strength data');
 }
+
+export interface ScanItem {
+  label: string;
+  price: number;
+}
+
+export interface ScanResponse {
+  /** ISO code recognised from what was printed, if any */
+  currency: string | null;
+  /** What the model read next to the prices, e.g. "¥" or "RM" */
+  printed: string | null;
+  items: ScanItem[];
+}
+
+export async function scanPrices(image: string): Promise<ScanResponse> {
+  const res = await fetch('/api/scan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error ?? `Scan failed (HTTP ${res.status})`);
+  return data as ScanResponse;
+}
