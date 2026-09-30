@@ -9,8 +9,11 @@ import PopularConversions from './PopularConversions';
 import MultiCurrencyResults from './MultiCurrencyResults';
 import RecentPairs from './RecentPairs';
 import VantaGlobe from './VantaGlobe';
+import CommandBar from './CommandBar';
+import TimeMachine from './TimeMachine';
+import CurrencyGlobe from './CurrencyGlobe';
 import { useConversionHistory } from '@/hooks/useConversionHistory';
-import { CURRENCIES } from '@/lib/currencies';
+import { CURRENCIES, hasHistory, pairHasHistory } from '@/lib/currencies';
 import { PAIR_COOKIE, multiTargetsFor, popularPairsFor } from '@/lib/region';
 import type { RateResponse } from '@/lib/api';
 import { prefersReducedMotion } from '@/lib/motion';
@@ -132,11 +135,30 @@ export default function ConverterSection({
     setToCurrency(fromCurrency);
   }, [fromCurrency, toCurrency]);
 
+  const handleCommand = useCallback((from: string, to: string, value: string) => {
+    setFromCurrency(from);
+    setToCurrency(to);
+    setAmount(value);
+  }, []);
+
   const handleSelect = useCallback((from: string, to: string) => {
     setFromCurrency(from);
     setToCurrency(to);
     window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
   }, []);
+
+  const commandBar = (
+    <CommandBar
+      from={fromCurrency}
+      to={toCurrency}
+      amount={amount}
+      localCurrency={localCurrency}
+      onApply={handleCommand}
+    />
+  );
+
+  // The globe compares year-on-year ECB rates, so it needs an ECB currency as home
+  const globeBase = hasHistory(localCurrency) ? localCurrency : 'USD';
 
   const converterCard = (
     <div className="mx-auto w-full max-w-2xl rounded-2xl border border-slate-800/50 bg-slate-900/70 p-6 shadow-2xl backdrop-blur-md sm:p-8">
@@ -160,12 +182,16 @@ export default function ConverterSection({
       {fromCurrency !== toCurrency && (
         <RateTrendChart fromCurrency={fromCurrency} toCurrency={toCurrency} />
       )}
+      {pairHasHistory(fromCurrency, toCurrency) && (
+        <TimeMachine fromCurrency={fromCurrency} toCurrency={toCurrency} amount={amount} />
+      )}
       <MultiCurrencyResults
         fromCurrency={fromCurrency}
         amount={amount}
         targets={multiTargets}
         onSelect={handleSelect}
       />
+      <CurrencyGlobe base={globeBase} onSelect={handleSelect} />
     </div>
   );
 
@@ -186,7 +212,8 @@ export default function ConverterSection({
         <section className="relative flex min-h-dvh flex-col items-center justify-center px-4 pt-20 pb-16 sm:px-6 sm:py-24">
           <VantaGlobe />
           <div className="pointer-events-none absolute inset-0 -z-5 bg-linear-to-b from-slate-950/75 to-slate-950/95" />
-          <div className="mb-6 text-center sm:mb-10">{heroInner}</div>
+          <div className="mb-6 text-center sm:mb-8">{heroInner}</div>
+          {commandBar}
           {converterCard}
         </section>
         {belowFold}
@@ -196,7 +223,10 @@ export default function ConverterSection({
 
   return (
     <div className="pt-20 pb-4">
-      <div className="mx-auto mb-8 max-w-2xl px-4 sm:px-6">{converterCard}</div>
+      <div className="mx-auto mb-8 max-w-2xl px-4 sm:px-6">
+        {commandBar}
+        {converterCard}
+      </div>
       {belowFold}
     </div>
   );

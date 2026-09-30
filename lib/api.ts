@@ -42,3 +42,47 @@ export async function getHistoricalRates(
   if (!res.ok) throw new Error(`Chart data unavailable (HTTP ${res.status})`);
   return res.json();
 }
+
+async function getJson<T>(url: string, what: string): Promise<T> {
+  const res = await fetch(url);
+  if (res.status === 429) throw new Error('Rate limited, try again in a moment');
+  if (res.status === 404) throw new Error(`No ${what} published for this selection`);
+  if (!res.ok) throw new Error(`${what} unavailable (HTTP ${res.status})`);
+  return res.json();
+}
+
+export interface TimeMachineResponse {
+  base: string;
+  target: string;
+  then: { date: string; rate: number };
+  now: { date: string; rate: number };
+}
+
+export function getTimeMachine(
+  base: string,
+  target: string,
+  date: string,
+): Promise<TimeMachineResponse> {
+  return getJson(`/api/time-machine?base=${base}&target=${target}&date=${date}`, 'ECB rate');
+}
+
+export interface StrengthEntry {
+  code: string;
+  /** Units of `code` one unit of base buys today */
+  now: number;
+  /** ...and a year ago */
+  then: number;
+  /** Positive: base buys more of `code` than a year ago, i.e. your money goes further there */
+  changePct: number;
+}
+
+export interface StrengthResponse {
+  base: string;
+  date: string;
+  since: string;
+  entries: StrengthEntry[];
+}
+
+export function getStrength(base: string): Promise<StrengthResponse> {
+  return getJson(`/api/strength?base=${base}`, 'strength data');
+}

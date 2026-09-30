@@ -120,6 +120,21 @@ export default async function PairPage({ params }: Props) {
           },
         ]
       : []),
+    ...(snapshot?.past?.length
+      ? [
+          {
+            q: `What was the ${parsed.from} to ${parsed.to} rate in the past?`,
+            a: `${snapshot.past
+              .map(
+                (p) =>
+                  `${p.years} ${p.years === 1 ? 'year' : 'years'} ago (${formatDate(p.date)}), 1 ${parsed.from} was ${formatRate(p.rate)} ${parsed.to}`,
+              )
+              .join(
+                '. ',
+              )}. Today it is ${formatRate(snapshot.rate)} ${parsed.to}. Figures are European Central Bank reference rates.`,
+          },
+        ]
+      : []),
     {
       q: `How do I convert ${from?.name ?? parsed.from} to ${to?.name ?? parsed.to}?`,
       a: `Enter any amount in the converter above and select ${parsed.from} as source and ${parsed.to} as target. The result updates instantly. You can also use the slider to quickly select common amounts between 10 and 10,000.`,

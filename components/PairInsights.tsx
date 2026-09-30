@@ -66,7 +66,7 @@ function changeLabel(stats: RangeStats): { value: string; tone?: 'up' | 'down' }
 }
 
 export default function PairInsights({ snapshot }: Props) {
-  const { from, to, rate, inverse, date, month, year } = snapshot;
+  const { from, to, rate, inverse, date, month, year, past } = snapshot;
   const fromCur = getCurrency(from);
   const toCur = getCurrency(to);
   const monthChange = month && changeLabel(month);
@@ -102,6 +102,40 @@ export default function PairInsights({ snapshot }: Props) {
             <StatTile label="1-year high" value={formatRate(year.high)} />
             <StatTile label="1-year low" value={formatRate(year.low)} />
           </dl>
+        )}
+
+        {past && past.length > 0 && (
+          <div className="mt-6">
+            <h3 className="mb-3 text-sm font-semibold text-slate-200">
+              {from} to {to} in the past
+            </h3>
+            <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+              {past.map((p) => {
+                const change = (rate / p.rate - 1) * 100;
+                return (
+                  <li
+                    key={p.years}
+                    className="rounded-xl border border-slate-700/60 bg-slate-800/50 p-4"
+                  >
+                    <p className="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+                      {p.years} {p.years === 1 ? 'year' : 'years'} ago
+                    </p>
+                    <p className="mt-1 text-sm text-slate-200 tabular-nums">
+                      1 {from} = <strong className="text-slate-50">{formatRate(p.rate)}</strong>{' '}
+                      {to}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-slate-400 tabular-nums">
+                      <time dateTime={p.date}>{formatDate(p.date)}</time> ·{' '}
+                      <span className={change >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                        {change > 0 ? '+' : ''}
+                        {change.toFixed(1)}% since
+                      </span>
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         )}
       </section>
 

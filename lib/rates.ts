@@ -9,6 +9,9 @@
 
 import { APP_URL } from './config';
 import { pairHasHistory } from './currencies';
+import { ECB_START, yearsAgo } from './dates';
+
+export { ECB_START, yearsAgo };
 
 const ER_API = 'https://open.er-api.com/v6/latest';
 // Canonical host. api.frankfurter.app 301s here, costing a redirect on every call.
@@ -217,6 +220,8 @@ export interface PairSnapshot {
   /** ECB-backed pairs only */
   month?: RangeStats;
   year?: RangeStats;
+  /** ECB rate on the same day 1, 5 and 10 years ago. ECB-backed pairs only. */
+  past?: { years: number; date: string; rate: number }[];
 }
 
 function rangeStats(points: HistoryPoint[]): RangeStats | undefined {
@@ -254,6 +259,41 @@ export async function getPairSnapshot(from: string, to: string): Promise<PairSna
     } catch {
       // Stats are a bonus. The live rate alone is still worth rendering.
     }
+    const past = await Promise.all(
+      [1, 5, 10].map(async (years) => {
+        try {
+          const table = await getEcbTable(from, yearsAgo(years));
+          const pastRate = table.rates[to];
+          return pastRate == null ? null : { years, date: table.date, rate: pastRate };
+        } catch {
+          return null;
+        }
+      }),
+    );
+    snapshot.past = past.filter((p) => p != null);
   }
   return snapshot;
+}
+
+// ── ECB snapshots by date ────────────────────────────────────────────────────
+
+/**
+ * All ECB rates for `base` on `date` ('latest' for the newest publication). A weekend
+ * or holiday resolves to the previous business day; the returned `date` says which.
+ * Past dates never change, so they're cached for a month.
+ */
+export function getEcbTable(base: string, date: string | 'latest'): Promise<RateTable> {
+  const ttl = date === 'latest' ? LATEST_TTL : 30 * 24 * 60 * 60;
+  return cached(`ecb/${base}/${date}`, ttl, async () => {
+    let res: Response;
+    try {
+      res = await fetch(`${FRANKFURTER}/${date}?base=${base}`);
+    } catch {
+      throw new UpstreamError(502, 'Failed to fetch ECB rates');
+    }
+    if (res.status === 429) throw new UpstreamError(429, 'Rate limited');
+    if (!res.ok) throw new UpstreamError(502, `Upstream error: HTTP ${res.status}`);
+    const data: { base: string; date: string; rates: Record<string, number> } = await res.json();
+    return { base: data.base, date: data.date, rates: data.rates };
+  });
 }

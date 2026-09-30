@@ -4,7 +4,10 @@ A fast, minimal currency converter with live exchange rates, built with Next.js 
 
 ## Features
 
+- **Command bar**: type `150 euro in ringgit`, `¥30k to sgd` or `hotel ¥45,000 split 3 ways`. Parsed locally, no AI call. Focus with `/` or ⌘K
 - **Region-aware defaults**: first-time visitors start on USD → their own currency (Cloudflare geo); returning visitors get their last pair
+- **Money time machine**: what an amount bought 1–27 years ago vs today, from ECB rates back to 1999
+- **Currency globe**: an interactive WebGL globe (cobe) showing where your money goes further than a year ago
 - Live rates via [open.er-api.com](https://www.exchangerate-api.com/docs/free) (free, no key) with [Frankfurter](https://frankfurter.dev/) (ECB data) as fallback
 - Historical charts and 24h change from Frankfurter, for the ~30 currencies the ECB publishes
 - Searchable currency dropdowns with keyboard navigation
@@ -30,18 +33,21 @@ A fast, minimal currency converter with live exchange rates, built with Next.js 
 | Smooth scroll   | Lenis v1                                        |
 | Language        | TypeScript 7                                    |
 | Lint / format   | oxlint + oxfmt                                  |
+| Globe           | cobe (WebGL)                                    |
 | Package manager | pnpm 12 (pinned via `packageManager`)           |
 
 ## Architecture
 
-The browser never calls the rate providers directly. All data goes through two route handlers:
+The browser never calls the rate providers directly. All data goes through route handlers:
 
 - `GET /api/rates?base=USD&symbols=MYR,EUR`: latest rates (open.er-api.com, Frankfurter fallback)
 - `GET /api/historical?base=USD&target=MYR&days=30`: daily history (Frankfurter)
+- `GET /api/time-machine?base=USD&target=MYR&date=2015-09-30`: ECB rate on a past date and today
+- `GET /api/strength?base=MYR`: how far `base` goes in each ECB currency vs a year ago
 
 Upstream data lives in `lib/rates.ts`, cached in two tiers: in memory per Worker isolate, then the Workers Cache API per data centre. Next's `fetch` data cache is a no-op on Cloudflare unless an OpenNext `incrementalCache` override is configured, so it is not relied on.
 
-Pages are rendered per request. The home page reads the visitor's country (`lib/region-server.ts`) to pick a default pair. Pair pages put the live rate, conversion tables, 30-day / 1-year stats into the HTML, and seed the client converter with the same numbers.
+Pages are rendered per request. The home page reads the visitor's country (`lib/region-server.ts`) to pick a default pair. Pair pages put the live rate, conversion tables, 30-day / 1-year stats and past rates into the HTML, and seed the client converter with the same numbers.
 
 ## Getting Started
 
