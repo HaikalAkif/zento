@@ -3,6 +3,7 @@
 //   "hotel ¥45,000 split 3 ways" · "usd/jpy" · "in yen"
 
 import { CURRENCIES } from './currencies';
+import { countryCurrencies } from './region';
 
 export interface ParsedCommand {
   /** Undefined when the query names no source currency ("in yen") */
@@ -98,9 +99,6 @@ const MANUAL_ALIASES: Record<string, string> = {
   rubles: 'RUB',
   rouble: 'RUB',
   '₽': 'RUB',
-  shekel: 'ILS',
-  shekels: 'ILS',
-  '₪': 'ILS',
   zloty: 'PLN',
   zł: 'PLN',
   krona: 'SEK',
@@ -108,6 +106,16 @@ const MANUAL_ALIASES: Record<string, string> = {
   krone: 'NOK',
   kroner: 'NOK',
   forint: 'HUF',
+  // Country shorthands Intl.DisplayNames doesn't produce
+  usa: 'USD',
+  america: 'USD',
+  uk: 'GBP',
+  britain: 'GBP',
+  england: 'GBP',
+  uae: 'AED',
+  korea: 'KRW',
+  europe: 'EUR',
+  eurozone: 'EUR',
   koruna: 'CZK',
 };
 
@@ -144,6 +152,17 @@ function buildAliases(): Map<string, string> {
   for (const [word, owners] of lastWordOwners) {
     if (owners.size === 1 && !aliases.has(word)) aliases.set(word, [...owners][0]);
   }
+  // Country names, so "100 euro to argentina" works. Names come from the runtime's own
+  // locale data rather than a hand-kept list; currency names above win any clash.
+  try {
+    const names = new Intl.DisplayNames(['en'], { type: 'region' });
+    for (const [country, code] of countryCurrencies()) {
+      const name = names.of(country)?.toLowerCase();
+      if (name && name !== country.toLowerCase() && !aliases.has(name)) aliases.set(name, code);
+    }
+  } catch {
+    // No Intl.DisplayNames: country names just don't parse
+  }
   for (const [alias, code] of Object.entries(MANUAL_ALIASES)) aliases.set(alias, code);
   return aliases;
 }
@@ -178,8 +197,9 @@ const MULTIPLIERS: Record<string, number> = {
   billion: 1e9,
 };
 
+// The multiplier must end the word, so "100euro" is 100 of something, not 100 million
 const AMOUNT_RE =
-  /(\d[\d,]*(?:\.\d+)?|\.\d+)\s*(thousand|million|billion|grand|mil|mn|bn|k|m|b)?\b/;
+  /(\d[\d,]*(?:\.\d+)?|\.\d+)(?:\s*(thousand|million|billion|grand|mil|mn|bn|k|m|b)(?!\p{L}))?/u;
 const SPLIT_RE =
   /\b(?:split|divided?)\s*(?:by|between|among|in(?:to)?)?\s*(\d+)(?:\s*ways?)?|\bfor\s+(\d+)\s*(?:people|persons|pax|of us)\b|\/\s*(\d+)\s*(?:ways?|people)\b/;
 const CONNECTOR_RE = /\s(?:in|to|into|as|=|->|→)\s|\s(?:in|to|into)$/;

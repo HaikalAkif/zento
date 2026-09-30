@@ -54,7 +54,6 @@ export const CURRENCIES: Currency[] = [
   { code: 'BHD', name: 'Bahraini Dinar', symbol: 'BD', flag: '🇧🇭' },
   { code: 'OMR', name: 'Omani Rial', symbol: 'ر.ع', flag: '🇴🇲' },
   { code: 'JOD', name: 'Jordanian Dinar', symbol: 'JD', flag: '🇯🇴' },
-  { code: 'ILS', name: 'Israeli Shekel', symbol: '₪', flag: '🇮🇱' },
   { code: 'IQD', name: 'Iraqi Dinar', symbol: 'ع.د', flag: '🇮🇶' },
   { code: 'IRR', name: 'Iranian Rial', symbol: '﷼', flag: '🇮🇷' },
   { code: 'LBP', name: 'Lebanese Pound', symbol: '£', flag: '🇱🇧' },
@@ -175,7 +174,7 @@ export const CURRENCIES: Currency[] = [
 export const getCurrency = (code: string): Currency | undefined =>
   CURRENCIES.find((c) => c.code === code);
 
-// Historical rates come from the ECB via Frankfurter, which only publishes these 30.
+// Historical rates come from the ECB via Frankfurter, which publishes these (the ECB's list, minus any Zento doesn't support).
 // The other ~120 currencies have live rates but no chart and no 24h change. Asking
 // for them returns 404 upstream, so callers must check before requesting.
 const HISTORY_CURRENCIES = new Set([
@@ -191,7 +190,6 @@ const HISTORY_CURRENCIES = new Set([
   'HKD',
   'HUF',
   'IDR',
-  'ILS',
   'INR',
   'ISK',
   'JPY',

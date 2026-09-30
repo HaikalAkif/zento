@@ -179,8 +179,6 @@ const COUNTRY_CURRENCY: Record<string, string> = {
   BH: 'BHD',
   OM: 'OMR',
   JO: 'JOD',
-  IL: 'ILS',
-  PS: 'ILS',
   IQ: 'IQD',
   IR: 'IRR',
   LB: 'LBP',
@@ -245,6 +243,11 @@ const COUNTRY_CURRENCY: Record<string, string> = {
 };
 
 export const FALLBACK_CURRENCY = 'USD';
+
+/** Every [country, currency] pair Zento supports, e.g. ["AR", "ARS"]. */
+export function countryCurrencies(): [string, string][] {
+  return Object.entries(COUNTRY_CURRENCY).filter(([, code]) => getCurrency(code));
+}
 
 export function currencyForCountry(country: string | null | undefined): string | undefined {
   if (!country) return undefined;

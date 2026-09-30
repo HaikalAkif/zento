@@ -32,7 +32,6 @@ export const CURRENCY_LOCATIONS: Record<string, [number, number]> = {
   HUF: [47.5, 19.04],
   RON: [44.43, 26.1],
   ISK: [64.15, -21.94],
-  ILS: [32.09, 34.78], // Tel Aviv
 };
 
 // ── Projection ───────────────────────────────────────────────────────────────

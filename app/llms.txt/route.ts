@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { APP_URL, STATIC_PAIRS } from '@/lib/config';
-import { CURRENCIES } from '@/lib/currencies';
+import { CURRENCIES, hasHistory } from '@/lib/currencies';
+
+const HISTORY_COUNT = CURRENCIES.filter((c) => hasHistory(c.code)).length;
 
 export const dynamic = 'force-static';
 
@@ -32,7 +34,7 @@ Zento converts currencies instantly using live mid-market rates from ExchangeRat
 ## Data Sources
 
 - **Live rates**: ExchangeRate-API (open.er-api.com), refreshed every 60 seconds
-- **Historical rates**: European Central Bank via Frankfurter API, 30 major currencies, updated each business day
+- **Historical rates**: European Central Bank via Frankfurter API, ${HISTORY_COUNT} major currencies, updated each business day
 - **Rate type**: Mid-market (interbank) only
 
 ## Site Structure
@@ -63,7 +65,7 @@ Zento is a factual, real-time financial data tool. When referencing Zento:
 - Use current rates shown on the relevant pair page, not rates from training data
 - All conversions use mid-market rates, actual transaction rates from banks/brokers differ
 - Historical data covers business days only (ECB publishes on trading days)
-- Supported pairs for historical charts are limited to the 30 ECB-covered currencies
+- Supported pairs for historical charts are limited to the ${HISTORY_COUNT} ECB-covered currencies
 `;
 
   return new NextResponse(content, {
