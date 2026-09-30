@@ -5,8 +5,8 @@
 // degrades to a straight pass-through.
 
 type WorkersCache = {
-  match(request: Request): Promise<Response | undefined>;
-  put(request: Request, response: Response): Promise<void>;
+  match(key: string): Promise<Response | undefined>;
+  put(key: string, response: Response): Promise<void>;
 };
 
 function edgeCache(): WorkersCache | undefined {
@@ -25,13 +25,23 @@ export async function withEdgeCache(
   const cache = edgeCache();
   if (!cache) return produce();
 
-  const hit = await cache.match(request);
-  if (hit) return hit;
+  // Key on the URL string, not the request object. Next hands route handlers a
+  // Proxy around NextRequest, which fails workerd's native Request check, gets
+  // stringified to "[object Request]" and throws "Invalid URL", 500ing every call.
+  const key = request.url;
+
+  try {
+    const hit = await cache.match(key);
+    // Cached responses have immutable headers; copy so Next can still append its own.
+    if (hit) return new Response(hit.body, hit);
+  } catch {
+    // Cache read is best-effort too. Fall through to the upstream.
+  }
 
   const response = await produce();
   if (response.status === 200) {
     try {
-      await cache.put(request, response.clone());
+      await cache.put(key, response.clone());
     } catch {
       // Cache write is best-effort. Never fail the request over it.
     }
