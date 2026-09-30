@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: `Free live currency converter with mid-market rates for ${CURRENCIES.length} currencies.`,
     start_url: '/',
     display: 'standalone',
-    background_color: '#f2eee3',
-    theme_color: '#0e5a43',
+    background_color: '#0d110f',
+    theme_color: '#0d110f',
     // TODO: add real 192x192 and 512x512 maskable PNGs. favicon.png is 240x240 and has
     // no maskable safe zone, so declaring those sizes here would just get it cropped.
     icons: [{ src: '/favicon.png', sizes: '240x240', type: 'image/png', purpose: 'any' }],

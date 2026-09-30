@@ -1,15 +1,13 @@
 import { ImageResponse } from 'next/og';
-import { CURRENCIES } from '@/lib/currencies';
 
-export const alt = 'Zento: free currency converter with live mid-market rates';
+export const alt = 'Zento: type an amount, get the conversion';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-// Same paper, ink and banknote green as the site and the pair share images
-const PAPER = '#f2eee3';
-const INK = '#16150f';
-const INK_2 = '#57534a';
-const GREEN = '#0e5a43';
+const PAPER = '#0d110f';
+const INK = '#ece7da';
+const INK_3 = '#8d897d';
+const ACCENT = '#7fd1a8';
 
 export default function OgImage() {
   return new ImageResponse(
@@ -19,65 +17,30 @@ export default function OgImage() {
         width: '100%',
         height: '100%',
         display: 'flex',
-        position: 'relative',
-        padding: '64px 72px',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        padding: '72px 80px',
         fontFamily: 'sans-serif',
         color: INK,
       }}
     >
-      {[520, 470, 420, 300, 250].map((d, i) => (
-        <div
-          key={d}
-          style={{
-            position: 'absolute',
-            right: -130 + (520 - d) / 2,
-            top: 55 + (520 - d) / 2,
-            width: d,
-            height: d,
-            borderRadius: d / 2,
-            border: `${i === 0 || i === 3 ? 2 : 1}px solid rgba(14,90,67,${i === 0 ? 0.5 : 0.25})`,
-          }}
-        />
-      ))}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          width: '100%',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-          <span style={{ fontSize: 40, fontWeight: 600, letterSpacing: -1 }}>Zento</span>
-          <span style={{ fontSize: 16, color: INK_2, letterSpacing: 4 }}>FX</span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div
-            style={{
-              display: 'flex',
-              fontSize: 104,
-              fontWeight: 600,
-              letterSpacing: -4,
-              lineHeight: 1,
-            }}
-          >
-            <span>Currency,&nbsp;</span>
-            <span style={{ color: GREEN }}>converted.</span>
-          </div>
-          <div style={{ fontSize: 30, color: INK_2, marginTop: 22 }}>
-            {`Live mid-market rates for ${CURRENCIES.length} currencies`}
-          </div>
-        </div>
+      <div style={{ fontSize: 34, fontWeight: 500, letterSpacing: -1 }}>zento</div>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ fontSize: 40, color: INK_3 }}>150 euro in ringgit</div>
         <div
           style={{
-            display: 'flex',
-            fontSize: 22,
-            color: INK_2,
-            borderTop: '1px solid rgba(22,21,15,0.2)',
-            paddingTop: 20,
+            fontSize: 150,
+            fontWeight: 300,
+            letterSpacing: -7,
+            color: ACCENT,
+            lineHeight: 1,
+            marginTop: 20,
           }}
         >
-          Free · no account · no ads
+          694.54
+        </div>
+        <div style={{ fontSize: 32, color: INK_3, marginTop: 24 }}>
+          Type an amount. Get the live mid-market conversion.
         </div>
       </div>
     </div>,

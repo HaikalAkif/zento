@@ -22,7 +22,7 @@ export default async function HomePage({ searchParams }: Props) {
   return (
     <main>
       <ConverterSection
-        heroMode
+        heading="Currency converter"
         initialFrom={from}
         initialTo={to}
         initialAmount={parseAmount(amount, defaultAmount(seedRates?.rates[to]))}

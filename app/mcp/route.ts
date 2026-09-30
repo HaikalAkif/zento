@@ -193,15 +193,25 @@ function buildServer(): McpServer {
 }
 
 async function handle(request: Request): Promise<Response> {
-  const server = buildServer();
-  const transport = new WebStandardStreamableHTTPServerTransport({
-    sessionIdGenerator: undefined,
-    enableJsonResponse: true,
-  });
-  await server.connect(transport);
-  const response = await transport.handleRequest(request);
-  response.headers.set('Cache-Control', 'no-store');
-  return response;
+  try {
+    const server = buildServer();
+    const transport = new WebStandardStreamableHTTPServerTransport({
+      sessionIdGenerator: undefined,
+      enableJsonResponse: true,
+    });
+    await server.connect(transport);
+    const response = await transport.handleRequest(request);
+    response.headers.set('Cache-Control', 'no-store');
+    return response;
+  } catch (err) {
+    // Tool errors are already returned as results; this is the transport itself failing.
+    // Answer in JSON-RPC so MCP clients can show something better than a bare 500.
+    console.error('MCP request failed', err);
+    return Response.json(
+      { jsonrpc: '2.0', id: null, error: { code: -32603, message: 'Internal error' } },
+      { status: 500, headers: { 'Cache-Control': 'no-store' } },
+    );
+  }
 }
 
 export { handle as GET, handle as POST, handle as DELETE };

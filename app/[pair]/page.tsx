@@ -227,46 +227,24 @@ export default async function PairPage({ params }: Props) {
     },
   ];
 
-  const heroContent = (
-    <>
-      <p className="t-label text-ink-3">
-        {from?.name ?? parsed.from} to {to?.name ?? parsed.to}
-      </p>
-      <h1 className="mt-3 t-h1 text-ink">
-        {parsed.from} to <span className="text-accent">{parsed.to}</span>
-        <span className="mt-3 block text-base font-normal tracking-normal text-ink-2 sm:text-lg">
-          Live exchange rate
-          {snapshot && (
-            <>
-              {' '}
-              · 1 {parsed.from} = {formatRate(snapshot.rate)} {parsed.to}
-            </>
-          )}
-        </span>
-      </h1>
-    </>
-  );
-
   const details = (
-    <div className="space-y-12">
+    <div className="space-y-16">
       {snapshot && <PairInsights snapshot={snapshot} />}
 
       {/* Visible FAQ: content must match FAQPage schema for AEO */}
       <div>
-        <h3 className="mb-3 t-h3 text-ink">
-          {parsed.from} to {parsed.to} questions
-        </h3>
-        <div className="divide-y divide-line border-y border-line-strong">
+        <h3 className="mb-2 t-label text-ink-3">Questions</h3>
+        <div className="divide-y divide-line">
           {faqItems.map(({ q, a }) => (
             <details key={q} className="group">
-              <summary className="flex cursor-pointer list-none items-start justify-between gap-4 py-4 text-base text-ink transition-colors hover:text-accent [&::-webkit-details-marker]:hidden">
+              <summary className="flex cursor-pointer list-none items-start justify-between gap-4 py-4 text-[15px] text-ink transition-colors hover:text-accent [&::-webkit-details-marker]:hidden">
                 <span>{q}</span>
                 <PlusIcon
                   aria-hidden="true"
                   className="mt-1 h-4 w-4 shrink-0 text-ink-3 transition-transform duration-200 group-open:rotate-45"
                 />
               </summary>
-              <p className="max-w-2xl pb-5 text-sm leading-relaxed text-ink-2">{a}</p>
+              <p className="pb-5 text-sm leading-relaxed text-ink-2">{a}</p>
             </details>
           ))}
         </div>
@@ -285,7 +263,7 @@ export default async function PairPage({ params }: Props) {
         initialFrom={parsed.from}
         initialTo={parsed.to}
         initialAmount={defaultAmount(snapshot?.rate)}
-        heroContent={heroContent}
+        heading={`${parsed.from} to ${parsed.to} exchange rate`}
         details={details}
         localCurrency={localCurrency}
         seedRates={seedRates}

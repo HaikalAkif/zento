@@ -4,7 +4,7 @@ A fast, minimal currency converter with live exchange rates, built with Next.js 
 
 ## Features
 
-- **Command bar**: type `150 euro in ringgit`, `¥30k to sgd` or `hotel ¥45,000 split 3 ways`. Parsed locally, no AI call. Focus with `/` or ⌘K
+- **Type to convert**: `150 euro in ringgit`, `¥30k to sgd`, `hotel ¥45,000 split 3 ways`, `100 euro to argentina`. Parsed locally, no AI call. Focus with `/` or ⌘K
 - **Region-aware defaults**: first-time visitors start on USD → their own currency (Cloudflare geo); returning visitors get their last pair
 - **Money time machine**: what an amount bought 1–27 years ago vs today, from ECB rates back to 1999
 - **Price scanner**: photograph a menu, price tag or receipt and every price is read and converted (Workers AI vision, Llama 4 Scout)
@@ -41,7 +41,9 @@ A fast, minimal currency converter with live exchange rates, built with Next.js 
 
 ## Design
 
-"Engraved money": warm paper, ink and one banknote green, with a matching dark theme that follows the system setting. All colours are CSS tokens in `app/globals.css`, and a five-level type scale (`t-figure`, `t-h1`, `t-h2`, `t-h3`, `t-label`) in a single family, Geist. Each currency pair gets its own generative guilloche seal (`components/Seal.tsx`). Below the converter, content sits in numbered editorial sections with a sticky index rather than stacked cards.
+Minimal and dark. The converter is a single line you type into: `100`, `150 euro in yen` or `hotel ¥45,000 split 3 ways` are parsed on every keystroke (`lib/command.ts`) and the answer appears below as one large figure. The currency codes under it open a searchable picker. Everything else sits in one narrow column with plain headings.
+
+Colours are CSS tokens in `app/globals.css` (one dark theme; all text levels pass WCAG AA). One type family, Geist. Pair changes update the URL with `history.replaceState` instead of navigating, so the input keeps focus while you type.
 
 ## Architecture
 

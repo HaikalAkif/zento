@@ -279,41 +279,6 @@ export function defaultPairFor(local: string): { from: string; to: string } {
   return local === 'USD' ? { from: 'USD', to: 'EUR' } : { from: 'USD', to: local };
 }
 
-const GLOBAL_MAJORS = ['USD', 'EUR', 'GBP', 'JPY', 'CNY', 'SGD', 'AUD', 'CHF'];
-
-/** Eight pairs centred on the visitor's currency, topped up with global majors. */
-export function popularPairsFor(local: string): { from: string; to: string }[] {
-  const pairs: { from: string; to: string }[] = [];
-  const seen = new Set<string>();
-  const push = (from: string, to: string) => {
-    const key = `${from}-${to}`;
-    if (from === to || seen.has(key)) return;
-    seen.add(key);
-    pairs.push({ from, to });
-  };
-
-  if (local === 'USD') {
-    // Americans mostly convert outward, for travel and imports
-    for (const target of ['EUR', 'GBP', 'JPY', 'CAD', 'MXN', 'CNY']) push('USD', target);
-    push('EUR', 'USD');
-    push('GBP', 'USD');
-  } else {
-    // Their currency against the big ones, both directions for USD
-    push('USD', local);
-    push(local, 'USD');
-    for (const major of GLOBAL_MAJORS) push(major, local);
-  }
-
-  // Then the pairs everyone looks up
-  push('EUR', 'USD');
-  push('USD', 'JPY');
-  push('GBP', 'USD');
-  push('USD', 'CNY');
-  push('EUR', 'GBP');
-
-  return pairs.slice(0, 8);
-}
-
 const MULTI_BASE = ['USD', 'EUR', 'GBP', 'JPY', 'CNY', 'SGD', 'AUD', 'CAD', 'CHF', 'HKD', 'INR'];
 
 /** Ten "what it buys" targets with the visitor's currency first. */

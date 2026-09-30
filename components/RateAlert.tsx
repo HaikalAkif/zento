@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { BellAlertIcon, TrashIcon } from '@heroicons/react/24/outline';
 import type { Alert, AlertDirection } from '@/lib/alerts/types';
 import { formatRate } from '@/lib/format';
 import {
@@ -86,46 +85,49 @@ export default function RateAlert({ base, target, rate }: Props) {
   };
 
   const remove = async (id: string) => {
-    const sub = await existingSubscription();
-    if (!sub) return;
-    await deleteAlert(sub, id).catch(() => {});
-    setAlerts((prev) => prev.filter((a) => a.id !== id));
+    try {
+      const sub = await existingSubscription();
+      if (!sub) throw new Error('This browser is no longer subscribed');
+      await deleteAlert(sub, id);
+      setAlerts((prev) => prev.filter((a) => a.id !== id));
+    } catch (err) {
+      // Keep it in the list: it still exists on the server and would still fire
+      setMessage({
+        tone: 'error',
+        text:
+          err instanceof Error ? `Couldn't delete: ${err.message}` : "Couldn't delete the alert.",
+      });
+    }
   };
 
   return (
-    <div className="mt-5 rounded-xl border border-line-strong bg-paper-2 p-4 text-left">
-      <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-ink">
-        <BellAlertIcon aria-hidden="true" className="h-4 w-4 text-accent" />
-        Rate alert
-      </p>
-
+    <div className="mt-8 text-[15px]">
       {support && support !== 'supported' ? (
-        <p className="text-sm text-ink-2">{SUPPORT_MESSAGE[support]}</p>
+        <p className="text-ink-2">{SUPPORT_MESSAGE[support]}</p>
       ) : (
-        <form onSubmit={submit} className="flex flex-wrap items-center gap-2 text-sm text-ink">
-          <span>Notify me when 1 {base} goes</span>
-          <div
-            role="group"
-            aria-label="Direction"
-            className="inline-flex overflow-hidden rounded-lg border border-line-strong"
-          >
+        <form
+          onSubmit={submit}
+          className="flex flex-wrap items-baseline gap-x-2 gap-y-3 text-ink-2"
+        >
+          <span>Tell me when 1 {base} goes</span>
+          <span role="group" aria-label="Direction" className="inline-flex gap-2">
             {(['above', 'below'] as const).map((d) => (
               <button
                 key={d}
                 type="button"
                 onClick={() => pickDirection(d)}
                 aria-pressed={direction === d}
-                className={`px-2.5 py-1 text-xs font-semibold transition-colors ${
+                className={`transition-colors ${
                   direction === d
-                    ? 'bg-accent/20 text-accent'
-                    : 'bg-paper-2 text-ink-2 hover:text-ink'
+                    ? 'text-ink underline underline-offset-4'
+                    : 'text-ink-3 hover:text-ink-2'
                 }`}
               >
                 {d}
               </button>
             ))}
-          </div>
-          <label className="inline-flex items-center gap-1.5">
+          </span>
+          <label className="inline-flex items-baseline gap-1.5">
             <span className="sr-only">Threshold rate in {target}</span>
             <input
               type="number"
@@ -134,14 +136,14 @@ export default function RateAlert({ base, target, rate }: Props) {
               min="0"
               value={threshold}
               onChange={(e) => setThreshold(e.target.value)}
-              className="w-28 rounded-lg border border-line-strong bg-paper px-2 py-1 text-sm text-ink tabular-nums outline-none focus:border-accent"
+              className="w-24 border-b border-line bg-transparent text-ink tabular-nums"
             />
             <span>{target}</span>
           </label>
           <button
             type="submit"
             disabled={busy}
-            className="ml-auto rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-accent-ink transition-colors hover:opacity-90 disabled:opacity-60"
+            className="text-accent transition-opacity hover:opacity-80 disabled:opacity-50"
           >
             {busy ? 'Setting…' : 'Set alert'}
           </button>
@@ -151,33 +153,33 @@ export default function RateAlert({ base, target, rate }: Props) {
       {message && (
         <p
           role="status"
-          className={`mt-3 text-xs ${message.tone === 'ok' ? 'text-up' : 'text-down'}`}
+          className={`mt-3 t-label ${message.tone === 'ok' ? 'text-up' : 'text-down'}`}
         >
           {message.text}
         </p>
       )}
 
       {alerts.length > 0 && (
-        <ul className="mt-4 space-y-1.5 border-t border-line-strong pt-3">
+        <ul className="mt-5 space-y-1.5 t-label text-ink-3">
           {alerts.map((a) => (
-            <li key={a.id} className="flex items-center justify-between gap-2 text-xs text-ink-2">
-              <span className="tabular-nums">
+            <li key={a.id} className="flex items-baseline gap-4 tabular-nums">
+              <span>
                 1 {a.base} {a.direction} {formatRate(a.threshold)} {a.target}
               </span>
               <button
                 type="button"
                 onClick={() => remove(a.id)}
                 aria-label={`Delete alert for ${a.base} ${a.direction} ${formatRate(a.threshold)} ${a.target}`}
-                className="rounded p-1 text-ink-3 hover:bg-paper-2 hover:text-down"
+                className="text-ink-3 hover:text-down"
               >
-                <TrashIcon className="h-3.5 w-3.5" />
+                Remove
               </button>
             </li>
           ))}
         </ul>
       )}
-      <p className="mt-3 text-[11px] text-ink-3">
-        Checked hourly against the live rate. Each alert fires once, then clears. No account needed.
+      <p className="mt-3 t-label text-ink-3">
+        Checked hourly. Each alert fires once. No account needed.
       </p>
     </div>
   );

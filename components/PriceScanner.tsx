@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { CameraIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { CameraIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { scanPrices, type ScanResponse } from '@/lib/api';
 import { CURRENCIES, getCurrency } from '@/lib/currencies';
 import { formatAmount } from '@/lib/format';
@@ -29,7 +29,7 @@ async function toJpegDataUrl(file: File): Promise<string> {
   return canvas.toDataURL('image/jpeg', 0.82);
 }
 
-function CurrencyPicker({
+function SourceSelect({
   label,
   value,
   onChange,
@@ -44,7 +44,7 @@ function CurrencyPicker({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-lg border border-line-strong bg-paper px-2 py-1 text-sm font-semibold text-ink outline-none focus:border-accent"
+        className="border-b border-line bg-transparent text-sm text-ink"
       >
         {CURRENCIES.map((c) => (
           <option key={c.code} value={c.code}>
@@ -78,11 +78,11 @@ function Results({
 
   return (
     <div>
-      <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-ink">
+      <div className="mb-3 flex flex-wrap items-baseline gap-2 text-sm text-ink-2">
         <span>Prices in</span>
-        <CurrencyPicker label="Currency on the photo" value={source} onChange={onSource} />
+        <SourceSelect label="Currency on the photo" value={source} onChange={onSource} />
         <span>shown in</span>
-        <CurrencyPicker label="Convert into" value={target} onChange={onTarget} />
+        <SourceSelect label="Convert into" value={target} onChange={onTarget} />
       </div>
       {scan.printed && (
         <p className="mb-3 text-xs text-ink-3">
@@ -97,13 +97,13 @@ function Results({
           No prices found. Try a closer, straighter shot with good light.
         </p>
       ) : (
-        <ul className="max-h-[45dvh] divide-y divide-line overflow-y-auto">
+        <ul className="-mx-3 max-h-[45dvh] overflow-y-auto">
           {scan.items.map((item, i) => (
             <li key={`${item.label}-${i}`}>
               <button
                 type="button"
                 onClick={() => onPick(item.price)}
-                className="flex w-full items-center justify-between gap-3 px-1 py-2.5 text-left hover:bg-paper-2"
+                className="flex w-full items-baseline justify-between gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-paper-3"
               >
                 <span className="min-w-0">
                   <span className="block truncate text-sm text-ink">{item.label}</span>
@@ -112,7 +112,7 @@ function Results({
                     {formatAmount(item.price)} {source}
                   </span>
                 </span>
-                <span className="shrink-0 text-sm font-bold text-ink tabular-nums">
+                <span className="shrink-0 text-sm text-accent tabular-nums">
                   {rate != null ? (
                     <>
                       {dst?.symbol}
@@ -187,7 +187,7 @@ export default function PriceScanner({ from, to, localCurrency, onApply }: Props
         onClick={() => inputRef.current?.click()}
         aria-label="Scan prices with your camera"
         title="Scan a menu or price tag"
-        className="shrink-0 rounded-lg p-1.5 text-ink-2 transition-colors hover:bg-paper-2 hover:text-accent"
+        className="shrink-0 p-1 text-ink-3 transition-colors hover:text-ink"
       >
         <CameraIcon className="h-5 w-5" />
       </button>
@@ -209,18 +209,15 @@ export default function PriceScanner({ from, to, localCurrency, onApply }: Props
         ref={dialogRef}
         onClose={reset}
         aria-label="Price scanner"
-        className="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-2xl border border-line-strong bg-paper p-0 text-ink shadow-lift backdrop:bg-ink/40 backdrop:backdrop-blur-sm"
+        className="m-0 mt-auto max-h-[90dvh] w-full max-w-none rounded-t-2xl bg-paper-2 p-0 text-ink backdrop:bg-black/60 sm:m-auto sm:w-[30rem] sm:rounded-2xl"
       >
-        <div className="flex items-center justify-between border-b border-line px-5 py-3">
-          <h2 className="flex items-center gap-2 text-sm font-bold">
-            <CameraIcon aria-hidden="true" className="h-4 w-4 text-accent" />
-            Price scanner
-          </h2>
+        <div className="flex items-center justify-between px-5 pt-4">
+          <h2 className="t-label text-ink-3">Price scanner</h2>
           <button
             type="button"
             onClick={close}
             aria-label="Close scanner"
-            className="rounded-lg p-1 text-ink-2 hover:bg-paper-2 hover:text-ink"
+            className="p-1 text-ink-3 hover:text-ink"
           >
             <XMarkIcon className="h-5 w-5" />
           </button>
@@ -228,14 +225,14 @@ export default function PriceScanner({ from, to, localCurrency, onApply }: Props
 
         <div className="p-5">
           {photo && (
-            <div className="relative mb-4 overflow-hidden rounded-xl border border-line bg-paper">
+            <div className="relative mb-5 overflow-hidden rounded-xl bg-paper">
               {/* oxlint-disable-next-line nextjs/no-img-element -- a local data URL, nothing for next/image to optimise */}
               <img src={photo} alt="What you scanned" className="max-h-56 w-full object-contain" />
               {!scan && !error && (
                 // Sweeping scan line while the model reads the photo
                 <div className="pointer-events-none absolute inset-0">
                   <div className="absolute inset-x-0 h-16 animate-[scan_1.6s_ease-in-out_infinite] bg-linear-to-b from-transparent via-accent/25 to-transparent motion-reduce:hidden" />
-                  <p className="absolute right-0 bottom-2 left-0 text-center text-xs font-semibold text-accent">
+                  <p className="absolute right-0 bottom-2 left-0 text-center text-xs text-ink">
                     Reading prices…
                   </p>
                 </div>
@@ -244,7 +241,7 @@ export default function PriceScanner({ from, to, localCurrency, onApply }: Props
           )}
 
           {error ? (
-            <p role="alert" className="py-4 text-center text-sm text-down">
+            <p role="alert" className="py-4 text-sm text-down">
               {error}
             </p>
           ) : scan ? (
@@ -261,16 +258,15 @@ export default function PriceScanner({ from, to, localCurrency, onApply }: Props
             />
           ) : null}
 
-          <div className="mt-4 flex items-center justify-between gap-3">
-            <p className="text-[11px] text-ink-3">
+          <div className="mt-5 flex items-baseline justify-between gap-4">
+            <p className="t-label text-ink-3">
               Tap a price to open it in the converter. Zento doesn&apos;t keep your photos.
             </p>
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-line-strong px-3 py-1.5 text-xs font-semibold text-ink hover:bg-paper-2"
+              className="shrink-0 t-label text-ink-2 hover:text-ink"
             >
-              <ArrowPathIcon className="h-3.5 w-3.5" />
               New photo
             </button>
           </div>

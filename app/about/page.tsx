@@ -74,17 +74,17 @@ export default function AboutPage() {
   ];
 
   return (
-    <main className="mx-auto max-w-3xl px-4 pt-28 pb-16 sm:px-6">
+    <main className="mx-auto max-w-2xl px-5 pt-28 pb-16 sm:px-6 sm:pt-36">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <p className="t-label text-ink-3">About Zento</p>
-      <h1 className="mt-3 t-h1 text-ink">
-        Money, <span className="text-accent">minus the noise.</span>
-      </h1>
-      <p className="mt-5 text-lg leading-relaxed text-ink-2 sm:text-xl">
+      <h1 className="t-label text-ink-3">About Zento</h1>
+      <p className="mt-2 text-3xl font-medium tracking-tight text-ink">
+        A currency converter, and nothing else.
+      </p>
+      <p className="mt-5 text-[15px] leading-relaxed text-ink-2">
         Zento is a free currency converter. It shows live mid-market exchange rates for{' '}
         {CURRENCIES.length} world currencies, with no sign-up, no ads, and no fees.
       </p>
@@ -153,7 +153,7 @@ export default function AboutPage() {
               <li key={pair}>
                 <Link
                   href={`/${pair}`}
-                  className="inline-block rounded-full border border-line-strong px-3 py-1.5 text-xs text-ink-2 tabular-nums transition-colors hover:border-ink-2 hover:text-ink"
+                  className="text-sm text-ink-2 tabular-nums transition-colors hover:text-ink"
                 >
                   {from.toUpperCase()}/{to.toUpperCase()}
                 </Link>
@@ -164,10 +164,7 @@ export default function AboutPage() {
       </section>
 
       <div className="mt-10">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-opacity hover:opacity-85"
-        >
+        <Link href="/" className="text-[15px] text-accent hover:opacity-80">
           Open the converter
         </Link>
       </div>

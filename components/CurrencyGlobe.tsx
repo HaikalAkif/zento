@@ -8,7 +8,6 @@ import { getCurrency } from '@/lib/currencies';
 import { formatDate } from '@/lib/format';
 import { CURRENCY_LOCATIONS, phiFacing, projectLocation } from '@/lib/geo';
 import { prefersReducedMotion } from '@/lib/motion';
-import CurrencyMark from './CurrencyMark';
 
 interface Props {
   /** Whose money we're measuring. Must be an ECB currency. */
@@ -21,30 +20,14 @@ const ELEVATION = 0.05;
 const SPIN = 0.0025;
 type RGB = [number, number, number];
 
-/** WebGL can't read CSS variables, so the globe gets its own copy of each theme. */
-function palette(dark: boolean) {
-  return dark
-    ? {
-        dark: 1,
-        diffuse: 1.2,
-        mapBrightness: 5,
-        base: [0.1, 0.13, 0.11] as RGB,
-        glow: [0.16, 0.22, 0.18] as RGB,
-        up: [0.44, 0.83, 0.62] as RGB,
-        down: [1, 0.54, 0.5] as RGB,
-        home: [0.79, 0.7, 0.49] as RGB,
-      }
-    : {
-        dark: 0,
-        diffuse: 1.4,
-        mapBrightness: 7,
-        base: [0.95, 0.93, 0.89] as RGB,
-        glow: [0.9, 0.87, 0.8] as RGB,
-        up: [0.05, 0.48, 0.31] as RGB,
-        down: [0.7, 0.15, 0.12] as RGB,
-        home: [0.09, 0.08, 0.06] as RGB,
-      };
-}
+// WebGL can't read CSS variables, so the globe carries its own copy of the palette
+const COLORS = {
+  base: [0.1, 0.13, 0.11] as RGB,
+  glow: [0.14, 0.19, 0.16] as RGB,
+  up: [0.5, 0.82, 0.66] as RGB,
+  down: [1, 0.54, 0.5] as RGB,
+  home: [0.93, 0.91, 0.85] as RGB,
+};
 
 function pct(v: number): string {
   return `${v > 0 ? '+' : ''}${v.toFixed(1)}%`;
@@ -73,14 +56,11 @@ function ListItem({
         onFocus={() => onFocusCurrency(entry.code)}
         onBlur={() => onFocusCurrency(null)}
         aria-label={`Convert ${base} to ${cur?.name ?? entry.code}. Your ${base} buys ${Math.abs(entry.changePct).toFixed(1)}% ${up ? 'more' : 'less'} than a year ago`}
-        className="group flex w-full items-center justify-between gap-3 border-b border-line py-2.5 text-left"
+        className="group -mx-3 flex w-[calc(100%+1.5rem)] items-baseline justify-between gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-paper-2"
       >
-        <span className="flex min-w-0 items-center gap-2.5">
-          <CurrencyMark code={entry.code} size="sm" />
-          <span className="text-sm font-semibold text-ink transition-colors group-hover:text-accent">
-            {entry.code}
-          </span>
-          <span className="truncate text-xs text-ink-3">{cur?.name}</span>
+        <span className="flex min-w-0 items-baseline gap-3">
+          <span className="w-10 shrink-0 text-sm font-medium text-ink">{entry.code}</span>
+          <span className="truncate text-sm text-ink-3">{cur?.name}</span>
         </span>
         <span className={`text-sm font-medium tabular-nums ${up ? 'text-up' : 'text-down'}`}>
           {pct(entry.changePct)}
@@ -99,16 +79,6 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
   const focusRef = useRef<string | null>(null);
   const [inView, setInView] = useState(false);
   const [focusCode, setFocusCode] = useState<string | null>(null);
-  const [dark, setDark] = useState(false);
-
-  // Follow the system theme, which is what the CSS tokens follow
-  useEffect(() => {
-    const scheme = window.matchMedia('(prefers-color-scheme: dark)');
-    const update = () => setDark(scheme.matches);
-    update();
-    scheme.addEventListener('change', update);
-    return () => scheme.removeEventListener('change', update);
-  }, []);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['strength', base],
@@ -159,7 +129,7 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
     let dragging: { x: number; y: number; phi: number; theta: number } | null = null;
     let hovering = false;
 
-    const colors = palette(dark);
+    const colors = COLORS;
     const maxAbs = Math.max(...entries.map((e) => Math.abs(e.changePct)), 1);
     const markers = [
       ...entries.map((e) => ({
@@ -203,10 +173,10 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
         height: size,
         phi,
         theta,
-        dark: colors.dark,
-        diffuse: colors.diffuse,
+        dark: 1,
+        diffuse: 1.2,
         mapSamples: 16000,
-        mapBrightness: colors.mapBrightness,
+        mapBrightness: 4.5,
         baseColor: colors.base,
         markerColor: colors.home,
         glowColor: colors.glow,
@@ -303,15 +273,14 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
       wrap.removeEventListener('pointerenter', onEnter);
       wrap.removeEventListener('pointerleave', onLeave);
     };
-  }, [entries, base, dark]);
+  }, [entries, base]);
 
   return (
-    <div className="grid grid-cols-1 items-center gap-8 xl:grid-cols-[minmax(0,1fr)_16rem]">
-      {/* Globe */}
-      <div ref={wrapRef} className="relative mx-auto aspect-square w-full max-w-[520px]">
+    <div>
+      <div ref={wrapRef} className="relative mx-auto aspect-square w-full max-w-[420px]">
         {isError ? (
-          <p className="absolute inset-0 grid place-items-center text-sm text-ink-2">
-            Globe data unavailable right now.
+          <p className="absolute inset-0 grid place-items-center t-label text-ink-3">
+            The globe is unavailable right now.
           </p>
         ) : (
           <>
@@ -335,7 +304,7 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
                 className="group absolute h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0 transition-opacity duration-300"
               >
                 <span
-                  className={`pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 rounded-full border border-line-strong bg-paper px-2 py-0.5 text-[11px] font-medium whitespace-nowrap tabular-nums shadow-lift transition-opacity ${
+                  className={`pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 rounded-md bg-paper-3 px-2 py-0.5 text-xs whitespace-nowrap tabular-nums transition-opacity ${
                     focusCode === e.code ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                   } ${e.changePct >= 0 ? 'text-up' : 'text-down'}`}
                 >
@@ -349,9 +318,9 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
 
       {/* Ranked lists: the accessible, keyboard-friendly view of the same data */}
       {entries.length > 0 && (
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-1">
+        <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2">
           <div>
-            <h3 className="mb-1 t-label text-up">Goes furthest</h3>
+            <h3 className="mb-2 t-label text-ink-3">Goes furthest</h3>
             <ul>
               {strongest.map((e) => (
                 <ListItem
@@ -365,7 +334,7 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
             </ul>
           </div>
           <div>
-            <h3 className="mb-1 t-label text-down">Buys less</h3>
+            <h3 className="mb-2 t-label text-ink-3">Buys less</h3>
             <ul>
               {weakest.map((e) => (
                 <ListItem
@@ -379,8 +348,8 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
             </ul>
           </div>
           {data && (
-            <p className="text-xs text-ink-3 sm:col-span-2 xl:col-span-1">
-              Compared with {formatDate(data.since)}. ECB reference rates.
+            <p className="t-label text-ink-3 sm:col-span-2">
+              Change in what 1 {base} buys since {formatDate(data.since)}. ECB reference rates.
             </p>
           )}
         </div>

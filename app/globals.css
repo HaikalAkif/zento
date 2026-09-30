@@ -1,48 +1,24 @@
 @import 'tailwindcss';
 
 /*
- * "Engraved money": paper, ink and one banknote green by day; a green-black
- * "night note" with mint and antique gold after dark. Every colour in the app comes
- * from these tokens, so both themes stay in step.
+ * One dark theme: green-black paper, warm off-white ink, one mint accent.
+ * Text levels, all AA against --paper: ink 15.4:1, ink-2 7.6:1, ink-3 5.4:1.
  */
 :root {
-  --paper: #f2eee3;
-  --paper-2: #e9e3d4;
-  --paper-3: #ddd5c2;
-  --ink: #16150f;
-  --ink-2: #57534a;
-  --ink-3: #8a8577;
-  --line: rgb(22 21 15 / 0.14);
-  --line-strong: rgb(22 21 15 / 0.32);
-  --accent: #0e5a43;
-  --accent-ink: #f2eee3;
-  --accent-tint: rgb(14 90 67 / 0.09);
-  --up: #0e7a4f;
-  --down: #b3261e;
-  --seal: #0e5a43;
-  --shadow: 0 1px 0 rgb(22 21 15 / 0.04), 0 18px 40px -18px rgb(22 21 15 / 0.35);
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #0d110f;
-    --paper-2: #151a17;
-    --paper-3: #1e2521;
-    --ink: #ece7da;
-    --ink-2: #a9a496;
-    --ink-3: #6f6b60;
-    --line: rgb(236 231 218 / 0.12);
-    --line-strong: rgb(236 231 218 / 0.3);
-    --accent: #7fd1a8;
-    --accent-ink: #0d110f;
-    --accent-tint: rgb(127 209 168 / 0.1);
-    --up: #6fd39e;
-    --down: #ff8a80;
-    --seal: #c9b37e;
-    --shadow: 0 1px 0 rgb(0 0 0 / 0.3), 0 24px 48px -20px rgb(0 0 0 / 0.8);
-    color-scheme: dark;
-  }
+  --paper: #0d110f;
+  --paper-2: #141916;
+  --paper-3: #1c221f;
+  --ink: #ece7da;
+  --ink-2: #a9a496;
+  --ink-3: #8d897d;
+  --line: rgb(236 231 218 / 0.1);
+  --line-strong: rgb(236 231 218 / 0.2);
+  --accent: #7fd1a8;
+  --accent-ink: #0d110f;
+  --accent-tint: rgb(127 209 168 / 0.1);
+  --up: #6fd39e;
+  --down: #ff8a80;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -59,15 +35,12 @@
   --color-accent-tint: var(--accent-tint);
   --color-up: var(--up);
   --color-down: var(--down);
-  --color-seal: var(--seal);
   --font-sans: var(--font-geist-sans);
-  --shadow-lift: var(--shadow);
 }
 
 html {
   scroll-behavior: smooth;
-  /* Anchor jumps land below the sticky header and section index */
-  scroll-padding-top: 7.5rem;
+  scroll-padding-top: 5rem;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -80,81 +53,27 @@ body {
   font-feature-settings: 'zero';
 }
 
-/*
- * Type scale. One family, hierarchy from size and weight alone:
- *   figure  the converter amounts, the loudest thing on any page
- *   h1      page heading, deliberately a step below the figures
- *   h2      section titles
- *   h3      subheads inside a section
- *   stat    secondary numbers (ranges, trend change)
- *   label   captions and eyebrows, sentence case
- */
-@utility t-figure {
-  font-weight: 300;
-  letter-spacing: -0.045em;
-  line-height: 0.95;
-  font-variant-numeric: tabular-nums;
-}
-
-@utility t-h1 {
-  font-size: clamp(2rem, 4.2vw, 2.875rem);
-  font-weight: 600;
-  letter-spacing: -0.035em;
-  line-height: 1.02;
-}
-
-@utility t-h2 {
-  font-size: clamp(1.625rem, 2.8vw, 2.125rem);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: 1.08;
-}
-
-@utility t-h3 {
-  font-size: 0.9375rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.3;
-}
-
-@utility t-stat {
-  font-size: clamp(1.75rem, 3vw, 2.25rem);
-  font-weight: 300;
-  letter-spacing: -0.035em;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-@utility t-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
 ::selection {
   background: var(--accent);
   color: var(--accent-ink);
 }
 
-/* A faint paper grain, drawn once, so large flat areas don't look like a template */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.5;
-  background-image: radial-gradient(var(--line) 0.5px, transparent 0.5px);
-  background-size: 3px 3px;
-}
-
+/* Keyboard focus stays visible on buttons and links. Text inputs get no ring or
+   border change at all: the caret is the focus indicator. */
 :focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline: 1.5px solid var(--ink-2);
+  outline-offset: 3px;
   border-radius: 4px;
 }
 
-/* Remove number input spinners */
+/* Text-like inputs only: sliders and checkboxes have no caret, so they keep the ring */
+input:not([type='range'], [type='checkbox'], [type='radio'], [type='file']):focus,
+input:not([type='range'], [type='checkbox'], [type='radio'], [type='file']):focus-visible,
+textarea:focus,
+textarea:focus-visible {
+  outline: none;
+}
+
 input[type='number']::-webkit-outer-spin-button,
 input[type='number']::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -165,7 +84,7 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 
-/* Thin engraved-style range input (time machine scrubber) */
+/* Hairline range input (time machine) */
 input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
@@ -174,59 +93,62 @@ input[type='range'] {
 }
 
 input[type='range']::-webkit-slider-runnable-track {
-  height: 2px;
-  background: linear-gradient(
-    to right,
-    var(--accent) var(--p, 0%),
-    var(--line-strong) var(--p, 0%)
-  );
-  border-radius: 9999px;
+  height: 1px;
+  background: linear-gradient(to right, var(--ink-2) var(--p, 0%), var(--line-strong) var(--p, 0%));
 }
 
 input[type='range']::-moz-range-track {
-  height: 2px;
+  height: 1px;
   background: var(--line-strong);
-  border-radius: 9999px;
 }
 
 input[type='range']::-moz-range-progress {
-  height: 2px;
-  background: var(--accent);
+  height: 1px;
+  background: var(--ink-2);
 }
 
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
-  margin-top: -9px;
+  width: 14px;
+  height: 14px;
+  margin-top: -6.5px;
   border-radius: 50%;
-  background: var(--paper);
-  border: 2px solid var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-tint);
+  background: var(--ink);
+  border: none;
 }
 
 input[type='range']::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: var(--paper);
-  border: 2px solid var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-tint);
+  background: var(--ink);
+  border: none;
 }
 
-/* Rate tape: two copies of the list slide left by exactly one copy's width */
-@keyframes tape {
-  to {
-    transform: translateX(-50%);
-  }
+/*
+ * Type scale. One family, hierarchy from size and weight alone:
+ *   figure  the converted amount, the loudest thing on any page
+ *   h2      section headings, quiet on purpose
+ *   label   captions and metadata
+ */
+@utility t-figure {
+  font-weight: 300;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Guilloche seal: one slow turn every few minutes */
-@keyframes seal-turn {
-  to {
-    transform: rotate(360deg);
-  }
+@utility t-h2 {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+}
+
+@utility t-label {
+  font-size: 0.8125rem;
+  line-height: 1.45;
 }
 
 /* Price scanner: a line sweeping down the photo while it's read */
@@ -242,7 +164,7 @@ input[type='range']::-moz-range-thumb {
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(4px);
   }
 }
 

@@ -57,28 +57,37 @@ export async function POST(request: NextRequest) {
 
   const noStore = { headers: { 'Cache-Control': 'no-store' } };
 
-  switch (body?.action) {
-    case 'create': {
-      const { subscription, base, target, direction, threshold } = body;
-      const result = await alerts.create({ subscription, base, target, direction, threshold });
-      return result.ok
-        ? NextResponse.json({ alert: result.alert }, { status: 201, ...noStore })
-        : NextResponse.json({ error: result.error }, { status: 400 });
-    }
-    case 'list': {
-      if (typeof body.endpoint !== 'string') {
-        return NextResponse.json({ error: 'endpoint required' }, { status: 400 });
+  try {
+    switch (body?.action) {
+      case 'create': {
+        const { subscription, base, target, direction, threshold } = body;
+        const result = await alerts.create({ subscription, base, target, direction, threshold });
+        return result.ok
+          ? NextResponse.json({ alert: result.alert }, { status: 201, ...noStore })
+          : NextResponse.json({ error: result.error }, { status: 400 });
       }
-      return NextResponse.json({ alerts: await alerts.list(body.endpoint) }, noStore);
-    }
-    case 'delete': {
-      if (typeof body.id !== 'string' || typeof body.endpoint !== 'string') {
-        return NextResponse.json({ error: 'id and endpoint required' }, { status: 400 });
+      case 'list': {
+        if (typeof body.endpoint !== 'string') {
+          return NextResponse.json({ error: 'endpoint required' }, { status: 400 });
+        }
+        return NextResponse.json({ alerts: await alerts.list(body.endpoint) }, noStore);
       }
-      const removed = await alerts.remove(body.id, body.endpoint);
-      return NextResponse.json({ removed }, { status: removed ? 200 : 404, ...noStore });
+      case 'delete': {
+        if (typeof body.id !== 'string' || typeof body.endpoint !== 'string') {
+          return NextResponse.json({ error: 'id and endpoint required' }, { status: 400 });
+        }
+        const removed = await alerts.remove(body.id, body.endpoint);
+        return NextResponse.json({ removed }, { status: removed ? 200 : 404, ...noStore });
+      }
+      default:
+        return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
     }
-    default:
-      return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
+  } catch (err) {
+    // The Durable Object is unreachable or threw: say so rather than an empty 500
+    console.error('Alert store call failed', err);
+    return NextResponse.json(
+      { error: 'Rate alerts are temporarily unavailable. Try again shortly.' },
+      { status: 503 },
+    );
   }
 }

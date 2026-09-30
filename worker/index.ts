@@ -13,6 +13,11 @@ export default {
 
   async scheduled(_controller, env, ctx) {
     const store = env.ALERTS.get(env.ALERTS.idFromName('global'));
-    ctx.waitUntil(store.check().then((summary) => console.log('Rate alert check', summary)));
+    ctx.waitUntil(
+      store
+        .check()
+        .then((summary) => console.log('Rate alert check', summary))
+        .catch((err) => console.error('Rate alert check failed', err)),
+    );
   },
 } satisfies ExportedHandler<Env>;

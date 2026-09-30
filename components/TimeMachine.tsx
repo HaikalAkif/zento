@@ -3,9 +3,8 @@
 import { useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getTimeMachine } from '@/lib/api';
-import { getCurrency } from '@/lib/currencies';
 import { maxYearsBack, yearsAgo } from '@/lib/dates';
-import { formatAmount, formatDate } from '@/lib/format';
+import { formatAmount, formatDate, formatPlain } from '@/lib/format';
 
 interface Props {
   fromCurrency: string;
@@ -15,10 +14,7 @@ interface Props {
 
 const PRESETS = [1, 5, 10, 20];
 
-function money(code: string, value: number): string {
-  return `${getCurrency(code)?.symbol ?? ''}${formatAmount(value)}`;
-}
-
+/** What the amount bought on the same day years ago, told as a sentence. */
 export default function TimeMachine({ fromCurrency, toCurrency, amount }: Props) {
   const maxYears = maxYearsBack();
   const [years, setYears] = useState(10);
@@ -31,36 +27,28 @@ export default function TimeMachine({ fromCurrency, toCurrency, amount }: Props)
     // Past rates never change
     staleTime: Infinity,
     retry: false,
-    // Hold the last result while scrubbing through years, instead of flashing a skeleton
+    // Hold the last answer while scrubbing through years, instead of flashing a skeleton
     placeholderData: keepPreviousData,
   });
 
-  const thenValue = data ? numAmount * data.then.rate : 0;
-  const nowValue = data ? numAmount * data.now.rate : 0;
   const changePct = data ? (data.now.rate / data.then.rate - 1) * 100 : 0;
-  const better = changePct >= 0;
-  const peak = Math.max(thenValue, nowValue) || 1;
 
   return (
     <div>
-      {/* Year picker: presets for the common questions, a scrubber for the rest */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-baseline gap-x-5 gap-y-2">
         {PRESETS.filter((p) => p <= maxYears).map((p) => (
           <button
             key={p}
             type="button"
             onClick={() => setYears(p)}
             aria-pressed={years === p}
-            className={`rounded-full border px-3 py-1 text-xs font-medium tabular-nums transition-colors ${
-              years === p
-                ? 'border-ink bg-ink text-paper'
-                : 'border-line-strong text-ink-2 hover:border-ink-2 hover:text-ink'
+            className={`text-sm tabular-nums transition-colors ${
+              years === p ? 'text-ink' : 'text-ink-3 hover:text-ink-2'
             }`}
           >
-            {p}y
+            {p} {p === 1 ? 'year' : 'years'}
           </button>
         ))}
-        <span className="ml-auto text-xs text-ink-3 tabular-nums">{formatDate(date)}</span>
       </div>
       <input
         type="range"
@@ -70,67 +58,40 @@ export default function TimeMachine({ fromCurrency, toCurrency, amount }: Props)
         onChange={(e) => setYears(Number(e.target.value))}
         aria-label="Years back in time"
         aria-valuetext={`${years} years ago, ${formatDate(date)}`}
-        className="mt-4 w-full"
+        className="mt-5 w-full"
         style={
           { '--p': `${((years - 1) / Math.max(maxYears - 1, 1)) * 100}%` } as React.CSSProperties
         }
       />
 
-      {isError ? (
-        <p className="py-10 text-sm text-ink-2">
-          {error instanceof Error ? error.message : 'Rates unavailable right now.'}
-        </p>
-      ) : isLoading || !data ? (
-        <div className="mt-8 h-44 animate-pulse rounded-2xl bg-paper-2" />
-      ) : (
-        <div className="mt-8" aria-live="polite">
-          <p
-            className={`text-[clamp(3.5rem,9vw,5.5rem)] t-figure ${better ? 'text-up' : 'text-down'}`}
-          >
-            {changePct > 0 ? '+' : changePct < 0 ? '−' : ''}
-            {Math.abs(changePct).toFixed(1)}%
+      <div className="mt-8 min-h-[4.5rem]" aria-live="polite">
+        {isError && !data ? (
+          <p className="text-ink-3">
+            {error instanceof Error ? error.message : 'Past rates are unavailable right now.'}
           </p>
-          <p className="mt-2 text-sm text-ink-2">
-            {better ? 'more' : 'less'} {toCurrency} for your {fromCurrency} than {years}{' '}
-            {years === 1 ? 'year' : 'years'} ago
+        ) : isLoading || !data ? (
+          <div className="h-16 animate-pulse rounded-lg bg-paper-2" />
+        ) : (
+          <p className="text-xl leading-snug tracking-tight text-ink-2 tabular-nums sm:text-2xl">
+            On {formatDate(data.then.date)}, {formatPlain(numAmount)} {fromCurrency} bought{' '}
+            <span className="text-ink">
+              {formatAmount(numAmount * data.then.rate)} {toCurrency}
+            </span>
+            . Today it buys{' '}
+            <span className="text-ink">
+              {formatAmount(numAmount * data.now.rate)} {toCurrency}
+            </span>
+            ,{' '}
+            <span className={changePct >= 0 ? 'text-up' : 'text-down'}>
+              {Math.abs(changePct).toFixed(1)}% {changePct >= 0 ? 'more' : 'less'}
+            </span>
+            .
           </p>
-
-          {/* Then / now as two engraved bars */}
-          <dl className="mt-8 space-y-4">
-            {[
-              {
-                label: data.then.date.slice(0, 4),
-                value: thenValue,
-                date: data.then.date,
-                now: false,
-              },
-              { label: 'Today', value: nowValue, date: data.now.date, now: true },
-            ].map((bar) => (
-              <div key={bar.label} className="grid grid-cols-[4rem_1fr] items-center gap-4">
-                <dt className="t-label text-ink-2">{bar.label}</dt>
-                <dd className="min-w-0">
-                  <div
-                    className={`h-2.5 rounded-full transition-[width] duration-500 ease-out ${
-                      bar.now ? (better ? 'bg-up' : 'bg-down') : 'bg-ink-3'
-                    }`}
-                    style={{ width: `${Math.max((bar.value / peak) * 100, 3)}%` }}
-                  />
-                  <p className="mt-1.5 text-sm text-ink tabular-nums">
-                    {money(fromCurrency, numAmount)} {fromCurrency} ={' '}
-                    <strong className="font-semibold">
-                      {money(toCurrency, bar.value)} {toCurrency}
-                    </strong>
-                    <span className="text-ink-3"> · {formatDate(bar.date)}</span>
-                  </p>
-                </dd>
-              </div>
-            ))}
-          </dl>
-          <p className="mt-6 text-xs text-ink-3">
-            European Central Bank reference rates, back to 1999.
-          </p>
-        </div>
-      )}
+        )}
+      </div>
+      <p className="mt-4 t-label text-ink-3">
+        European Central Bank reference rates, back to 1999.
+      </p>
     </div>
   );
 }

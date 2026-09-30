@@ -1,15 +1,7 @@
 'use client';
 
 import { useState, useId } from 'react';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useHistoricalRates, Period } from '@/hooks/useHistoricalRates';
 import { getCurrency } from '@/lib/currencies';
 
@@ -63,34 +55,36 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
   return (
     <div>
       {/* Summary + period toggle */}
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
+      <div className="mb-6 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3 t-label">
+        <p className="text-ink-3 tabular-nums">
           {changePercent != null ? (
-            <p className={`text-5xl t-figure ${isPositive ? 'text-up' : 'text-down'}`}>
-              {isPositive ? '+' : '−'}
-              {Math.abs(changePercent).toFixed(2)}%
-            </p>
+            <>
+              <span className={isPositive ? 'text-up' : 'text-down'}>
+                {isPositive ? '+' : '−'}
+                {Math.abs(changePercent).toFixed(2)}%
+              </span>{' '}
+              over {period}
+              {last && (
+                <>
+                  {' '}
+                  · 1 {fromCurrency} = {last.rate.toFixed(4)} {toCurrency}
+                </>
+              )}
+            </>
           ) : (
-            <p className="h-12 w-32 animate-pulse rounded-lg bg-paper-2" />
+            ' '
           )}
-          {last && (
-            <p className="mt-2 text-sm text-ink-2 tabular-nums">
-              over {period} · now 1 {fromCurrency} = {last.rate.toFixed(4)} {toCurrency}
-            </p>
-          )}
-        </div>
+        </p>
 
-        <div role="group" aria-label="Chart period" className="flex gap-1 text-xs font-medium">
+        <div role="group" aria-label="Chart period" className="flex gap-4">
           {PERIODS.map(({ label, value }) => (
             <button
               key={value}
               type="button"
               onClick={() => setPeriod(value)}
               aria-pressed={period === value}
-              className={`rounded-full px-3 py-1.5 transition-colors ${
-                period === value
-                  ? 'bg-ink text-paper'
-                  : 'text-ink-2 hover:bg-paper-2 hover:text-ink'
+              className={`tabular-nums transition-colors ${
+                period === value ? 'text-ink' : 'text-ink-3 hover:text-ink-2'
               }`}
             >
               {label}
@@ -100,26 +94,25 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
       </div>
 
       {isLoading ? (
-        <div className="h-64 animate-pulse rounded-2xl bg-paper-2" />
+        <div className="h-56 animate-pulse rounded-xl bg-paper-2" />
       ) : isError ? (
-        <div className="flex h-64 items-center justify-center text-sm text-ink-2">
+        <div className="flex h-56 items-center justify-center t-label text-ink-3">
           Chart unavailable for this pair right now
         </div>
       ) : data && data.length > 0 ? (
-        <ResponsiveContainer width="100%" height={256}>
+        <ResponsiveContainer width="100%" height={224}>
           <AreaChart data={data} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.16} />
+                <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.08} />
                 <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid stroke="var(--line)" vertical={false} />
             <XAxis
               dataKey="date"
               tickFormatter={(v: string) => formatXTick(v, period)}
               tick={axis}
-              axisLine={{ stroke: 'var(--line-strong)' }}
+              axisLine={false}
               tickLine={false}
               interval="preserveStartEnd"
               minTickGap={24}
@@ -135,10 +128,9 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
             />
             <Tooltip
               contentStyle={{
-                background: 'var(--paper)',
-                border: '1px solid var(--line-strong)',
+                background: 'var(--paper-3)',
+                border: 'none',
                 borderRadius: '0.75rem',
-                boxShadow: 'var(--shadow)',
                 fontSize: '12px',
                 padding: '8px 12px',
               }}
@@ -162,7 +154,7 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
               type="monotone"
               dataKey="rate"
               stroke="var(--accent)"
-              strokeWidth={1.75}
+              strokeWidth={1.5}
               fill={`url(#${gradientId})`}
               dot={false}
               activeDot={{ r: 4, fill: 'var(--accent)', stroke: 'var(--paper)', strokeWidth: 2 }}
@@ -170,7 +162,7 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
           </AreaChart>
         </ResponsiveContainer>
       ) : (
-        <p className="py-10 text-sm text-ink-2">
+        <p className="py-10 t-label text-ink-3">
           No rate history for this pair. The European Central Bank publishes about 30 major
           currencies; live conversion still works.
         </p>

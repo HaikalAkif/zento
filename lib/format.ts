@@ -42,3 +42,19 @@ export function defaultAmount(rate: number | undefined): string {
   if (!rate || rate >= 0.1) return '1';
   return String(10 ** Math.round(1 - Math.log10(rate)));
 }
+
+/**
+ * Decimal places that keep a value meaningful: 2 normally, more for tiny values so
+ * 1 IDR in USD reads 0.000062 rather than 0.00.
+ */
+export function decimalsFor(value: number): number {
+  const abs = Math.abs(value);
+  if (abs === 0 || abs >= 0.01) return 2;
+  return Math.min(8, Math.ceil(-Math.log10(abs)) + 2);
+}
+
+/** An amount as the user entered it: no forced decimals, e.g. 1,000 or 0.5. */
+export function formatPlain(value: number): string {
+  if (value !== 0 && Math.abs(value) < 0.01) return value.toPrecision(3);
+  return value.toLocaleString('en-US', { maximumFractionDigits: 2 });
+}

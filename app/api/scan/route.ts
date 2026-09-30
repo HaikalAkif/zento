@@ -64,7 +64,11 @@ export async function POST(request: NextRequest) {
 
   const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
   if (env.SCAN_LIMITER) {
-    const { success } = await env.SCAN_LIMITER.limit({ key: ip });
+    // The limiter is a guard, not a dependency: if it errors, let the scan through
+    const success = await env.SCAN_LIMITER.limit({ key: ip }).then(
+      (r) => r.success,
+      () => true,
+    );
     if (!success) {
       return NextResponse.json(
         { error: 'Too many scans. Try again in a minute.' },
