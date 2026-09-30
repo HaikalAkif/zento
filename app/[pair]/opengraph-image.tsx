@@ -15,6 +15,36 @@ function parsePair(slug: string): { from: string; to: string } | null {
   return { from: match[1].toUpperCase(), to: match[2].toUpperCase() };
 }
 
+// Satori only knows its bundled sans face, so the seal is suggested with concentric
+// rings rather than drawn, and currencies are shown by code (some symbols have no glyph).
+const PAPER = '#f2eee3';
+const INK = '#16150f';
+const INK_2 = '#57534a';
+const GREEN = '#0e5a43';
+
+function Coin({ code }: { code: string }) {
+  return (
+    <div
+      style={{
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        border: `3px solid ${GREEN}`,
+        boxShadow: `inset 0 0 0 7px ${PAPER}, inset 0 0 0 9px rgba(14,90,67,0.35)`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: GREEN,
+        fontSize: 34,
+        fontWeight: 600,
+        letterSpacing: 1,
+      }}
+    >
+      {code}
+    </div>
+  );
+}
+
 export default async function OgImage({ params }: Props) {
   const { pair } = await params;
   const parsed = parsePair(pair);
@@ -26,136 +56,84 @@ export default async function OgImage({ params }: Props) {
   const toCode = parsed?.to ?? 'EUR';
   const fromName = from?.name ?? fromCode;
   const toName = to?.name ?? toCode;
-  const fromFlag = from?.flag ?? '';
-  const toFlag = to?.flag ?? '';
 
   return new ImageResponse(
     <div
       style={{
-        background: 'linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e293b 100%)',
+        background: PAPER,
         width: '100%',
         height: '100%',
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontFamily: 'system-ui, sans-serif',
         position: 'relative',
+        padding: '64px 72px',
+        fontFamily: 'sans-serif',
+        color: INK,
       }}
     >
-      {/* Blue accent circle */}
-      <div
-        style={{
-          position: 'absolute',
-          top: -120,
-          right: -120,
-          width: 400,
-          height: 400,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)',
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          bottom: -80,
-          left: -80,
-          width: 300,
-          height: 300,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%)',
-        }}
-      />
-
-      {/* Brand */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 48,
-          left: 60,
-          fontSize: 28,
-          fontWeight: 700,
-          color: '#3b82f6',
-          letterSpacing: '-0.5px',
-        }}
-      >
-        Zento
-      </div>
-
-      {/* Live badge */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 52,
-          right: 60,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          background: 'rgba(59,130,246,0.12)',
-          border: '1px solid rgba(59,130,246,0.3)',
-          borderRadius: 100,
-          padding: '6px 16px',
-          fontSize: 14,
-          color: '#60a5fa',
-          fontWeight: 600,
-        }}
-      >
+      {/* Seal rings, bleeding off the right edge */}
+      {[520, 470, 420, 300, 250].map((d, i) => (
         <div
+          key={d}
           style={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            background: '#22c55e',
+            position: 'absolute',
+            right: -130 + (520 - d) / 2,
+            top: 55 + (520 - d) / 2,
+            width: d,
+            height: d,
+            borderRadius: d / 2,
+            border: `${i === 0 || i === 3 ? 2 : 1}px solid rgba(14,90,67,${i === 0 ? 0.5 : 0.25})`,
           }}
         />
-        Live Rate
-      </div>
+      ))}
 
-      {/* Currency pair display */}
       <div
         style={{
           display: 'flex',
-          alignItems: 'center',
-          gap: 40,
-          marginBottom: 32,
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          width: '100%',
         }}
       >
-        {/* FROM */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-          <div style={{ fontSize: 72 }}>{fromFlag}</div>
-          <div style={{ fontSize: 52, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-2px' }}>
-            {fromCode}
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+          <span style={{ fontSize: 40, fontWeight: 600, letterSpacing: -1 }}>Zento</span>
+          <span style={{ fontSize: 16, color: INK_2, letterSpacing: 4 }}>FX</span>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', gap: 20, marginBottom: 36 }}>
+            <Coin code={fromCode} />
+            <Coin code={toCode} />
           </div>
-          <div style={{ fontSize: 20, color: '#64748b', fontWeight: 500 }}>{fromName}</div>
-        </div>
-
-        {/* Arrow */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-          <div style={{ fontSize: 40, color: '#3b82f6' }}>→</div>
-        </div>
-
-        {/* TO */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-          <div style={{ fontSize: 72 }}>{toFlag}</div>
-          <div style={{ fontSize: 52, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-2px' }}>
-            {toCode}
+          <div
+            style={{
+              display: 'flex',
+              fontSize: 110,
+              fontWeight: 600,
+              letterSpacing: -4,
+              lineHeight: 1,
+            }}
+          >
+            <span>{fromCode} to&nbsp;</span>
+            <span style={{ color: GREEN }}>{toCode}</span>
           </div>
-          <div style={{ fontSize: 20, color: '#64748b', fontWeight: 500 }}>{toName}</div>
+          <div style={{ fontSize: 30, color: INK_2, marginTop: 18 }}>
+            {`${fromName} to ${toName}, live mid-market rate`}
+          </div>
         </div>
-      </div>
 
-      {/* Subtitle */}
-      <div
-        style={{
-          fontSize: 22,
-          color: '#475569',
-          fontWeight: 500,
-          letterSpacing: '0.5px',
-        }}
-      >
-        Live Exchange Rate · Free · No Sign-up
+        <div
+          style={{
+            display: 'flex',
+            fontSize: 22,
+            color: INK_2,
+            borderTop: `1px solid rgba(22,21,15,0.2)`,
+            paddingTop: 20,
+          }}
+        >
+          Free currency converter · 150+ currencies · no sign-up
+        </div>
       </div>
     </div>,
-    { width: 1200, height: 630 },
+    { ...size },
   );
 }

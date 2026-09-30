@@ -103,18 +103,18 @@ export default function CommandBar({ from, to, amount, localCurrency, onApply, t
         e.preventDefault();
         apply();
       }}
-      className="mx-auto mb-4 w-full max-w-2xl"
+      className="w-full"
     >
       <div
-        className={`relative flex items-center gap-3 rounded-2xl border bg-slate-900/60 px-4 py-3 backdrop-blur-md transition-all duration-300 ${
+        className={`relative flex items-center gap-3 rounded-full border bg-paper px-4 py-2.5 transition-all duration-300 ${
           focused
-            ? 'border-blue-500/70 shadow-[0_0_0_4px_rgba(59,130,246,0.15),0_0_40px_-8px_rgba(59,130,246,0.5)]'
-            : 'border-slate-700/60 hover:border-slate-600'
+            ? 'border-accent shadow-[0_0_0_4px_var(--accent-tint)]'
+            : 'border-line-strong hover:border-ink-2'
         }`}
       >
         <SparklesIcon
           aria-hidden="true"
-          className={`h-5 w-5 shrink-0 transition-colors ${focused ? 'text-blue-400' : 'text-slate-500'}`}
+          className={`h-5 w-5 shrink-0 transition-colors ${focused ? 'text-accent' : 'text-ink-3'}`}
         />
         <div className="relative min-w-0 flex-1">
           <input
@@ -137,15 +137,15 @@ export default function CommandBar({ from, to, amount, localCurrency, onApply, t
             aria-describedby="command-preview"
             autoComplete="off"
             spellCheck={false}
-            className="w-full border-none bg-transparent text-base text-slate-100 outline-none placeholder:text-slate-500"
+            className="w-full border-none bg-transparent text-base text-ink outline-none placeholder:text-ink-3 focus-visible:outline-none"
           />
           {typed && (
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute inset-y-0 left-0 flex items-center overflow-hidden text-base whitespace-nowrap text-slate-500"
+              className="pointer-events-none absolute inset-y-0 left-0 flex items-center overflow-hidden text-base whitespace-nowrap text-ink-3"
             >
               {typed}
-              <span className="ml-px inline-block h-5 w-[2px] animate-pulse bg-blue-400/80" />
+              <span className="ml-px inline-block h-5 w-[2px] animate-pulse bg-accent" />
             </span>
           )}
         </div>
@@ -153,12 +153,12 @@ export default function CommandBar({ from, to, amount, localCurrency, onApply, t
         {resolved && value.trim() ? (
           <button
             type="submit"
-            className="shrink-0 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+            className="shrink-0 rounded-full bg-accent px-3.5 py-1.5 text-xs font-semibold text-accent-ink transition-opacity hover:opacity-90"
           >
             Convert ↵
           </button>
         ) : (
-          <kbd className="hidden shrink-0 items-center rounded-md border border-slate-700 bg-slate-800/80 px-1.5 py-0.5 text-[11px] font-semibold text-slate-400 sm:inline-flex">
+          <kbd className="hidden shrink-0 items-center rounded-md border border-line-strong px-1.5 py-0.5 text-[11px] text-ink-3 sm:inline-flex">
             /
           </kbd>
         )}
@@ -166,9 +166,9 @@ export default function CommandBar({ from, to, amount, localCurrency, onApply, t
       <p
         id="command-preview"
         aria-live="polite"
-        className={`mt-2 min-h-5 text-center text-sm tabular-nums transition-opacity ${
+        className={`mt-2 min-h-5 px-4 text-sm tabular-nums transition-opacity ${
           preview ? 'opacity-100' : 'opacity-0'
-        } ${rate != null && resolved ? 'text-slate-200' : 'text-slate-400'}`}
+        } ${rate != null && resolved ? 'text-ink' : 'text-ink-2'}`}
       >
         {preview}
       </p>

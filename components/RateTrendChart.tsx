@@ -41,7 +41,6 @@ function formatXTick(dateStr: string, period: Period): string {
 export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
   const uid = useId();
   const gradientId = `areaGradient-${uid}`;
-  const filterId = `lineGlow-${uid}`;
 
   const [period, setPeriod] = useState<Period>('30D');
   const { data, isLoading, isError } = useHistoricalRates(fromCurrency, toCurrency, period);
@@ -58,45 +57,40 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
       : null;
 
   const isPositive = changePercent == null || changePercent >= 0;
-  const lineColor = isPositive ? '#3b82f6' : '#f87171';
+  const last = data && data.length > 0 ? data[data.length - 1] : null;
+  const axis = { fontSize: 11, fill: 'var(--ink-3)', fontFamily: 'var(--font-geist-sans)' };
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 sm:p-7">
-      {/* Header */}
-      <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
+    <div>
+      {/* Summary + period toggle */}
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 className="text-base font-bold tracking-tight text-slate-50">
-            {fromCurrency} / {toCurrency}
-          </h2>
-          {changePercent != null && (
-            <div className="mt-1 flex items-center gap-1.5">
-              <span
-                className={`text-sm font-bold ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}
-              >
-                {isPositive ? '▲' : '▼'} {Math.abs(changePercent).toFixed(2)}%
-              </span>
-              <span className="text-xs text-slate-400">past {period}</span>
-            </div>
+          {changePercent != null ? (
+            <p className={`text-5xl t-figure ${isPositive ? 'text-up' : 'text-down'}`}>
+              {isPositive ? '+' : '−'}
+              {Math.abs(changePercent).toFixed(2)}%
+            </p>
+          ) : (
+            <p className="h-12 w-32 animate-pulse rounded-lg bg-paper-2" />
           )}
-          {data && data.length > 0 && (
-            <p className="mt-0.5 text-xs text-slate-400">
-              Now: {data[data.length - 1].rate.toFixed(4)} {toCurrency}
+          {last && (
+            <p className="mt-2 text-sm text-ink-2 tabular-nums">
+              over {period} · now 1 {fromCurrency} = {last.rate.toFixed(4)} {toCurrency}
             </p>
           )}
         </div>
 
-        {/* Period toggle */}
-        <div className="flex gap-1 rounded-lg border border-slate-700/60 bg-slate-800 p-1">
+        <div role="group" aria-label="Chart period" className="flex gap-1 text-xs font-medium">
           {PERIODS.map(({ label, value }) => (
             <button
               key={value}
               type="button"
               onClick={() => setPeriod(value)}
               aria-pressed={period === value}
-              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-800 ${
+              className={`rounded-full px-3 py-1.5 transition-colors ${
                 period === value
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-ink text-paper'
+                  : 'text-ink-2 hover:bg-paper-2 hover:text-ink'
               }`}
             >
               {label}
@@ -105,69 +99,61 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
         </div>
       </div>
 
-      {/* Chart */}
       {isLoading ? (
-        <div className="h-56 animate-pulse rounded-xl bg-slate-800" />
+        <div className="h-64 animate-pulse rounded-2xl bg-paper-2" />
       ) : isError ? (
-        <div className="flex h-56 items-center justify-center text-sm text-slate-400">
-          Chart unavailable for this pair
+        <div className="flex h-64 items-center justify-center text-sm text-ink-2">
+          Chart unavailable for this pair right now
         </div>
       ) : data && data.length > 0 ? (
-        <ResponsiveContainer width="100%" height={224}>
-          <AreaChart data={data} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+        <ResponsiveContainer width="100%" height={256}>
+          <AreaChart data={data} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
             <defs>
-              <filter id={filterId} x="-20%" y="-50%" width="140%" height="200%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
               <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={lineColor} stopOpacity={0.18} />
-                <stop offset="85%" stopColor={lineColor} stopOpacity={0.02} />
-                <stop offset="100%" stopColor={lineColor} stopOpacity={0} />
+                <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.16} />
+                <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
               </linearGradient>
             </defs>
-
-            <CartesianGrid strokeDasharray="4 4" stroke="#1e293b" vertical={false} />
+            <CartesianGrid stroke="var(--line)" vertical={false} />
             <XAxis
               dataKey="date"
               tickFormatter={(v: string) => formatXTick(v, period)}
-              tick={{ fontSize: 10, fill: '#475569' }}
-              axisLine={false}
+              tick={axis}
+              axisLine={{ stroke: 'var(--line-strong)' }}
               tickLine={false}
               interval="preserveStartEnd"
+              minTickGap={24}
             />
             <YAxis
               domain={[minRate, maxRate]}
-              tick={{ fontSize: 10, fill: '#475569' }}
+              tick={axis}
               axisLine={false}
               tickLine={false}
-              width={52}
+              width={56}
+              orientation="right"
               tickFormatter={(v: number) => v.toFixed(3)}
             />
             <Tooltip
               contentStyle={{
-                background: '#0f172a',
-                border: '1px solid #1e293b',
+                background: 'var(--paper)',
+                border: '1px solid var(--line-strong)',
                 borderRadius: '0.75rem',
-                boxShadow: `0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(59,130,246,0.1)`,
+                boxShadow: 'var(--shadow)',
                 fontSize: '12px',
-                padding: '10px 14px',
+                padding: '8px 12px',
               }}
-              labelStyle={{ fontWeight: '700', color: '#f1f5f9', marginBottom: '4px' }}
-              itemStyle={{ color: '#94a3b8' }}
-              cursor={{ stroke: '#334155', strokeWidth: 1, strokeDasharray: '4 4' }}
+              labelStyle={{ color: 'var(--ink-2)', marginBottom: '2px' }}
+              itemStyle={{ color: 'var(--ink)', fontVariantNumeric: 'tabular-nums' }}
+              cursor={{ stroke: 'var(--line-strong)', strokeWidth: 1 }}
               formatter={(value) => [
-                `${toCurrencyData?.symbol ?? ''}${(value as number).toFixed(6)} ${toCurrency}`,
+                `${toCurrencyData?.symbol ?? ''}${(value as number).toFixed(4)} ${toCurrency}`,
                 `1 ${fromCurrency}`,
               ]}
               labelFormatter={(label) =>
-                parseLocalDate(label as string).toLocaleDateString('en-US', {
+                parseLocalDate(label as string).toLocaleDateString('en-GB', {
                   weekday: 'short',
-                  month: 'short',
                   day: 'numeric',
+                  month: 'short',
                   year: 'numeric',
                 })
               }
@@ -175,23 +161,19 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
             <Area
               type="monotone"
               dataKey="rate"
-              stroke={lineColor}
-              strokeWidth={2}
+              stroke="var(--accent)"
+              strokeWidth={1.75}
               fill={`url(#${gradientId})`}
               dot={false}
-              activeDot={{ r: 4, fill: lineColor, strokeWidth: 0 }}
-              filter={`url(#${filterId})`}
+              activeDot={{ r: 4, fill: 'var(--accent)', stroke: 'var(--paper)', strokeWidth: 2 }}
             />
           </AreaChart>
         </ResponsiveContainer>
       ) : (
-        <div className="flex h-56 flex-col items-center justify-center gap-1 px-6 text-center">
-          <p className="text-sm text-slate-300">No rate history for this pair</p>
-          <p className="text-xs text-slate-400">
-            Charts use European Central Bank data, which covers 30 major currencies. Live conversion
-            above still works.
-          </p>
-        </div>
+        <p className="py-10 text-sm text-ink-2">
+          No rate history for this pair. The European Central Bank publishes about 30 major
+          currencies; live conversion still works.
+        </p>
       )}
     </div>
   );

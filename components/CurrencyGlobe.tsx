@@ -2,13 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { GlobeAltIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import type { Globe } from 'cobe';
 import { getStrength, type StrengthEntry } from '@/lib/api';
 import { getCurrency } from '@/lib/currencies';
 import { formatDate } from '@/lib/format';
 import { CURRENCY_LOCATIONS, phiFacing, projectLocation } from '@/lib/geo';
 import { prefersReducedMotion } from '@/lib/motion';
+import CurrencyMark from './CurrencyMark';
 
 interface Props {
   /** Whose money we're measuring. Must be an ECB currency. */
@@ -19,9 +19,32 @@ interface Props {
 const THETA = 0.3;
 const ELEVATION = 0.05;
 const SPIN = 0.0025;
-const GREEN: [number, number, number] = [0.2, 0.83, 0.6];
-const RED: [number, number, number] = [0.97, 0.44, 0.44];
-const BLUE: [number, number, number] = [0.38, 0.65, 0.98];
+type RGB = [number, number, number];
+
+/** WebGL can't read CSS variables, so the globe gets its own copy of each theme. */
+function palette(dark: boolean) {
+  return dark
+    ? {
+        dark: 1,
+        diffuse: 1.2,
+        mapBrightness: 5,
+        base: [0.1, 0.13, 0.11] as RGB,
+        glow: [0.16, 0.22, 0.18] as RGB,
+        up: [0.44, 0.83, 0.62] as RGB,
+        down: [1, 0.54, 0.5] as RGB,
+        home: [0.79, 0.7, 0.49] as RGB,
+      }
+    : {
+        dark: 0,
+        diffuse: 1.4,
+        mapBrightness: 7,
+        base: [0.95, 0.93, 0.89] as RGB,
+        glow: [0.9, 0.87, 0.8] as RGB,
+        up: [0.05, 0.48, 0.31] as RGB,
+        down: [0.7, 0.15, 0.12] as RGB,
+        home: [0.09, 0.08, 0.06] as RGB,
+      };
+}
 
 function pct(v: number): string {
   return `${v > 0 ? '+' : ''}${v.toFixed(1)}%`;
@@ -50,16 +73,16 @@ function ListItem({
         onFocus={() => onFocusCurrency(entry.code)}
         onBlur={() => onFocusCurrency(null)}
         aria-label={`Convert ${base} to ${cur?.name ?? entry.code}. Your ${base} buys ${Math.abs(entry.changePct).toFixed(1)}% ${up ? 'more' : 'less'} than a year ago`}
-        className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-slate-800/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        className="group flex w-full items-center justify-between gap-3 border-b border-line py-2.5 text-left"
       >
-        <span className="flex min-w-0 items-center gap-2">
-          <span className="text-lg leading-none select-none">{cur?.flag}</span>
-          <span className="text-sm font-semibold text-slate-200">{entry.code}</span>
-          <span className="truncate text-xs text-slate-500">{cur?.name}</span>
+        <span className="flex min-w-0 items-center gap-2.5">
+          <CurrencyMark code={entry.code} size="sm" />
+          <span className="text-sm font-semibold text-ink transition-colors group-hover:text-accent">
+            {entry.code}
+          </span>
+          <span className="truncate text-xs text-ink-3">{cur?.name}</span>
         </span>
-        <span
-          className={`text-sm font-bold tabular-nums ${up ? 'text-emerald-400' : 'text-red-400'}`}
-        >
+        <span className={`text-sm font-medium tabular-nums ${up ? 'text-up' : 'text-down'}`}>
           {pct(entry.changePct)}
         </span>
       </button>
@@ -76,6 +99,16 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
   const focusRef = useRef<string | null>(null);
   const [inView, setInView] = useState(false);
   const [focusCode, setFocusCode] = useState<string | null>(null);
+  const [dark, setDark] = useState(false);
+
+  // Follow the system theme, which is what the CSS tokens follow
+  useEffect(() => {
+    const scheme = window.matchMedia('(prefers-color-scheme: dark)');
+    const update = () => setDark(scheme.matches);
+    update();
+    scheme.addEventListener('change', update);
+    return () => scheme.removeEventListener('change', update);
+  }, []);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['strength', base],
@@ -126,21 +159,22 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
     let dragging: { x: number; y: number; phi: number; theta: number } | null = null;
     let hovering = false;
 
+    const colors = palette(dark);
     const maxAbs = Math.max(...entries.map((e) => Math.abs(e.changePct)), 1);
     const markers = [
       ...entries.map((e) => ({
         location: CURRENCY_LOCATIONS[e.code],
         size: 0.03 + (Math.abs(e.changePct) / maxAbs) * 0.07,
-        color: e.changePct >= 0 ? GREEN : RED,
+        color: e.changePct >= 0 ? colors.up : colors.down,
       })),
-      ...(baseLoc ? [{ location: baseLoc, size: 0.08, color: BLUE }] : []),
+      ...(baseLoc ? [{ location: baseLoc, size: 0.08, color: colors.home }] : []),
     ];
     // Arcs from home to the three places your money goes furthest
     const arcs = baseLoc
       ? entries
           .filter((e) => e.changePct > 0)
           .slice(0, 3)
-          .map((e) => ({ from: baseLoc, to: CURRENCY_LOCATIONS[e.code], color: GREEN }))
+          .map((e) => ({ from: baseLoc, to: CURRENCY_LOCATIONS[e.code], color: colors.up }))
       : [];
 
     const place = () => {
@@ -169,16 +203,16 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
         height: size,
         phi,
         theta,
-        dark: 1,
-        diffuse: 1.2,
+        dark: colors.dark,
+        diffuse: colors.diffuse,
         mapSamples: 16000,
-        mapBrightness: 5,
-        baseColor: [0.15, 0.2, 0.3],
-        markerColor: BLUE,
-        glowColor: [0.12, 0.2, 0.45],
+        mapBrightness: colors.mapBrightness,
+        baseColor: colors.base,
+        markerColor: colors.home,
+        glowColor: colors.glow,
         markers,
         arcs,
-        arcColor: GREEN,
+        arcColor: colors.up,
         arcWidth: 0.6,
         arcHeight: 0.25,
         markerElevation: ELEVATION,
@@ -269,116 +303,88 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
       wrap.removeEventListener('pointerenter', onEnter);
       wrap.removeEventListener('pointerleave', onLeave);
     };
-  }, [entries, base]);
-
-  const baseCur = getCurrency(base);
+  }, [entries, base, dark]);
 
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-6 sm:p-7">
-      <div className="pointer-events-none absolute -bottom-32 -left-24 h-72 w-72 rounded-full bg-blue-600/10 blur-3xl" />
-
-      <div className="mb-5 flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h2 className="flex items-center gap-2 text-base font-bold tracking-tight text-slate-50">
-            <GlobeAltIcon aria-hidden="true" className="h-4.5 w-4.5 text-blue-400" />
-            Where your {base} goes further
-          </h2>
-          <p className="mt-0.5 text-xs text-slate-400">
-            How much more or less {baseCur?.name ?? base} buys than a year ago. Drag the globe, tap
-            a currency to convert.
+    <div className="grid grid-cols-1 items-center gap-8 xl:grid-cols-[minmax(0,1fr)_16rem]">
+      {/* Globe */}
+      <div ref={wrapRef} className="relative mx-auto aspect-square w-full max-w-[520px]">
+        {isError ? (
+          <p className="absolute inset-0 grid place-items-center text-sm text-ink-2">
+            Globe data unavailable right now.
           </p>
-        </div>
-        {data && (
-          <span className="hidden shrink-0 rounded-full border border-slate-700 bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-slate-400 sm:inline">
-            vs {formatDate(data.since)}
-          </span>
+        ) : (
+          <>
+            {(isLoading || !data) && (
+              <div className="absolute inset-[10%] animate-pulse rounded-full bg-paper-2" />
+            )}
+            <div ref={hostRef} className="absolute inset-0" />
+            {/* Hit targets over the WebGL markers. Mouse-only: the list is the keyboard path. */}
+            {entries.map((e) => (
+              <button
+                key={e.code}
+                ref={(el) => {
+                  markerRefs.current[e.code] = el;
+                }}
+                type="button"
+                tabIndex={-1}
+                aria-hidden="true"
+                onClick={() => onSelect(base, e.code)}
+                onMouseEnter={() => setFocusCode(e.code)}
+                onMouseLeave={() => setFocusCode(null)}
+                className="group absolute h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0 transition-opacity duration-300"
+              >
+                <span
+                  className={`pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 rounded-full border border-line-strong bg-paper px-2 py-0.5 text-[11px] font-medium whitespace-nowrap tabular-nums shadow-lift transition-opacity ${
+                    focusCode === e.code ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                  } ${e.changePct >= 0 ? 'text-up' : 'text-down'}`}
+                >
+                  {e.code} {pct(e.changePct)}
+                </span>
+              </button>
+            ))}
+          </>
         )}
       </div>
 
-      <div className="grid grid-cols-1 items-center gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,18rem)]">
-        {/* Globe */}
-        <div ref={wrapRef} className="relative mx-auto aspect-square w-full max-w-[480px]">
-          {isError ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-sm text-slate-400">
-              <ExclamationTriangleIcon className="h-6 w-6 text-slate-600" />
-              Globe data unavailable right now.
-            </div>
-          ) : (
-            <>
-              {(isLoading || !data) && (
-                <div className="absolute inset-[10%] animate-pulse rounded-full bg-slate-800/40" />
-              )}
-              <div ref={hostRef} className="absolute inset-0" />
-              {/* Hit targets over the WebGL markers. Mouse-only: the list is the keyboard path. */}
-              {entries.map((e) => (
-                <button
+      {/* Ranked lists: the accessible, keyboard-friendly view of the same data */}
+      {entries.length > 0 && (
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-1">
+          <div>
+            <h3 className="mb-1 t-label text-up">Goes furthest</h3>
+            <ul>
+              {strongest.map((e) => (
+                <ListItem
                   key={e.code}
-                  ref={(el) => {
-                    markerRefs.current[e.code] = el;
-                  }}
-                  type="button"
-                  tabIndex={-1}
-                  aria-hidden="true"
-                  onClick={() => onSelect(base, e.code)}
-                  onMouseEnter={() => setFocusCode(e.code)}
-                  onMouseLeave={() => setFocusCode(null)}
-                  className="group absolute h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0 transition-opacity duration-300"
-                >
-                  <span
-                    className={`pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 rounded-md border px-1.5 py-0.5 text-[10px] font-bold whitespace-nowrap tabular-nums shadow-lg transition-opacity ${
-                      focusCode === e.code ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                    } ${
-                      e.changePct >= 0
-                        ? 'border-emerald-700/60 bg-emerald-950/90 text-emerald-300'
-                        : 'border-red-800/60 bg-red-950/90 text-red-300'
-                    }`}
-                  >
-                    {e.code} {pct(e.changePct)}
-                  </span>
-                </button>
+                  entry={e}
+                  base={base}
+                  onSelect={onSelect}
+                  onFocusCurrency={setFocusCode}
+                />
               ))}
-            </>
+            </ul>
+          </div>
+          <div>
+            <h3 className="mb-1 t-label text-down">Buys less</h3>
+            <ul>
+              {weakest.map((e) => (
+                <ListItem
+                  key={e.code}
+                  entry={e}
+                  base={base}
+                  onSelect={onSelect}
+                  onFocusCurrency={setFocusCode}
+                />
+              ))}
+            </ul>
+          </div>
+          {data && (
+            <p className="text-xs text-ink-3 sm:col-span-2 xl:col-span-1">
+              Compared with {formatDate(data.since)}. ECB reference rates.
+            </p>
           )}
         </div>
-
-        {/* Ranked lists: the accessible, keyboard-friendly view of the same data */}
-        {entries.length > 0 && (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-1">
-            <div>
-              <h3 className="mb-2 px-3 text-[11px] font-semibold tracking-widest text-emerald-400 uppercase">
-                Goes furthest
-              </h3>
-              <ul>
-                {strongest.map((e) => (
-                  <ListItem
-                    key={e.code}
-                    entry={e}
-                    base={base}
-                    onSelect={onSelect}
-                    onFocusCurrency={setFocusCode}
-                  />
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-2 px-3 text-[11px] font-semibold tracking-widest text-red-400 uppercase">
-                Buys less
-              </h3>
-              <ul>
-                {weakest.map((e) => (
-                  <ListItem
-                    key={e.code}
-                    entry={e}
-                    base={base}
-                    onSelect={onSelect}
-                    onFocusCurrency={setFocusCode}
-                  />
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
-      </div>
-    </section>
+      )}
+    </div>
   );
 }

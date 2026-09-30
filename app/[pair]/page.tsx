@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { PlusIcon } from '@heroicons/react/24/outline';
 import ConverterSection from '@/components/ConverterSection';
 import PairInsights from '@/components/PairInsights';
 import { getCurrency } from '@/lib/currencies';
 import { APP_URL, STATIC_PAIRS } from '@/lib/config';
 import { getPairSnapshot } from '@/lib/rates';
 import { detectLocalCurrency } from '@/lib/region-server';
-import { formatAmount, formatDate, formatRate } from '@/lib/format';
+import { defaultAmount, formatAmount, formatDate, formatRate } from '@/lib/format';
 
 // Rendered per request rather than prerendered: the page states the live rate in its
 // HTML, and a build-time snapshot would go stale. Upstream data is cached in lib/rates.
@@ -228,18 +229,49 @@ export default async function PairPage({ params }: Props) {
 
   const heroContent = (
     <>
-      <h1 className="mb-1 text-xl font-bold tracking-tight text-slate-50 sm:text-4xl">
-        {from?.flag} {parsed.from} to {to?.flag} {parsed.to}
-        <span className="mt-1 block text-sm font-semibold tracking-normal text-blue-400/80 sm:text-xl">
-          Live Exchange Rate
+      <p className="t-label text-ink-3">
+        {from?.name ?? parsed.from} to {to?.name ?? parsed.to}
+      </p>
+      <h1 className="mt-3 t-h1 text-ink">
+        {parsed.from} to <span className="text-accent">{parsed.to}</span>
+        <span className="mt-3 block text-base font-normal tracking-normal text-ink-2 sm:text-lg">
+          Live exchange rate
+          {snapshot && (
+            <>
+              {' '}
+              · 1 {parsed.from} = {formatRate(snapshot.rate)} {parsed.to}
+            </>
+          )}
         </span>
       </h1>
-      <p className="mt-2 text-sm text-slate-400 sm:text-base">
-        {snapshot
-          ? `1 ${parsed.from} = ${formatRate(snapshot.rate)} ${parsed.to} · mid-market, updates every 60 seconds`
-          : 'Real-time mid-market rate. Updates every 60 seconds.'}
-      </p>
     </>
+  );
+
+  const details = (
+    <div className="space-y-12">
+      {snapshot && <PairInsights snapshot={snapshot} />}
+
+      {/* Visible FAQ: content must match FAQPage schema for AEO */}
+      <div>
+        <h3 className="mb-3 t-h3 text-ink">
+          {parsed.from} to {parsed.to} questions
+        </h3>
+        <div className="divide-y divide-line border-y border-line-strong">
+          {faqItems.map(({ q, a }) => (
+            <details key={q} className="group">
+              <summary className="flex cursor-pointer list-none items-start justify-between gap-4 py-4 text-base text-ink transition-colors hover:text-accent [&::-webkit-details-marker]:hidden">
+                <span>{q}</span>
+                <PlusIcon
+                  aria-hidden="true"
+                  className="mt-1 h-4 w-4 shrink-0 text-ink-3 transition-transform duration-200 group-open:rotate-45"
+                />
+              </summary>
+              <p className="max-w-2xl pb-5 text-sm leading-relaxed text-ink-2">{a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 
   return (
@@ -252,37 +284,12 @@ export default async function PairPage({ params }: Props) {
       <ConverterSection
         initialFrom={parsed.from}
         initialTo={parsed.to}
+        initialAmount={defaultAmount(snapshot?.rate)}
         heroContent={heroContent}
+        details={details}
         localCurrency={localCurrency}
         seedRates={seedRates}
       />
-
-      <div className="mx-auto max-w-5xl space-y-5 px-4 pb-10 sm:px-6">
-        {snapshot && <PairInsights snapshot={snapshot} />}
-
-        {/* Visible FAQ: content must match FAQPage schema for AEO */}
-        <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6 sm:p-7">
-          <h2 className="mb-5 text-base font-bold text-slate-50">
-            {parsed.from} to {parsed.to}: FAQ
-          </h2>
-          <div className="space-y-0 divide-y divide-slate-800">
-            {faqItems.map(({ q, a }) => (
-              <details key={q} className="group py-4 first:pt-0 last:pb-0">
-                <summary className="flex cursor-pointer list-none items-start justify-between gap-4 text-sm font-semibold text-slate-200 transition-colors hover:text-slate-50">
-                  <span>{q}</span>
-                  <span
-                    aria-hidden="true"
-                    className="mt-0.5 shrink-0 text-slate-600 transition-transform duration-200 group-open:rotate-180"
-                  >
-                    ▾
-                  </span>
-                </summary>
-                <p className="mt-3 text-sm leading-relaxed text-slate-400">{a}</p>
-              </details>
-            ))}
-          </div>
-        </section>
-      </div>
     </main>
   );
 }

@@ -8,9 +8,16 @@ interface Props {
   decimals?: number;
   duration?: number;
   className?: string;
+  style?: React.CSSProperties;
 }
 
-export default function AnimatedNumber({ value, decimals = 2, duration = 500, className }: Props) {
+export default function AnimatedNumber({
+  value,
+  decimals = 2,
+  duration = 500,
+  className,
+  style,
+}: Props) {
   const [display, setDisplay] = useState(value);
   const frameRef = useRef<number | null>(null);
   const currentRef = useRef(value);
@@ -47,7 +54,7 @@ export default function AnimatedNumber({ value, decimals = 2, duration = 500, cl
   }, [value, duration]);
 
   return (
-    <span className={className}>
+    <span className={className} style={style}>
       {display.toLocaleString('en-US', {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals,

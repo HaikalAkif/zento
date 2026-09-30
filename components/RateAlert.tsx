@@ -93,24 +93,21 @@ export default function RateAlert({ base, target, rate }: Props) {
   };
 
   return (
-    <div className="mt-5 rounded-xl border border-slate-700/60 bg-slate-800/40 p-4 text-left">
-      <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200">
-        <BellAlertIcon aria-hidden="true" className="h-4 w-4 text-amber-400" />
+    <div className="mt-5 rounded-xl border border-line-strong bg-paper-2 p-4 text-left">
+      <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-ink">
+        <BellAlertIcon aria-hidden="true" className="h-4 w-4 text-accent" />
         Rate alert
       </p>
 
       {support && support !== 'supported' ? (
-        <p className="text-sm text-slate-400">{SUPPORT_MESSAGE[support]}</p>
+        <p className="text-sm text-ink-2">{SUPPORT_MESSAGE[support]}</p>
       ) : (
-        <form
-          onSubmit={submit}
-          className="flex flex-wrap items-center gap-2 text-sm text-slate-300"
-        >
+        <form onSubmit={submit} className="flex flex-wrap items-center gap-2 text-sm text-ink">
           <span>Notify me when 1 {base} goes</span>
           <div
             role="group"
             aria-label="Direction"
-            className="inline-flex overflow-hidden rounded-lg border border-slate-700"
+            className="inline-flex overflow-hidden rounded-lg border border-line-strong"
           >
             {(['above', 'below'] as const).map((d) => (
               <button
@@ -120,8 +117,8 @@ export default function RateAlert({ base, target, rate }: Props) {
                 aria-pressed={direction === d}
                 className={`px-2.5 py-1 text-xs font-semibold transition-colors ${
                   direction === d
-                    ? 'bg-amber-500/20 text-amber-300'
-                    : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                    ? 'bg-accent/20 text-accent'
+                    : 'bg-paper-2 text-ink-2 hover:text-ink'
                 }`}
               >
                 {d}
@@ -137,14 +134,14 @@ export default function RateAlert({ base, target, rate }: Props) {
               min="0"
               value={threshold}
               onChange={(e) => setThreshold(e.target.value)}
-              className="w-28 rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-100 tabular-nums outline-none focus:border-amber-500/70"
+              className="w-28 rounded-lg border border-line-strong bg-paper px-2 py-1 text-sm text-ink tabular-nums outline-none focus:border-accent"
             />
             <span>{target}</span>
           </label>
           <button
             type="submit"
             disabled={busy}
-            className="ml-auto rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-slate-950 transition-colors hover:bg-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 disabled:opacity-60"
+            className="ml-auto rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-accent-ink transition-colors hover:opacity-90 disabled:opacity-60"
           >
             {busy ? 'Setting…' : 'Set alert'}
           </button>
@@ -154,19 +151,16 @@ export default function RateAlert({ base, target, rate }: Props) {
       {message && (
         <p
           role="status"
-          className={`mt-3 text-xs ${message.tone === 'ok' ? 'text-emerald-400' : 'text-red-400'}`}
+          className={`mt-3 text-xs ${message.tone === 'ok' ? 'text-up' : 'text-down'}`}
         >
           {message.text}
         </p>
       )}
 
       {alerts.length > 0 && (
-        <ul className="mt-4 space-y-1.5 border-t border-slate-700/60 pt-3">
+        <ul className="mt-4 space-y-1.5 border-t border-line-strong pt-3">
           {alerts.map((a) => (
-            <li
-              key={a.id}
-              className="flex items-center justify-between gap-2 text-xs text-slate-400"
-            >
+            <li key={a.id} className="flex items-center justify-between gap-2 text-xs text-ink-2">
               <span className="tabular-nums">
                 1 {a.base} {a.direction} {formatRate(a.threshold)} {a.target}
               </span>
@@ -174,7 +168,7 @@ export default function RateAlert({ base, target, rate }: Props) {
                 type="button"
                 onClick={() => remove(a.id)}
                 aria-label={`Delete alert for ${a.base} ${a.direction} ${formatRate(a.threshold)} ${a.target}`}
-                className="rounded p-1 text-slate-500 hover:bg-slate-700/60 hover:text-red-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                className="rounded p-1 text-ink-3 hover:bg-paper-2 hover:text-down"
               >
                 <TrashIcon className="h-3.5 w-3.5" />
               </button>
@@ -182,7 +176,7 @@ export default function RateAlert({ base, target, rate }: Props) {
           ))}
         </ul>
       )}
-      <p className="mt-3 text-[11px] text-slate-500">
+      <p className="mt-3 text-[11px] text-ink-3">
         Checked hourly against the live rate. Each alert fires once, then clears. No account needed.
       </p>
     </div>

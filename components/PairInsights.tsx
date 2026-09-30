@@ -4,9 +4,14 @@
 import type { PairSnapshot, RangeStats } from '@/lib/rates';
 import { getCurrency } from '@/lib/currencies';
 import { amountLadder, formatAmount, formatDate, formatRate } from '@/lib/format';
+import CurrencyMark from './CurrencyMark';
 
 interface Props {
   snapshot: PairSnapshot;
+}
+
+function Subhead({ children }: { children: React.ReactNode }) {
+  return <h3 className="mb-3 t-h3 text-ink">{children}</h3>;
 }
 
 function ConversionTable({ from, to, rate }: { from: string; to: string; rate: number }) {
@@ -14,31 +19,34 @@ function ConversionTable({ from, to, rate }: { from: string; to: string; rate: n
   const toCur = getCurrency(to);
   return (
     <div className="min-w-0">
-      <h3 className="mb-3 text-sm font-semibold text-slate-200">
-        {fromCur?.flag} {from} to {toCur?.flag} {to}
-      </h3>
+      <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-ink">
+        <CurrencyMark code={from} size="sm" />
+        {from} to {to}
+      </p>
       <table className="w-full text-sm tabular-nums">
         <caption className="sr-only">
           {fromCur?.name ?? from} to {toCur?.name ?? to} conversion table
         </caption>
         <thead>
-          <tr className="text-[11px] tracking-wider text-slate-400 uppercase">
-            <th scope="col" className="pb-2 text-left font-semibold">
+          <tr className="text-xs text-ink-3">
+            <th scope="col" className="py-2 text-left font-normal">
               {from}
             </th>
-            <th scope="col" className="pb-2 text-right font-semibold">
+            <th scope="col" className="py-2 text-right font-normal">
               {to}
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-800">
+        <tbody className="divide-y divide-line border-t border-line-strong">
           {amountLadder(rate).map((amount) => (
             <tr key={amount}>
-              <td className="py-2 text-slate-300">
-                {fromCur?.symbol} {amount.toLocaleString('en-US')} {from}
+              <td className="py-2 text-ink-2">
+                {fromCur?.symbol}
+                {amount.toLocaleString('en-US')}
               </td>
-              <td className="py-2 text-right font-semibold text-slate-100">
-                {toCur?.symbol} {formatAmount(amount * rate)} {to}
+              <td className="py-2 text-right font-medium text-ink">
+                {toCur?.symbol}
+                {formatAmount(amount * rate)}
               </td>
             </tr>
           ))}
@@ -48,13 +56,17 @@ function ConversionTable({ from, to, rate }: { from: string; to: string; rate: n
   );
 }
 
-function StatTile({ label, value, tone }: { label: string; value: string; tone?: 'up' | 'down' }) {
-  const color =
-    tone === 'up' ? 'text-emerald-400' : tone === 'down' ? 'text-red-400' : 'text-slate-100';
+function Stat({ label, value, tone }: { label: string; value: string; tone?: 'up' | 'down' }) {
   return (
-    <div className="rounded-xl border border-slate-700/60 bg-slate-800/50 p-4">
-      <dt className="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">{label}</dt>
-      <dd className={`mt-1 text-base font-bold tabular-nums ${color}`}>{value}</dd>
+    <div className="border-b border-line py-4 pr-4">
+      <dt className="t-label text-ink-3">{label}</dt>
+      <dd
+        className={`mt-1.5 t-stat ${
+          tone === 'up' ? 'text-up' : tone === 'down' ? 'text-down' : 'text-ink'
+        }`}
+      >
+        {value}
+      </dd>
     </div>
   );
 }
@@ -72,82 +84,81 @@ export default function PairInsights({ snapshot }: Props) {
   const monthChange = month && changeLabel(month);
 
   return (
-    <>
-      <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6 sm:p-7">
-        <h2 className="mb-2 text-base font-bold text-slate-50">
+    <div className="space-y-12">
+      <div>
+        <Subhead>
           {from} to {to} exchange rate today
-        </h2>
-        <p className="text-sm leading-relaxed text-slate-300">
-          <strong className="text-slate-50">
-            1 {from} = {formatRate(rate)} {to}
-          </strong>{' '}
-          and 1 {to} = {formatRate(inverse)} {from}, at the mid-market rate as of{' '}
-          <time dateTime={date}>{formatDate(date)}</time>. That means 100 {fromCur?.name ?? from} is
-          worth {formatAmount(100 * rate)} {toCur?.name ?? to}.
+        </Subhead>
+        <p className="max-w-3xl text-lg leading-relaxed text-ink sm:text-xl">
+          1 {from} ={' '}
+          <span className="text-accent">
+            {formatRate(rate)} {to}
+          </span>
+          , and 1 {to} = {formatRate(inverse)} {from}, at the mid-market rate on{' '}
+          <time dateTime={date}>{formatDate(date)}</time>. So 100 {fromCur?.name ?? from} is{' '}
+          {formatAmount(100 * rate)} {toCur?.name ?? to}.
           {month && monthChange && (
-            <>
+            <span className="text-ink-2">
               {' '}
-              Over the past 30 days {from}/{to} has traded between {formatRate(month.low)} and{' '}
+              Over 30 days {from}/{to} traded between {formatRate(month.low)} and{' '}
               {formatRate(month.high)}, a {monthChange.value} move.
-            </>
+            </span>
           )}
         </p>
+      </div>
 
-        {month && year && monthChange && (
-          <dl className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-            <StatTile label="30-day high" value={formatRate(month.high)} />
-            <StatTile label="30-day low" value={formatRate(month.low)} />
-            <StatTile label="30-day change" value={monthChange.value} tone={monthChange.tone} />
-            <StatTile label="30-day average" value={formatRate(month.average)} />
-            <StatTile label="1-year high" value={formatRate(year.high)} />
-            <StatTile label="1-year low" value={formatRate(year.low)} />
+      {month && year && monthChange && (
+        <div>
+          <Subhead>Ranges</Subhead>
+          <dl className="grid grid-cols-2 border-t border-line-strong sm:grid-cols-3">
+            <Stat label="30-day high" value={formatRate(month.high)} />
+            <Stat label="30-day low" value={formatRate(month.low)} />
+            <Stat label="30-day change" value={monthChange.value} tone={monthChange.tone} />
+            <Stat label="30-day average" value={formatRate(month.average)} />
+            <Stat label="1-year high" value={formatRate(year.high)} />
+            <Stat label="1-year low" value={formatRate(year.low)} />
           </dl>
-        )}
+        </div>
+      )}
 
-        {past && past.length > 0 && (
-          <div className="mt-6">
-            <h3 className="mb-3 text-sm font-semibold text-slate-200">
-              {from} to {to} in the past
-            </h3>
-            <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-              {past.map((p) => {
-                const change = (rate / p.rate - 1) * 100;
-                return (
-                  <li
-                    key={p.years}
-                    className="rounded-xl border border-slate-700/60 bg-slate-800/50 p-4"
-                  >
-                    <p className="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
-                      {p.years} {p.years === 1 ? 'year' : 'years'} ago
-                    </p>
-                    <p className="mt-1 text-sm text-slate-200 tabular-nums">
-                      1 {from} = <strong className="text-slate-50">{formatRate(p.rate)}</strong>{' '}
-                      {to}
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-slate-400 tabular-nums">
-                      <time dateTime={p.date}>{formatDate(p.date)}</time> ·{' '}
-                      <span className={change >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-                        {change > 0 ? '+' : ''}
-                        {change.toFixed(1)}% since
-                      </span>
-                    </p>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
-      </section>
+      {past && past.length > 0 && (
+        <div>
+          <Subhead>
+            {from} to {to} in the past
+          </Subhead>
+          <ul className="border-t border-line-strong">
+            {past.map((p) => {
+              const change = (rate / p.rate - 1) * 100;
+              return (
+                <li
+                  key={p.years}
+                  className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-line py-3"
+                >
+                  <span className="text-sm text-ink-2">
+                    {p.years} {p.years === 1 ? 'year' : 'years'} ago,{' '}
+                    <time dateTime={p.date}>{formatDate(p.date)}</time>
+                  </span>
+                  <span className="text-sm font-medium text-ink tabular-nums">
+                    1 {from} = {formatRate(p.rate)} {to}
+                    <span className={`ml-3 ${change >= 0 ? 'text-up' : 'text-down'}`}>
+                      {change > 0 ? '+' : ''}
+                      {change.toFixed(1)}% since
+                    </span>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6 sm:p-7">
-        <h2 className="mb-5 text-base font-bold text-slate-50">
-          {from} / {to} conversion tables
-        </h2>
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+      <div>
+        <Subhead>Conversion tables</Subhead>
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2">
           <ConversionTable from={from} to={to} rate={rate} />
           <ConversionTable from={to} to={from} rate={inverse} />
         </div>
-      </section>
-    </>
+      </div>
+    </div>
   );
 }

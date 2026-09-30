@@ -33,3 +33,12 @@ export function amountLadder(rate: number): number[] {
   const scale = rate < 0.1 ? 10 ** Math.round(-Math.log10(rate)) : 1;
   return LADDER.map((a) => a * scale);
 }
+
+/**
+ * A starting amount worth converting. 1 USD says something; 1 JPY or 1 IDR is a
+ * rounding error, so weak currencies open on a round amount people actually spend.
+ */
+export function defaultAmount(rate: number | undefined): string {
+  if (!rate || rate >= 0.1) return '1';
+  return String(10 ** Math.round(1 - Math.log10(rate)));
+}

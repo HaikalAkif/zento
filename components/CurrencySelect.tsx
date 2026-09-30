@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { getCurrency, CURRENCIES } from '@/lib/currencies';
 import { ChevronDownIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import CurrencyMark from './CurrencyMark';
 
 interface Props {
   value: string;
@@ -106,11 +107,7 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
 
   return (
     <div ref={containerRef} className="relative">
-      {label && (
-        <label className="mb-2 block text-xs font-semibold tracking-widest text-slate-400 uppercase">
-          {label}
-        </label>
-      )}
+      {label && <label className="mb-2 block t-label text-ink-2">{label}</label>}
 
       {/* Trigger */}
       <button
@@ -124,16 +121,19 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={`Select currency, current: ${selected?.name}`}
-        className="flex w-full items-center gap-2.5 rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3.5 transition-all duration-200 hover:border-slate-500 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        title={selected?.name}
+        className={`flex items-center gap-2 rounded-full border py-1.5 pr-2.5 pl-2 transition-colors duration-200 ${
+          open
+            ? 'border-accent bg-accent-tint'
+            : 'border-line-strong bg-paper hover:border-ink-2 hover:bg-paper-2'
+        }`}
       >
-        <span className="shrink-0 text-xl leading-none select-none">{selected?.flag}</span>
-        <span className="shrink-0 text-sm font-bold text-slate-50">{selected?.code}</span>
-        {/* Name hidden on mobile to prevent overflow in narrow viewports */}
-        <span className="hidden min-w-0 flex-1 truncate text-left text-sm text-slate-400 sm:inline">
-          – {selected?.name}
+        <CurrencyMark code={value} size="sm" />
+        <span className="shrink-0 text-base font-semibold tracking-wide text-ink">
+          {selected?.code}
         </span>
         <ChevronDownIcon
-          className={`h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          className={`h-3.5 w-3.5 shrink-0 text-ink-2 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
         />
       </button>
 
@@ -142,12 +142,12 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
         <div
           role="listbox"
           aria-label="Select a currency"
-          className={`absolute top-[calc(100%+6px)] w-64 max-w-[calc(100vw-2rem)] ${align === 'right' ? 'right-0' : 'left-0'} z-100 overflow-hidden rounded-xl border border-slate-700 bg-slate-900 shadow-2xl shadow-black/50`}
+          className={`absolute top-[calc(100%+8px)] w-72 max-w-[calc(100vw-2rem)] ${align === 'right' ? 'right-0' : 'left-0'} z-100 overflow-hidden rounded-2xl border border-line-strong bg-paper shadow-lift motion-safe:animate-[rise_0.18s_ease-out]`}
         >
           {/* Search */}
-          <div className="border-b border-slate-800 p-2.5">
-            <div className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 transition focus-within:border-blue-500">
-              <MagnifyingGlassIcon className="h-3.5 w-3.5 shrink-0 text-slate-500" />
+          <div className="border-b border-line p-2.5">
+            <div className="flex items-center gap-2 rounded-xl bg-paper-2 px-3 py-2">
+              <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-ink-3" />
               <input
                 ref={searchRef}
                 type="text"
@@ -157,9 +157,9 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
                   setFocusedIndex(-1);
                 }}
                 onKeyDown={handleSearchKeyDown}
-                placeholder="Search currency..."
+                placeholder="Search 150+ currencies"
                 aria-label="Search currencies"
-                className="flex-1 bg-transparent text-base leading-tight text-slate-200 placeholder:text-slate-600 focus:outline-none"
+                className="flex-1 bg-transparent text-base leading-tight text-ink placeholder:text-ink-3 focus:outline-none"
               />
               {search && (
                 <button
@@ -170,7 +170,7 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
                   className="shrink-0"
                   aria-label="Clear search"
                 >
-                  <XMarkIcon className="h-3.5 w-3.5 text-slate-500 transition hover:text-slate-300" />
+                  <XMarkIcon className="h-3.5 w-3.5 text-ink-3 transition hover:text-ink" />
                 </button>
               )}
             </div>
@@ -179,13 +179,9 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
           {/* Options: arrow keys drive this list, so options are tabIndex={-1};
               Tab would otherwise walk through every currency */}
           {/* data-lenis-prevent stops Lenis from intercepting wheel events inside this list */}
-          <div
-            ref={listRef}
-            className="max-h-56 overflow-y-auto overscroll-contain py-1"
-            data-lenis-prevent
-          >
+          <div ref={listRef} className="max-h-72 overflow-y-auto overscroll-contain py-1">
             {filtered.length === 0 ? (
-              <div className="px-4 py-3 text-center text-sm text-slate-400">No results</div>
+              <div className="px-4 py-3 text-center text-sm text-ink-2">No results</div>
             ) : (
               filtered.map((c, i) => (
                 <button
@@ -198,23 +194,23 @@ export default function CurrencySelect({ value, onChange, label, align = 'left' 
                   onClick={() => handleSelect(c.code)}
                   className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors ${
                     i === focusedIndex
-                      ? 'bg-slate-700'
+                      ? 'bg-paper-3'
                       : c.code === value
-                        ? 'bg-blue-600/15'
-                        : 'hover:bg-slate-800'
+                        ? 'bg-accent-tint'
+                        : 'hover:bg-paper-2'
                   }`}
                 >
-                  <span className="text-lg leading-none select-none">{c.flag}</span>
+                  <CurrencyMark code={c.code} size="sm" />
                   <div className="flex min-w-0 items-baseline gap-2">
                     <span
-                      className={`shrink-0 text-sm font-bold ${c.code === value ? 'text-blue-400' : 'text-slate-200'}`}
+                      className={`shrink-0 text-sm font-semibold ${c.code === value ? 'text-accent' : 'text-ink'}`}
                     >
                       {c.code}
                     </span>
-                    <span className="truncate text-xs text-slate-400">{c.name}</span>
+                    <span className="truncate text-xs text-ink-2">{c.name}</span>
                   </div>
                   {c.code === value && (
-                    <div className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400" />
+                    <div className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
                   )}
                 </button>
               ))

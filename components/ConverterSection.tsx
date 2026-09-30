@@ -5,24 +5,28 @@ import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import CurrencyConverter from './CurrencyConverter';
-import PopularConversions from './PopularConversions';
+import RateTape from './RateTape';
 import MultiCurrencyResults from './MultiCurrencyResults';
 import RecentPairs from './RecentPairs';
-import VantaGlobe from './VantaGlobe';
+import Seal from './Seal';
+import Section from './Section';
+import SectionNav, { type NavItem } from './SectionNav';
 import CommandBar from './CommandBar';
 import PriceScanner from './PriceScanner';
 import TimeMachine from './TimeMachine';
 import CurrencyGlobe from './CurrencyGlobe';
 import { useConversionHistory } from '@/hooks/useConversionHistory';
-import { CURRENCIES, hasHistory, pairHasHistory } from '@/lib/currencies';
+import { CURRENCIES, getCurrency, hasHistory, pairHasHistory } from '@/lib/currencies';
 import { PAIR_COOKIE, multiTargetsFor, popularPairsFor } from '@/lib/region';
 import type { RateResponse } from '@/lib/api';
+import { useCurrencyRate } from '@/hooks/useCurrencyRate';
+import { formatDate, formatRate } from '@/lib/format';
 import { prefersReducedMotion } from '@/lib/motion';
 
 // Recharts is ~450 kB. The chart sits below the fold, so keep it out of the initial bundle.
 const RateTrendChart = dynamic(() => import('./RateTrendChart'), {
   ssr: false,
-  loading: () => <div className="h-[360px] rounded-2xl border border-slate-800 bg-slate-900" />,
+  loading: () => <div className="h-72 animate-pulse rounded-2xl bg-paper-2" />,
 });
 
 interface Props {
@@ -30,8 +34,10 @@ interface Props {
   initialTo?: string;
   initialAmount?: string;
   heroMode?: boolean;
-  /** Pass JSX from a server component to render inside the Vanta hero on pair pages. */
+  /** Pass JSX from a server component to render as the hero heading on pair pages. */
   heroContent?: ReactNode;
+  /** Server-rendered pair facts (stats, tables, FAQ), shown as the last section */
+  details?: ReactNode;
   /** Visitor's home currency, detected server-side from their region. */
   localCurrency?: string;
   /** Server-fetched rates for the initial pair, so the result is in the first HTML. */
@@ -56,6 +62,7 @@ export default function ConverterSection({
   initialAmount = '1',
   heroMode = false,
   heroContent,
+  details,
   localCurrency = 'USD',
   seedRates,
 }: Props) {
@@ -148,95 +155,159 @@ export default function ConverterSection({
     window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
   }, []);
 
-  const commandBar = (
-    <CommandBar
-      from={fromCurrency}
-      to={toCurrency}
-      amount={amount}
-      localCurrency={localCurrency}
-      onApply={handleCommand}
-      trailing={
-        <PriceScanner
-          from={fromCurrency}
-          to={toCurrency}
-          localCurrency={localCurrency}
-          onApply={handleCommand}
-        />
-      }
-    />
-  );
+  const { data: rateData } = useCurrencyRate(fromCurrency, toCurrency, seedRates);
+  const rate = rateData?.rates[toCurrency];
+  const symbol = (code: string) => getCurrency(code)?.symbol ?? code;
 
   // The globe compares year-on-year ECB rates, so it needs an ECB currency as home
   const globeBase = hasHistory(localCurrency) ? localCurrency : 'USD';
+  const hasHistoryData = pairHasHistory(fromCurrency, toCurrency);
+  const numAmount = parseFloat(amount) || 1;
 
-  const converterCard = (
-    <div className="mx-auto w-full max-w-2xl rounded-2xl border border-slate-800/50 bg-slate-900/70 p-6 shadow-2xl backdrop-blur-md sm:p-8">
-      <CurrencyConverter
-        amount={amount}
-        fromCurrency={fromCurrency}
-        toCurrency={toCurrency}
-        onAmountChange={setAmount}
-        onFromChange={setFromCurrency}
-        onToChange={setToCurrency}
-        onSwap={handleSwap}
-        seedRates={seedRates}
-      />
-    </div>
+  // Only sections that can have data for this pair, numbered in order
+  const sections: (NavItem & { render: () => ReactNode; title: ReactNode; kicker: ReactNode })[] = [
+    ...(hasHistoryData
+      ? [
+          {
+            id: 'trend',
+            label: 'Trend',
+            title: 'Trend',
+            kicker: `How 1 ${fromCurrency} has moved against ${toCurrency}. ECB reference rates, each business day.`,
+            render: () => <RateTrendChart fromCurrency={fromCurrency} toCurrency={toCurrency} />,
+          },
+          {
+            id: 'then-and-now',
+            label: 'Then & now',
+            title: <>Then &amp; now</>,
+            kicker: `What ${numAmount.toLocaleString('en-US')} ${fromCurrency} bought in ${toCurrency} years ago, against today.`,
+            render: () => (
+              <TimeMachine fromCurrency={fromCurrency} toCurrency={toCurrency} amount={amount} />
+            ),
+          },
+        ]
+      : []),
+    {
+      id: 'compare',
+      label: 'Compare',
+      title: 'What it buys',
+      kicker: `${numAmount.toLocaleString('en-US')} ${getCurrency(fromCurrency)?.name ?? fromCurrency} in the currencies that matter to you. Tap one to switch.`,
+      render: () => (
+        <MultiCurrencyResults
+          fromCurrency={fromCurrency}
+          amount={amount}
+          targets={multiTargets}
+          onSelect={handleSelect}
+        />
+      ),
+    },
+    {
+      id: 'globe',
+      label: 'Globe',
+      title: (
+        <>
+          Where your {globeBase} <span className="text-accent">goes further</span>
+        </>
+      ),
+      kicker: `How much more or less ${getCurrency(globeBase)?.name ?? globeBase} buys around the world than a year ago. Drag to spin, tap to convert.`,
+      render: () => <CurrencyGlobe base={globeBase} onSelect={handleSelect} />,
+    },
+    ...(details
+      ? [
+          {
+            id: 'details',
+            label: 'Details',
+            title: 'The details',
+            kicker: `Rates, ranges and conversion tables for ${fromCurrency} and ${toCurrency}.`,
+            render: () => details,
+          },
+        ]
+      : []),
+  ];
+  // Stable while the set of sections is unchanged, so the index doesn't re-observe on
+  // every keystroke in the amount field
+  const navKey = sections.map(({ id, label }) => `${id}:${label}`).join('|');
+  const navItems = useMemo(
+    () =>
+      navKey.split('|').map((entry) => {
+        const [id, label] = entry.split(':');
+        return { id, label };
+      }),
+    [navKey],
   );
 
-  const belowFold = (
-    <div className="mx-auto max-w-5xl space-y-5 px-4 pb-16 sm:px-6">
-      <RecentPairs items={history} onSelect={handleSelect} />
-      <PopularConversions pairs={popularPairs} onSelect={handleSelect} />
-      {fromCurrency !== toCurrency && (
-        <RateTrendChart fromCurrency={fromCurrency} toCurrency={toCurrency} />
-      )}
-      {pairHasHistory(fromCurrency, toCurrency) && (
-        <TimeMachine fromCurrency={fromCurrency} toCurrency={toCurrency} amount={amount} />
-      )}
-      <MultiCurrencyResults
-        fromCurrency={fromCurrency}
-        amount={amount}
-        targets={multiTargets}
-        onSelect={handleSelect}
-      />
-      <CurrencyGlobe base={globeBase} onSelect={handleSelect} />
-    </div>
+  const heading = heroContent ?? (
+    <>
+      <p className="t-label text-ink-3">{CURRENCIES.length} currencies · live mid-market · free</p>
+      <h1 className="mt-3 t-h1 text-ink">
+        Currency, <span className="text-accent">converted.</span>
+      </h1>
+    </>
   );
-
-  if (heroMode || heroContent != null) {
-    const heroInner = heroContent ?? (
-      <>
-        <h1 className="mb-1.5 text-2xl font-bold tracking-tight text-slate-50 sm:mb-2 sm:text-5xl">
-          Zento: currency, converted instantly.
-        </h1>
-        <p className="text-sm text-slate-400 sm:text-base">
-          {CURRENCIES.length} currencies. Live rates. Zero fees.
-        </p>
-      </>
-    );
-
-    return (
-      <>
-        <section className="relative flex min-h-dvh flex-col items-center justify-center px-4 pt-20 pb-16 sm:px-6 sm:py-24">
-          <VantaGlobe />
-          <div className="pointer-events-none absolute inset-0 -z-5 bg-linear-to-b from-slate-950/75 to-slate-950/95" />
-          <div className="mb-6 text-center sm:mb-8">{heroInner}</div>
-          {commandBar}
-          {converterCard}
-        </section>
-        {belowFold}
-      </>
-    );
-  }
 
   return (
-    <div className="pt-20 pb-4">
-      <div className="mx-auto mb-8 max-w-2xl px-4 sm:px-6">
-        {commandBar}
-        {converterCard}
-      </div>
-      {belowFold}
-    </div>
+    <>
+      {/* ── Hero ── */}
+      <section className="relative overflow-hidden">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 pt-24 pb-10 sm:px-6 sm:pt-28 lg:grid-cols-12 lg:gap-14 lg:pb-16">
+          <div className="relative z-10 lg:col-span-7">
+            {heading}
+            <div className="mt-7">
+              <CommandBar
+                from={fromCurrency}
+                to={toCurrency}
+                amount={amount}
+                localCurrency={localCurrency}
+                onApply={handleCommand}
+                trailing={
+                  <PriceScanner
+                    from={fromCurrency}
+                    to={toCurrency}
+                    localCurrency={localCurrency}
+                    onApply={handleCommand}
+                  />
+                }
+              />
+            </div>
+            <div className="mt-4">
+              <CurrencyConverter
+                amount={amount}
+                fromCurrency={fromCurrency}
+                toCurrency={toCurrency}
+                onAmountChange={setAmount}
+                onFromChange={setFromCurrency}
+                onToChange={setToCurrency}
+                onSwap={handleSwap}
+                seedRates={seedRates}
+              />
+            </div>
+            <RecentPairs items={history} onSelect={handleSelect} />
+          </div>
+
+          {/* The pair's own seal. Behind the converter on phones, beside it on desktop. */}
+          <div className="pointer-events-none absolute top-6 -right-[46vw] w-[92vw] max-w-[440px] opacity-[0.14] sm:-right-40 lg:pointer-events-auto lg:relative lg:top-auto lg:right-auto lg:col-span-5 lg:w-full lg:max-w-[480px] lg:justify-self-end lg:opacity-100">
+            <Seal
+              seed={`${fromCurrency}-${toCurrency}`}
+              ring={`Zento · ${fromCurrency} ${toCurrency}${rate ? ` · 1 ${fromCurrency} = ${formatRate(rate)} ${toCurrency}` : ''} · mid-market${rateData ? ` · ${formatDate(rateData.date)}` : ''}`}
+              center={`${symbol(fromCurrency)} · ${symbol(toCurrency)}`}
+            />
+          </div>
+        </div>
+      </section>
+
+      <RateTape pairs={popularPairs} onSelect={handleSelect} />
+      <SectionNav items={navItems} />
+
+      {sections.map((section, i) => (
+        <Section
+          key={section.id}
+          id={section.id}
+          index={String(i + 1).padStart(2, '0')}
+          title={section.title}
+          kicker={section.kicker}
+        >
+          {section.render()}
+        </Section>
+      ))}
+    </>
   );
 }

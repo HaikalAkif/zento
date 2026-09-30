@@ -18,7 +18,6 @@ A fast, minimal currency converter with live exchange rates, built with Next.js 
 - Multi-currency result grid for 10 major currencies at once
 - Animated number transitions
 - SEO-optimised pair pages (`/usd-to-myr`, `/eur-to-usd`, …) with full OG metadata and generated OG images
-- Lenis smooth scrolling
 - Fully accessible (ARIA labels, keyboard nav, screen-reader live regions)
 - Security headers including a Content-Security-Policy, HSTS and X-Frame-Options
 - Auto-generated `robots.txt`, `sitemap.xml` and `llms.txt`
@@ -33,13 +32,16 @@ A fast, minimal currency converter with live exchange rates, built with Next.js 
 | Data fetching   | TanStack Query v5                                      |
 | Charts          | Recharts 3                                             |
 | Icons           | Heroicons v2                                           |
-| Smooth scroll   | Lenis v1                                               |
 | Language        | TypeScript 7                                           |
 | Lint / format   | oxlint + oxfmt                                         |
 | Globe           | cobe (WebGL)                                           |
 | AI              | Workers AI (`@cf/meta/llama-4-scout-17b-16e-instruct`) |
 | Alerts          | Durable Object (SQLite) + Cron Trigger + Web Push      |
 | Package manager | pnpm 12 (pinned via `packageManager`)                  |
+
+## Design
+
+"Engraved money": warm paper, ink and one banknote green, with a matching dark theme that follows the system setting. All colours are CSS tokens in `app/globals.css`, and a five-level type scale (`t-figure`, `t-h1`, `t-h2`, `t-h3`, `t-label`) in a single family, Geist. Each currency pair gets its own generative guilloche seal (`components/Seal.tsx`). Below the converter, content sits in numbered editorial sections with a sticky index rather than stacked cards.
 
 ## Architecture
 

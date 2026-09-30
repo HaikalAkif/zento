@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist } from 'next/font/google';
 import './globals.css';
 import QueryProvider from '@/providers/QueryProvider';
-import LenisProvider from '@/providers/LenisProvider';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { APP_URL } from '@/lib/config';
@@ -12,11 +11,6 @@ const CURRENCY_COUNT = CURRENCIES.length;
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
   subsets: ['latin'],
 });
 
@@ -63,20 +57,21 @@ export const metadata: Metadata = {
     url: APP_URL,
     siteName: 'Zento',
     locale: 'en_US',
-    images: [{ url: '/og.png', width: 1800, height: 945, alt: 'Zento Currency Converter' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Zento: Free Currency Converter | Live Exchange Rates',
     description: `Convert currencies instantly with live mid-market exchange rates. Free for ${CURRENCY_COUNT} world currencies, no sign-up required.`,
-    images: ['/og.png'],
     // No `site` handle. @zentoapp is not a Zento account, and claiming it would
     // attribute every shared card to a stranger. Add it back if the handle is registered.
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#020617',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f2eee3' },
+    { media: '(prefers-color-scheme: dark)', color: '#0d110f' },
+  ],
 };
 
 const jsonLd = [
@@ -156,15 +151,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col bg-slate-950 font-sans text-slate-50 antialiased`}
+        className={`${geistSans.variable} flex min-h-screen flex-col bg-paper font-sans text-ink antialiased`}
       >
-        <LenisProvider>
-          <QueryProvider>
-            <Navbar />
-            <div className="flex-1">{children}</div>
-            <Footer />
-          </QueryProvider>
-        </LenisProvider>
+        <QueryProvider>
+          <Navbar />
+          <div className="flex-1">{children}</div>
+          <Footer />
+        </QueryProvider>
       </body>
     </html>
   );

@@ -4,7 +4,9 @@
 
 ---
 
-## 1. OG Image: `public/og.png` (Critical)
+## 1. OG Image: `public/og.png` (Done: now generated)
+
+> **Update:** share images are now generated in code: `app/opengraph-image.tsx` for the home page and `app/[pair]/opengraph-image.tsx` for pair pages, in the site's paper-and-green style. The static `public/og.png` is no longer used. The notes below are kept for reference only.
 
 Pair pages use the dynamic edge OG generator (already built). The home page falls back to `/og.png` which does not exist yet. Every share from the home page on X, WhatsApp, LinkedIn, Telegram shows a broken preview until this is created.
 
