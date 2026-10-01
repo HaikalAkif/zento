@@ -34,10 +34,6 @@ export default function Footer() {
           <Link href="/about" className={link}>
             About
           </Link>
-          {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- a plain-text route, not a page */}
-          <a href="/llms.txt" className={link}>
-            For AI
-          </a>
           <a
             href="https://haikalakif.com"
             target="_blank"
