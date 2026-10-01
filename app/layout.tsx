@@ -42,11 +42,7 @@ export const metadata: Metadata = {
     'Zento exchange rates',
   ],
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
-  icons: {
-    icon: '/favicon.png',
-    shortcut: '/favicon.png',
-    apple: '/favicon.png',
-  },
+  // Favicon and Apple icon come from app/icon.svg and app/apple-icon.tsx
   alternates: {
     canonical: APP_URL,
   },
@@ -129,7 +125,7 @@ const jsonLd = [
     name: 'Zento',
     alternateName: 'Zento Currency Converter',
     url: APP_URL,
-    logo: `${APP_URL}/favicon.png`,
+    logo: `${APP_URL}/pwa-icon/512`,
     // sameAs is how Google resolves "Zento" to this entity rather than a same-named
     // company. Every additional verifiable profile added here strengthens that link.
     sameAs: ['https://github.com/HaikalAkif/zento'],

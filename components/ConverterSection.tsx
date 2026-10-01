@@ -15,6 +15,7 @@ import { PAIR_COOKIE, multiTargetsFor } from '@/lib/region';
 import type { RateResponse } from '@/lib/api';
 import { prefersReducedMotion } from '@/lib/motion';
 import { pairHref, pairPath, parsePairPath } from '@/lib/paths';
+import { interpretQuery } from '@/lib/command';
 
 // Recharts is ~450 kB. The chart sits below the fold, so keep it out of the initial bundle.
 const RateTrendChart = dynamic(() => import('./RateTrendChart'), {
@@ -83,14 +84,37 @@ export default function ConverterSection({
   // the originally rendered page under the newer URL.
   useEffect(() => {
     /* oxlint-disable react/set-state-in-effect -- hydrates from window.location, unavailable during SSR */
-    const urlPair = parsePairPath(window.location.pathname);
-    if (urlPair && getCurrency(urlPair.from) && getCurrency(urlPair.to)) {
+    // Only a pair of supported currencies counts; anything else keeps the server's pair
+    const parsedPath = parsePairPath(window.location.pathname);
+    const urlPair =
+      parsedPath && getCurrency(parsedPath.from) && getCurrency(parsedPath.to) ? parsedPath : null;
+    if (urlPair) {
       setFromCurrency(urlPair.from);
       setToCurrency(urlPair.to);
     }
-    const raw = new URLSearchParams(window.location.search).get('amount');
-    const n = raw ? parseFloat(raw) : NaN;
-    if (raw && n > 0 && raw !== initialAmount) setAmount(raw);
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get('amount');
+    const urlAmount = raw && parseFloat(raw) > 0 ? raw : null;
+    if (urlAmount && urlAmount !== initialAmount) setAmount(urlAmount);
+    // ?q= opens with a query typed and applied (links from the guide, shared queries)
+    const q = params.get('q')?.slice(0, 200);
+    const r = q
+      ? interpretQuery(
+          q,
+          {
+            from: urlPair?.from ?? initialFrom,
+            to: urlPair?.to ?? initialTo,
+            amount: parseFloat(urlAmount ?? initialAmount) || 1,
+          },
+          localCurrency,
+        )
+      : null;
+    if (q && r) {
+      setQuery(q);
+      setFromCurrency(r.from);
+      setToCurrency(r.to);
+      setAmount(String(r.amount));
+    }
     /* oxlint-enable react/set-state-in-effect */
     // Landing on a pair page (often straight from search) counts as using that pair.
     // Not the home page: its pair is only a regional default nobody chose.
@@ -186,8 +210,8 @@ export default function ConverterSection({
     // Phones: one column. Desktop: the converter pinned in the left half, context
     // scrolling in the right, so the answer never leaves the screen.
     <div className="mx-auto max-w-2xl px-5 pb-24 sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-2 lg:gap-x-20 lg:px-10 xl:gap-x-28">
-      <div className="pt-28 sm:pt-36 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:justify-center lg:overflow-y-auto lg:pt-16 lg:pb-10">
-        <h1 className="mb-6 t-label text-ink-3">{title}</h1>
+      <div className="no-scrollbar pt-28 sm:pt-36 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:justify-center-safe lg:overflow-x-hidden lg:overflow-y-auto lg:pt-16 lg:pb-10">
+        <h1 className="mb-10 t-label text-ink-3">{title}</h1>
 
         <Converter
           query={query}

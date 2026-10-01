@@ -1,9 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import Link from 'next/link';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
+import { QuestionMarkCircleIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import type { RateResponse } from '@/lib/api';
-import { parseCommand, resolveCommand } from '@/lib/command';
+import { interpretQuery, parseCommand } from '@/lib/command';
 import { getCurrency } from '@/lib/currencies';
 import { decimalsFor, formatAmount, formatDate, formatPlain, formatRate } from '@/lib/format';
 import { pairHref } from '@/lib/paths';
@@ -46,6 +48,9 @@ function examplesFor(local: string): string[] {
   ];
 }
 
+/** Tappable examples under the input: one tap fills and runs it */
+const TRY = ['150 euro in yen', '¥30k to sgd', 'dinner 120 aud split 3 ways'];
+
 /** Show a confirmation ("Copied") briefly. */
 function flash(set: (v: boolean) => void): void {
   set(true);
@@ -62,7 +67,7 @@ function TypedPlaceholder({ phrases, active }: { phrases: string[]; active: bool
   return (
     <span
       aria-hidden="true"
-      className="pointer-events-none absolute inset-y-0 left-0 flex items-center overflow-hidden text-2xl tracking-tight whitespace-nowrap text-ink-3 sm:text-3xl"
+      className="pointer-events-none absolute inset-y-0 left-0 flex items-center overflow-hidden text-xl tracking-tight whitespace-nowrap text-ink-3 sm:text-2xl"
     >
       {typed}
       <span className="ml-0.5 inline-block h-[1em] w-px animate-pulse bg-ink-2" />
@@ -70,11 +75,17 @@ function TypedPlaceholder({ phrases, active }: { phrases: string[]; active: bool
   );
 }
 
-/** The figure shrinks as it gets longer, so 30,000,000.00 still fits a phone. */
+/**
+ * Size the figure to fit its own column, not the viewport: on desktop the converter
+ * sits in half the screen. cqi is 1% of the container's width (the converter is an
+ * inline-size container). Geist's light tabular digits are ~0.6em wide, so N
+ * characters fill the width at about 165/N cqi.
+ */
 function figureSize(text: string): React.CSSProperties {
   const len = Math.max(text.length, 4);
-  // The floor is low enough for 17-character results on a 320px phone
-  return { fontSize: `clamp(1.5rem, ${Math.min(19, 118 / len)}vw, ${Math.min(8.5, 58 / len)}rem)` };
+  return {
+    fontSize: `clamp(1.25rem, ${Math.min(24, 165 / len)}cqi, ${Math.min(8.5, 58 / len)}rem)`,
+  };
 }
 
 export default function Converter({
@@ -111,9 +122,8 @@ export default function Converter({
   // anything the query leaves out ("in yen" has no amount) from the current state.
   const handleChange = (text: string) => {
     onQueryChange(text);
-    const next = parseCommand(text);
-    if (!next) return;
-    const r = resolveCommand(next, { from, to, amount: numAmount || 1 }, localCurrency);
+    const r = interpretQuery(text, { from, to, amount: numAmount || 1 }, localCurrency);
+    if (!r) return;
     const nextAmount = String(r.amount);
     if (r.from !== from || r.to !== to || nextAmount !== amount) onApply(r.from, r.to, nextAmount);
   };
@@ -172,18 +182,26 @@ export default function Converter({
   const action = 'hit text-ink-3 transition-colors hover:text-ink disabled:opacity-40';
 
   return (
-    <div>
+    // Container for the figure's cqi sizing
+    <div className="@container">
       {/* ── The one input ── */}
+      <label htmlFor="converter-input" className="mb-2 block t-label text-ink-3">
+        Type an amount, a currency or a question
+      </label>
       <form
         role="search"
         onSubmit={(e) => {
           e.preventDefault();
           inputRef.current?.blur();
         }}
-        className="flex items-center gap-3 border-b border-line pb-3"
+        // A filled field reads as "type here" at a glance; it deliberately doesn't change
+        // on focus (the caret is the focus indicator)
+        className="flex items-center gap-3 rounded-2xl bg-paper-3 py-3 pr-2 pl-4"
       >
+        <SparklesIcon aria-hidden="true" className="h-5 w-5 shrink-0 text-ink-3" />
         <div className="relative min-w-0 flex-1">
           <input
+            id="converter-input"
             ref={inputRef}
             type="text"
             value={query}
@@ -198,26 +216,54 @@ export default function Converter({
             }}
             // Nothing once active; the typed overlay stands in while idle, or a static
             // hint with reduced motion (and before hydration).
-            placeholder={reducedMotion && !focused ? 'Type an amount, like 150 euro in yen' : ''}
-            aria-label="Type an amount and currencies, for example 150 euro in ringgit"
+            placeholder={reducedMotion && !focused ? '150 euro in yen' : ''}
             aria-describedby="converter-hint"
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
             enterKeyHint="done"
-            className="w-full bg-transparent text-2xl tracking-tight text-ink placeholder:text-ink-3 sm:text-3xl"
+            className="w-full bg-transparent text-xl tracking-tight text-ink placeholder:text-ink-3 sm:text-2xl"
           />
           <TypedPlaceholder phrases={examples} active={showTyped} />
         </div>
         {trailing}
+        <Link
+          href="/guide"
+          aria-label="What can I type? Open the guide"
+          title="What can I type?"
+          className="hit shrink-0 p-1 text-ink-3 transition-colors hover:text-ink"
+        >
+          <QuestionMarkCircleIcon className="h-5 w-5" />
+        </Link>
       </form>
-      <p id="converter-hint" aria-live="polite" className="mt-2 min-h-5 t-label text-ink-3">
-        {unparsed
-          ? 'Try an amount and a currency, like "50 pounds in yen"'
-          : parsed?.splitBy && result != null
-            ? `Split ${parsed.splitBy} ways: ${formatAmount(result / parsed.splitBy)} ${to} each`
-            : ''}
+      <p id="converter-hint" aria-live="polite" className="mt-3 min-h-5 t-label text-ink-3">
+        {unparsed ? (
+          'Try an amount and a currency, like "50 pounds in yen"'
+        ) : parsed?.splitBy && result != null ? (
+          `Split ${parsed.splitBy} ways: ${formatAmount(result / parsed.splitBy)} ${to} each`
+        ) : query === '' ? (
+          <>
+            Try{' '}
+            {TRY.map((example, i) => (
+              <span key={example}>
+                {i > 0 && <span aria-hidden="true"> · </span>}
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleChange(example);
+                    inputRef.current?.focus();
+                  }}
+                  className="hit text-ink-2 underline decoration-line-strong underline-offset-4 transition-colors hover:text-ink"
+                >
+                  {example}
+                </button>
+              </span>
+            ))}
+          </>
+        ) : (
+          ''
+        )}
       </p>
 
       {/* ── The answer ── */}

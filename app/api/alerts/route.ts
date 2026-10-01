@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import type { AlertInput, AlertStoreApi } from '@/lib/alerts/types';
+import { withinLimit } from '@/lib/rate-limit';
 
 // A push subscription (endpoint + keys) is the only identity. The endpoint is an
 // unguessable URL only that browser knows, so it doubles as the device's credential:
@@ -60,6 +61,12 @@ export async function POST(request: NextRequest) {
   try {
     switch (body?.action) {
       case 'create': {
+        if (!(await withinLimit('ALERT_LIMITER', request))) {
+          return NextResponse.json(
+            { error: 'Too many alerts created. Try again in a minute.' },
+            { status: 429, headers: { 'Retry-After': '60' } },
+          );
+        }
         const { subscription, base, target, direction, threshold } = body;
         const result = await alerts.create({ subscription, base, target, direction, threshold });
         return result.ok

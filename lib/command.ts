@@ -279,3 +279,16 @@ export function currencyFromText(value: string | null | undefined): string | und
   const key = value.toLowerCase().normalize('NFKC').trim();
   return ALIASES.get(key) ?? ALIASES.get(key.replace(/[.\s]+$/, ''));
 }
+
+/**
+ * Text to a conversion: parse it, then fill the gaps from the current state. Null when
+ * nothing in the text was recognised. The one path every typed or linked query takes.
+ */
+export function interpretQuery(
+  text: string,
+  current: { from: string; to: string; amount: number },
+  localCurrency: string,
+): { from: string; to: string; amount: number; splitBy?: number } | null {
+  const parsed = parseCommand(text);
+  return parsed ? resolveCommand(parsed, current, localCurrency) : null;
+}

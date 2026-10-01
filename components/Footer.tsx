@@ -28,6 +28,9 @@ export default function Footer() {
           . Not financial advice.
         </p>
         <p className="flex gap-5">
+          <Link href="/guide" className={link}>
+            Guide
+          </Link>
           <Link href="/about" className={link}>
             About
           </Link>

@@ -9,6 +9,7 @@ import { APP_URL } from '@/lib/config';
 import { CURRENCIES, getCurrency, hasHistory } from '@/lib/currencies';
 import { ECB_START } from '@/lib/dates';
 import { getEcbTable, getHistory, getLatestTable } from '@/lib/rates';
+import { withinLimit } from '@/lib/rate-limit';
 
 const code = z
   .string()
@@ -193,6 +194,16 @@ function buildServer(): McpServer {
 }
 
 async function handle(request: Request): Promise<Response> {
+  if (!(await withinLimit('MCP_LIMITER', request))) {
+    return Response.json(
+      {
+        jsonrpc: '2.0',
+        id: null,
+        error: { code: -32000, message: 'Rate limited. Try again in a minute.' },
+      },
+      { status: 429, headers: { 'Retry-After': '60', 'Cache-Control': 'no-store' } },
+    );
+  }
   try {
     const server = buildServer();
     const transport = new WebStandardStreamableHTTPServerTransport({

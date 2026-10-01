@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { currencyFromText } from '@/lib/command';
+import { withinLimit } from '@/lib/rate-limit';
 import type { ScanItem, ScanResponse } from '@/lib/api';
 
 // Reads prices out of a photo (menu, price tag, receipt) with a vision model on
@@ -62,19 +63,11 @@ export async function POST(request: NextRequest) {
   }
   if (!env.AI) return NextResponse.json({ error: 'Scanning is unavailable here' }, { status: 503 });
 
-  const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
-  if (env.SCAN_LIMITER) {
-    // The limiter is a guard, not a dependency: if it errors, let the scan through
-    const success = await env.SCAN_LIMITER.limit({ key: ip }).then(
-      (r) => r.success,
-      () => true,
+  if (!(await withinLimit('SCAN_LIMITER', request))) {
+    return NextResponse.json(
+      { error: 'Too many scans. Try again in a minute.' },
+      { status: 429, headers: { 'Retry-After': '60' } },
     );
-    if (!success) {
-      return NextResponse.json(
-        { error: 'Too many scans. Try again in a minute.' },
-        { status: 429, headers: { 'Retry-After': '60' } },
-      );
-    }
   }
 
   let image: unknown;

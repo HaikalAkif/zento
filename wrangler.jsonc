@@ -28,6 +28,19 @@
       "namespace_id": "1001",
       "simple": { "limit": 5, "period": 60 },
     },
+    // MCP: hosted assistants call from a few shared egress IPs, so one bucket covers
+    // many of their users. High enough for that, low enough to stop a runaway loop.
+    {
+      "name": "MCP_LIMITER",
+      "namespace_id": "1002",
+      "simple": { "limit": 600, "period": 60 },
+    },
+    // Creating alerts: stops one IP filling the store with throwaway subscriptions
+    {
+      "name": "ALERT_LIMITER",
+      "namespace_id": "1003",
+      "simple": { "limit": 10, "period": 60 },
+    },
   ],
   // Rate alerts: one SQLite-backed Durable Object holds every alert
   "durable_objects": {

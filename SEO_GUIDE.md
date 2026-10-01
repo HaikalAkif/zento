@@ -44,7 +44,9 @@ Figma (free), Adobe Express, Canva. Export > PNG > upload to `/public/og.png`.
 
 ---
 
-## 2. PWA Icons: `/public/` (High Priority)
+## 2. PWA Icons (Done: now generated)
+
+> **Update:** the favicon is `app/icon.svg`; Apple and install icons are generated from the same mark (`lib/mark.ts`) by `app/apple-icon.tsx` and `app/pwa-icon/[variant]/route.ts`, including a maskable variant. The notes below are kept for reference only.
 
 The manifest currently points `favicon.png` for both 192px and 512px which is almost certainly wrong size. Create these files:
 

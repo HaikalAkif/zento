@@ -4,7 +4,8 @@ import { PlusIcon } from '@heroicons/react/24/outline';
 import ConverterSection from '@/components/ConverterSection';
 import PairInsights from '@/components/PairInsights';
 import { getCurrency } from '@/lib/currencies';
-import { APP_URL, STATIC_PAIRS } from '@/lib/config';
+import { APP_URL } from '@/lib/config';
+import { isIndexablePair } from '@/lib/seo';
 import { getPairSnapshot } from '@/lib/rates';
 import { detectLocalCurrency } from '@/lib/region-server';
 import { defaultAmount, formatAmount, formatDate, formatRate } from '@/lib/format';
@@ -45,9 +46,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    // Only the curated pairs are indexable. The full currency list would otherwise expose
-    // tens of thousands of near-identical URLs and dilute crawl budget.
-    robots: STATIC_PAIRS.includes(pair as (typeof STATIC_PAIRS)[number])
+    // Not every combination is indexable: ~23,000 near-identical URLs would dilute
+    // crawl budget. lib/seo.ts decides which are.
+    // Majors among themselves and everything against USD; the long tail stays out of
+    // the index (but its links are still followed)
+    robots: isIndexablePair(parsed.from, parsed.to)
       ? { index: true, follow: true }
       : { index: false, follow: true },
     keywords: [
@@ -155,6 +158,24 @@ export default async function PairPage({ params }: Props) {
   ];
 
   const structuredData = [
+    // The live rate itself, in the vocabulary search engines and AI answers read
+    ...(snapshot
+      ? [
+          {
+            '@context': 'https://schema.org',
+            '@type': 'ExchangeRateSpecification',
+            name: `${parsed.from} to ${parsed.to} exchange rate`,
+            url: pageUrl,
+            currency: parsed.from,
+            currentExchangeRate: {
+              '@type': 'UnitPriceSpecification',
+              price: Number(snapshot.rate.toPrecision(6)),
+              priceCurrency: parsed.to,
+              validFrom: snapshot.date,
+            },
+          },
+        ]
+      : []),
     {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',

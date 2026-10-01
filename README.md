@@ -39,6 +39,18 @@ A fast, minimal currency converter with live exchange rates, built with Next.js 
 | Alerts          | Durable Object (SQLite) + Cron Trigger + Web Push      |
 | Package manager | pnpm 12 (pinned via `packageManager`)                  |
 
+## Pages
+
+- `/`: the converter. `?q=150 euro in yen` opens with a query typed and applied.
+- `/[from]-to-[to]`: pair pages with live rate, stats, tables and FAQ. Indexable for
+  pairs among 20 majors and anything against USD (`lib/seo.ts`); the rest are
+  `noindex, follow`.
+- `/guide`: everything the input understands, plus every supported currency.
+- `/about`, `/llms.txt`, `/mcp` (Model Context Protocol), `/sitemap.xml`.
+
+Icons are generated from one mark (`lib/mark.ts`): `app/icon.svg`, `app/apple-icon.tsx`
+and `/pwa-icon/192|512|maskable`.
+
 ## Design
 
 Minimal and dark. The converter is a single line you type into: `100`, `150 euro in yen` or `hotel ¥45,000 split 3 ways` are parsed on every keystroke (`lib/command.ts`) and the answer appears below as one large figure. The currency codes under it open a searchable picker. Everything else sits in one narrow column with plain headings.

@@ -12,8 +12,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title || 'Zento rate alert', {
       body: data.body || '',
-      icon: '/favicon.png',
-      badge: '/favicon.png',
+      icon: '/pwa-icon/192',
+      badge: '/pwa-icon/badge',
       tag: data.tag,
       data: { url: data.url || '/' },
     }),

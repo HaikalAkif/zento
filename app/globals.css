@@ -39,6 +39,8 @@
 }
 
 html {
+  /* No visible page scrollbar: wheel, trackpad, touch and keyboard still scroll */
+  scrollbar-width: none;
   scroll-behavior: smooth;
   scroll-padding-top: 5rem;
   -webkit-tap-highlight-color: transparent;
@@ -51,6 +53,18 @@ body {
   overflow-x: hidden;
   /* Geist's slashed zero keeps rates like 0.0260 unambiguous */
   font-feature-settings: 'zero';
+}
+
+html::-webkit-scrollbar {
+  display: none;
+}
+
+/* Scrollable regions that shouldn't show a bar (the pinned converter pane) */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 ::selection {

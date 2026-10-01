@@ -6,14 +6,18 @@
 
 import type { AlertStoreApi } from '@/lib/alerts/types';
 
+interface RateLimiter {
+  limit(options: { key: string }): Promise<{ success: boolean }>;
+}
+
 declare global {
   interface CloudflareEnv {
     AI?: {
       run(model: string, inputs: Record<string, unknown>): Promise<unknown>;
     };
-    SCAN_LIMITER?: {
-      limit(options: { key: string }): Promise<{ success: boolean }>;
-    };
+    SCAN_LIMITER?: RateLimiter;
+    MCP_LIMITER?: RateLimiter;
+    ALERT_LIMITER?: RateLimiter;
     ALERTS?: {
       idFromName(name: string): unknown;
       get(id: unknown): AlertStoreApi;
