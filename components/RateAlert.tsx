@@ -117,7 +117,7 @@ export default function RateAlert({ base, target, rate }: Props) {
                 type="button"
                 onClick={() => pickDirection(d)}
                 aria-pressed={direction === d}
-                className={`transition-colors ${
+                className={`hit transition-colors ${
                   direction === d
                     ? 'text-ink underline underline-offset-4'
                     : 'text-ink-3 hover:text-ink-2'
@@ -143,7 +143,7 @@ export default function RateAlert({ base, target, rate }: Props) {
           <button
             type="submit"
             disabled={busy}
-            className="text-accent transition-opacity hover:opacity-80 disabled:opacity-50"
+            className="hit text-accent transition-opacity hover:opacity-80 disabled:opacity-50"
           >
             {busy ? 'Setting…' : 'Set alert'}
           </button>
@@ -170,7 +170,7 @@ export default function RateAlert({ base, target, rate }: Props) {
                 type="button"
                 onClick={() => remove(a.id)}
                 aria-label={`Delete alert for ${a.base} ${a.direction} ${formatRate(a.threshold)} ${a.target}`}
-                className="text-ink-3 hover:text-down"
+                className="hit text-ink-3 hover:text-down"
               >
                 Remove
               </button>

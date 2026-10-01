@@ -4,7 +4,7 @@ const link = 'text-ink-2 transition-colors hover:text-ink';
 
 export default function Footer() {
   return (
-    <footer className="mx-auto w-full max-w-2xl px-5 pt-10 pb-12 sm:px-6">
+    <footer className="mx-auto w-full max-w-2xl px-5 pt-10 pb-12 sm:px-6 lg:max-w-7xl lg:px-10">
       <div className="flex flex-col gap-3 border-t border-line pt-8 t-label text-ink-3 sm:flex-row sm:justify-between">
         <p>
           Mid-market rates from{' '}

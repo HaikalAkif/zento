@@ -187,7 +187,7 @@ export default function PriceScanner({ from, to, localCurrency, onApply }: Props
         onClick={() => inputRef.current?.click()}
         aria-label="Scan prices with your camera"
         title="Scan a menu or price tag"
-        className="shrink-0 p-1 text-ink-3 transition-colors hover:text-ink"
+        className="hit shrink-0 p-1 text-ink-3 transition-colors hover:text-ink"
       >
         <CameraIcon className="h-5 w-5" />
       </button>
@@ -217,7 +217,7 @@ export default function PriceScanner({ from, to, localCurrency, onApply }: Props
             type="button"
             onClick={close}
             aria-label="Close scanner"
-            className="p-1 text-ink-3 hover:text-ink"
+            className="hit p-1 text-ink-3 hover:text-ink"
           >
             <XMarkIcon className="h-5 w-5" />
           </button>

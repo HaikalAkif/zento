@@ -42,9 +42,16 @@ function rememberPair(from: string, to: string): void {
   document.cookie = `${PAIR_COOKIE}=${from}-${to}; path=/; max-age=31536000; samesite=lax`;
 }
 
+/** Matches Tailwind's lg breakpoint, where the page splits into two panes. */
+const SPLIT_LAYOUT = '(min-width: 1024px)';
+
 function Block({ id, title, children }: { id: string; title: ReactNode; children: ReactNode }) {
   return (
-    <section id={id} aria-labelledby={`${id}-title`} className="mt-24 sm:mt-32">
+    <section
+      id={id}
+      aria-labelledby={`${id}-title`}
+      className="mt-24 sm:mt-32 lg:mt-24 lg:first:mt-0"
+    >
       <h2 id={`${id}-title`} className="mb-6 t-h2 text-ink">
         {title}
       </h2>
@@ -146,7 +153,10 @@ export default function ConverterSection({
     setToCurrency(to);
     if (value) setAmount(value);
     setQuery('');
-    window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+    // On desktop the converter is pinned and always in view; on phones, bring it back
+    if (!window.matchMedia(SPLIT_LAYOUT).matches) {
+      window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+    }
   }, []);
 
   const swap = useCallback(() => {
@@ -173,29 +183,33 @@ export default function ConverterSection({
   const compareTargets = multiTargets.filter((t) => t !== toCurrency);
 
   return (
-    <div className="mx-auto max-w-2xl px-5 pt-28 pb-24 sm:px-6 sm:pt-36">
-      <h1 className="mb-6 t-label text-ink-3">{title}</h1>
+    // Phones: one column. Desktop: the converter pinned in the left half, context
+    // scrolling in the right, so the answer never leaves the screen.
+    <div className="mx-auto max-w-2xl px-5 pb-24 sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-2 lg:gap-x-20 lg:px-10 xl:gap-x-28">
+      <div className="pt-28 sm:pt-36 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:justify-center lg:overflow-y-auto lg:pt-16 lg:pb-10">
+        <h1 className="mb-6 t-label text-ink-3">{title}</h1>
 
-      <Converter
-        query={query}
-        onQueryChange={setQuery}
-        amount={amount}
-        from={fromCurrency}
-        to={toCurrency}
-        localCurrency={localCurrency}
-        seedRates={seedRates}
-        onApply={applyQuery}
-        onPick={setPicking}
-        onSwap={swap}
-        trailing={
-          <PriceScanner
-            from={fromCurrency}
-            to={toCurrency}
-            localCurrency={localCurrency}
-            onApply={select}
-          />
-        }
-      />
+        <Converter
+          query={query}
+          onQueryChange={setQuery}
+          amount={amount}
+          from={fromCurrency}
+          to={toCurrency}
+          localCurrency={localCurrency}
+          seedRates={seedRates}
+          onApply={applyQuery}
+          onPick={setPicking}
+          onSwap={swap}
+          trailing={
+            <PriceScanner
+              from={fromCurrency}
+              to={toCurrency}
+              localCurrency={localCurrency}
+              onApply={select}
+            />
+          }
+        />
+      </div>
 
       <CurrencyPicker
         open={picking !== null}
@@ -208,46 +222,51 @@ export default function ConverterSection({
         onClose={() => setPicking(null)}
       />
 
-      <Block id="compare" title={`${numAmount.toLocaleString('en-US')} ${fromCurrency} elsewhere`}>
-        <MultiCurrencyResults
-          fromCurrency={fromCurrency}
-          amount={amount}
-          targets={compareTargets}
-          onSelect={(from, to) => select(from, to)}
-        />
-      </Block>
+      <div className="lg:pt-32">
+        <Block
+          id="compare"
+          title={`${numAmount.toLocaleString('en-US')} ${fromCurrency} elsewhere`}
+        >
+          <MultiCurrencyResults
+            fromCurrency={fromCurrency}
+            amount={amount}
+            targets={compareTargets}
+            onSelect={(from, to) => select(from, to)}
+          />
+        </Block>
 
-      {pairHasHistory(fromCurrency, toCurrency) && (
-        <>
-          <Block id="trend" title={`${fromCurrency} to ${toCurrency} over time`}>
-            <RateTrendChart fromCurrency={fromCurrency} toCurrency={toCurrency} />
-          </Block>
-          <Block id="then-and-now" title="Then and now">
-            <TimeMachine fromCurrency={fromCurrency} toCurrency={toCurrency} amount={amount} />
-          </Block>
-        </>
-      )}
+        {pairHasHistory(fromCurrency, toCurrency) && (
+          <>
+            <Block id="trend" title={`${fromCurrency} to ${toCurrency} over time`}>
+              <RateTrendChart fromCurrency={fromCurrency} toCurrency={toCurrency} />
+            </Block>
+            <Block id="then-and-now" title="Then and now">
+              <TimeMachine fromCurrency={fromCurrency} toCurrency={toCurrency} amount={amount} />
+            </Block>
+          </>
+        )}
 
-      <Block id="globe" title={`Where ${getCurrency(globeBase)?.name ?? globeBase} goes further`}>
-        <CurrencyGlobe base={globeBase} onSelect={(from, to) => select(from, to)} />
-      </Block>
+        <Block id="globe" title={`Where ${getCurrency(globeBase)?.name ?? globeBase} goes further`}>
+          <CurrencyGlobe base={globeBase} onSelect={(from, to) => select(from, to)} />
+        </Block>
 
-      {details &&
-        (onPagePair ? (
-          <Block id="details" title={`${initialFrom} to ${initialTo} in detail`}>
-            {details}
-          </Block>
-        ) : (
-          <p className="mt-24 t-label text-ink-3">
-            {/* Details are server-rendered for the page's own pair, so link to the new one */}
-            <a
-              href={pairPath(fromCurrency, toCurrency)}
-              className="text-ink-2 underline decoration-line-strong underline-offset-4 hover:text-ink"
-            >
-              Rates, tables and history for {fromCurrency} to {toCurrency}
-            </a>
-          </p>
-        ))}
+        {details &&
+          (onPagePair ? (
+            <Block id="details" title={`${initialFrom} to ${initialTo} in detail`}>
+              {details}
+            </Block>
+          ) : (
+            <p className="mt-24 t-label text-ink-3">
+              {/* Details are server-rendered for the page's own pair, so link to the new one */}
+              <a
+                href={pairPath(fromCurrency, toCurrency)}
+                className="text-ink-2 underline decoration-line-strong underline-offset-4 hover:text-ink"
+              >
+                Rates, tables and history for {fromCurrency} to {toCurrency}
+              </a>
+            </p>
+          ))}
+      </div>
     </div>
   );
 }

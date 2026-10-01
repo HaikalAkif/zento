@@ -83,7 +83,7 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
               type="button"
               onClick={() => setPeriod(value)}
               aria-pressed={period === value}
-              className={`tabular-nums transition-colors ${
+              className={`hit tabular-nums transition-colors ${
                 period === value ? 'text-ink' : 'text-ink-3 hover:text-ink-2'
               }`}
             >

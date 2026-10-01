@@ -73,7 +73,8 @@ function TypedPlaceholder({ phrases, active }: { phrases: string[]; active: bool
 /** The figure shrinks as it gets longer, so 30,000,000.00 still fits a phone. */
 function figureSize(text: string): React.CSSProperties {
   const len = Math.max(text.length, 4);
-  return { fontSize: `clamp(3rem, ${Math.min(19, 118 / len)}vw, ${Math.min(8.5, 58 / len)}rem)` };
+  // The floor is low enough for 17-character results on a 320px phone
+  return { fontSize: `clamp(1.5rem, ${Math.min(19, 118 / len)}vw, ${Math.min(8.5, 58 / len)}rem)` };
 }
 
 export default function Converter({
@@ -168,7 +169,7 @@ export default function Converter({
     }
   }, [from, to, amount]);
 
-  const action = 'text-ink-3 transition-colors hover:text-ink disabled:opacity-40';
+  const action = 'hit text-ink-3 transition-colors hover:text-ink disabled:opacity-40';
 
   return (
     <div>
@@ -227,7 +228,7 @@ export default function Converter({
             type="button"
             onClick={() => onPick('from')}
             aria-label={`Convert from ${getCurrency(from)?.name ?? from}. Change`}
-            className="inline-flex items-baseline gap-0.5 text-ink underline decoration-line-strong decoration-dotted underline-offset-4 hover:decoration-ink-2"
+            className="hit inline-flex items-baseline gap-0.5 text-ink underline decoration-line-strong decoration-dotted underline-offset-4 hover:decoration-ink-2"
           >
             {from}
             <ChevronDownIcon aria-hidden="true" className="h-4 w-4 self-center text-ink-3" />
@@ -263,7 +264,7 @@ export default function Converter({
             type="button"
             onClick={() => onPick('to')}
             aria-label={`Convert to ${toName}. Change`}
-            className="inline-flex items-baseline gap-0.5 text-ink underline decoration-line-strong decoration-dotted underline-offset-4 hover:decoration-ink-2"
+            className="hit inline-flex items-baseline gap-0.5 text-ink underline decoration-line-strong decoration-dotted underline-offset-4 hover:decoration-ink-2"
           >
             {to}
             <ChevronDownIcon aria-hidden="true" className="h-4 w-4 self-center text-ink-3" />

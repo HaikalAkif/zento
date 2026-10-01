@@ -84,6 +84,19 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 
+/*
+ * Bigger tap area, same look. Small text controls get an invisible box around them
+ * so they reach ~44px for thumbs without adding visual padding.
+ */
+@utility hit {
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -12px -8px;
+  }
+}
+
 /* Hairline range input (time machine) */
 input[type='range'] {
   -webkit-appearance: none;

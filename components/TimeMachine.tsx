@@ -42,7 +42,7 @@ export default function TimeMachine({ fromCurrency, toCurrency, amount }: Props)
             type="button"
             onClick={() => setYears(p)}
             aria-pressed={years === p}
-            className={`text-sm tabular-nums transition-colors ${
+            className={`hit text-sm tabular-nums transition-colors ${
               years === p ? 'text-ink' : 'text-ink-3 hover:text-ink-2'
             }`}
           >
