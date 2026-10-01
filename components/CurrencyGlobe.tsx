@@ -4,10 +4,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { Globe } from 'cobe';
 import { getStrength, type StrengthEntry } from '@/lib/api';
-import { getCurrency } from '@/lib/currencies';
 import { formatDate } from '@/lib/format';
+import { currencyName } from '@/lib/i18n';
 import { CURRENCY_LOCATIONS, phiFacing, projectLocation } from '@/lib/geo';
 import { prefersReducedMotion } from '@/lib/motion';
+import { useLang } from './LangProvider';
 
 interface Props {
   /** Whose money we're measuring. Must be an ECB currency. */
@@ -44,7 +45,8 @@ function ListItem({
   onSelect: Props['onSelect'];
   onFocusCurrency: (code: string | null) => void;
 }) {
-  const cur = getCurrency(entry.code);
+  const { lang, t } = useLang();
+  const name = currencyName(entry.code, lang);
   const up = entry.changePct >= 0;
   return (
     <li>
@@ -55,12 +57,12 @@ function ListItem({
         onMouseLeave={() => onFocusCurrency(null)}
         onFocus={() => onFocusCurrency(entry.code)}
         onBlur={() => onFocusCurrency(null)}
-        aria-label={`Convert ${base} to ${cur?.name ?? entry.code}. Your ${base} buys ${Math.abs(entry.changePct).toFixed(1)}% ${up ? 'more' : 'less'} than a year ago`}
+        aria-label={t.globe.convert(base, name, Math.abs(entry.changePct).toFixed(1), up)}
         className="group -mx-3 flex w-[calc(100%+1.5rem)] items-baseline justify-between gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-paper-2"
       >
         <span className="flex min-w-0 items-baseline gap-3">
           <span className="w-10 shrink-0 text-sm font-medium text-ink">{entry.code}</span>
-          <span className="truncate text-sm text-ink-3">{cur?.name}</span>
+          <span className="truncate text-sm text-ink-3">{name}</span>
         </span>
         <span className={`text-sm font-medium tabular-nums ${up ? 'text-up' : 'text-down'}`}>
           {pct(entry.changePct)}
@@ -71,6 +73,7 @@ function ListItem({
 }
 
 export default function CurrencyGlobe({ base, onSelect }: Props) {
+  const { lang, t } = useLang();
   const wrapRef = useRef<HTMLDivElement>(null);
   // cobe re-parents its canvas into a wrapper it never removes, so React only renders
   // an empty host and the effect owns everything inside it.
@@ -280,7 +283,7 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
       <div ref={wrapRef} className="relative mx-auto aspect-square w-full max-w-[420px]">
         {isError ? (
           <p className="absolute inset-0 grid place-items-center t-label text-ink-3">
-            The globe is unavailable right now.
+            {t.globe.unavailable}
           </p>
         ) : (
           <>
@@ -320,7 +323,7 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
       {entries.length > 0 && (
         <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2">
           <div>
-            <h3 className="mb-2 t-label text-ink-3">Goes furthest</h3>
+            <h3 className="mb-2 t-label text-ink-3">{t.globe.furthest}</h3>
             <ul>
               {strongest.map((e) => (
                 <ListItem
@@ -334,7 +337,7 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
             </ul>
           </div>
           <div>
-            <h3 className="mb-2 t-label text-ink-3">Buys less</h3>
+            <h3 className="mb-2 t-label text-ink-3">{t.globe.less}</h3>
             <ul>
               {weakest.map((e) => (
                 <ListItem
@@ -349,7 +352,7 @@ export default function CurrencyGlobe({ base, onSelect }: Props) {
           </div>
           {data && (
             <p className="t-label text-ink-3 sm:col-span-2">
-              Change in what 1 {base} buys since {formatDate(data.since)}. ECB reference rates.
+              {t.globe.footnote(base, formatDate(data.since, lang))}
             </p>
           )}
         </div>

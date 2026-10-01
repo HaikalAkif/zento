@@ -24,10 +24,10 @@ Zento converts currencies instantly using live mid-market rates from ExchangeRat
 
 - Live mid-market exchange rates refreshed every 60 seconds
 - ${CURRENCIES.length} world currencies supported
+- Type plain language: "150 euro in yen", "hotel ¥45,000 split 3 ways", also in Malay ("150 euro ke ringgit")
 - Historical rate charts: 3-day, 7-day, 30-day, 1-year
-- 24-hour rate change percentage indicator
-- Conversion history stored locally (no account)
-- Copy converted amount or share a link to any conversion
+- Price scanner: reads prices from a photo and converts them
+- Rate alerts by push notification, no account
 - Progressive Web App. Installable on mobile and desktop
 - Free. No ads, no sign-up, no fees
 
@@ -40,19 +40,23 @@ Zento converts currencies instantly using live mid-market rates from ExchangeRat
 ## Site Structure
 
 - [Home](${APP_URL}/): Main converter with live rates and popular currency pairs
+- [Guide](${APP_URL}/guide): Everything the converter understands
 - [About](${APP_URL}/about): What Zento is, who builds it, and where the rates come from
+- Currency profiles: ${APP_URL}/currency/{code}, e.g. [Malaysian Ringgit](${APP_URL}/currency/myr): symbol, countries, value against major currencies, 1-year move
+- Malay (Bahasa Melayu): every page also exists under ${APP_URL}/ms, e.g. [${APP_URL}/ms/usd-to-myr](${APP_URL}/ms/usd-to-myr)
 - [Sitemap](${APP_URL}/sitemap.xml): Full list of all pages
 
 ## Currency Pair Pages
 
-Each pair page includes: live converter, 24h change, historical chart, rate trend, multi-currency results, and FAQ.
+Each pair page includes: live converter, historical chart, then-and-now comparison, ranges, conversion tables, FAQ and links to related pairs.
 
 ${pairLines}
 
 ## Structured Data (Schema.org)
 
-- Home: WebSite, WebApplication, FinancialService, Organization
-- Pair pages: BreadcrumbList, FAQPage (up to 8 Q&As with live figures), HowTo (4 steps), FinancialService
+- Home: WebSite, WebApplication, Organization
+- Pair pages: ExchangeRateSpecification, BreadcrumbList, FAQPage (with live figures)
+- Currency pages: BreadcrumbList, FAQPage
 
 ## MCP Server
 

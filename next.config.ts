@@ -30,6 +30,10 @@ const csp = [
 ].join('; ');
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // app/global-not-found.tsx: two root layouts leave no single layout for a 404
+    globalNotFound: true,
+  },
   turbopack: {
     // A stray lockfile exists in the parent folder; pin the root here.
     root: __dirname,

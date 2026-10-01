@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CURRENCIES, getCurrency } from '@/lib/currencies';
+import { currencyName } from '@/lib/i18n';
+import { useLang } from './LangProvider';
 
 interface Props {
   open: boolean;
@@ -19,6 +21,7 @@ interface Props {
  * come for free. A bottom sheet on phones, a centred panel on wider screens.
  */
 export default function CurrencyPicker({ open, title, value, recent, onSelect, onClose }: Props) {
+  const { lang, t } = useLang();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -39,14 +42,18 @@ export default function CurrencyPicker({ open, title, value, recent, onSelect, o
   const options = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (q) {
+      // Matches the code, the English name, and the name in the page's language
       return CURRENCIES.filter(
-        (c) => c.code.toLowerCase().includes(q) || c.name.toLowerCase().includes(q),
+        (c) =>
+          c.code.toLowerCase().includes(q) ||
+          c.name.toLowerCase().includes(q) ||
+          currencyName(c.code, lang).toLowerCase().includes(q),
       ).sort((a, b) => Number(b.code.toLowerCase() === q) - Number(a.code.toLowerCase() === q));
     }
     const recentSet = new Set(recent);
     const first = recent.map((code) => getCurrency(code)).filter((c) => c != null);
     return [...first, ...CURRENCIES.filter((c) => !recentSet.has(c.code))];
-  }, [query, recent]);
+  }, [query, recent, lang]);
 
   // Keep the keyboard-highlighted option in view
   useEffect(() => {
@@ -102,8 +109,8 @@ export default function CurrencyPicker({ open, title, value, recent, onSelect, o
               setActive(0);
             }}
             onKeyDown={onKeyDown}
-            placeholder="Search currency or code"
-            aria-label="Search currencies"
+            placeholder={t.picker.search}
+            aria-label={t.picker.searchLabel}
             role="combobox"
             aria-expanded="true"
             aria-autocomplete="list"
@@ -118,11 +125,11 @@ export default function CurrencyPicker({ open, title, value, recent, onSelect, o
           id="currency-options"
           ref={listRef}
           role="listbox"
-          aria-label="Currencies"
+          aria-label={t.picker.list}
           className="flex-1 overflow-y-auto overscroll-contain px-2 pb-3"
         >
           {options.length === 0 && (
-            <p className="px-3 py-6 text-center text-sm text-ink-3">No currency matches</p>
+            <p className="px-3 py-6 text-center text-sm text-ink-3">{t.picker.none}</p>
           )}
           {options.map((c, i) => (
             // Options stay out of the tab order: the search box owns the keyboard and
@@ -146,9 +153,9 @@ export default function CurrencyPicker({ open, title, value, recent, onSelect, o
               >
                 {c.code}
               </span>
-              <span className="truncate text-sm text-ink-2">{c.name}</span>
+              <span className="truncate text-sm text-ink-2">{currencyName(c.code, lang)}</span>
               {showRecentLabel && i === 0 && (
-                <span className="ml-auto shrink-0 text-xs text-ink-3">recent</span>
+                <span className="ml-auto shrink-0 text-xs text-ink-3">{t.picker.recent}</span>
               )}
             </div>
           ))}

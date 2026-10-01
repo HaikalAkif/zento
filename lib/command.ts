@@ -1,6 +1,8 @@
 // Natural-language conversion queries, parsed locally with no AI call:
 //   "150 euro in ringgit" · "¥30k to myr" · "$2,500 to yen" · "1.5m idr in sgd"
 //   "hotel ¥45,000 split 3 ways" · "usd/jpy" · "in yen"
+// Malay is understood alongside English, whatever the page language:
+//   "150 euro ke ringgit" · "5 ribu baht dalam sgd" · "makan 120 aud bahagi 3"
 
 import { CURRENCIES } from './currencies';
 import { countryCurrencies } from './region';
@@ -117,6 +119,20 @@ const MANUAL_ALIASES: Record<string, string> = {
   europe: 'EUR',
   eurozone: 'EUR',
   koruna: 'CZK',
+  // Malay words that Intl's Malay names don't produce on their own
+  dolar: 'USD',
+  'dolar amerika': 'USD',
+  'dolar sg': 'SGD',
+  'dolar singapore': 'SGD',
+  'dolar australia': 'AUD',
+  'dolar aussie': 'AUD',
+  'dolar hong kong': 'HKD',
+  'dolar taiwan': 'TWD',
+  paun: 'GBP',
+  'paun sterling': 'GBP',
+  rupi: 'INR',
+  amerika: 'USD',
+  eropah: 'EUR',
 };
 
 // Codes that are everyday English words. As bare lowercase words they'd hijack
@@ -160,6 +176,18 @@ function buildAliases(): Map<string, string> {
       const name = names.of(country)?.toLowerCase();
       if (name && name !== country.toLowerCase() && !aliases.has(name)) aliases.set(name, code);
     }
+    // Malay names next ("dolar as", "yen jepun", "jepun"), after English so an English
+    // reading always wins a clash
+    const msCurrencies = new Intl.DisplayNames(['ms'], { type: 'currency' });
+    for (const c of CURRENCIES) {
+      const name = msCurrencies.of(c.code)?.toLowerCase();
+      if (name && name !== c.code.toLowerCase() && !aliases.has(name)) aliases.set(name, c.code);
+    }
+    const msRegions = new Intl.DisplayNames(['ms'], { type: 'region' });
+    for (const [country, code] of countryCurrencies()) {
+      const name = msRegions.of(country)?.toLowerCase();
+      if (name && name !== country.toLowerCase() && !aliases.has(name)) aliases.set(name, code);
+    }
   } catch {
     // No Intl.DisplayNames: country names just don't parse
   }
@@ -195,14 +223,19 @@ const MULTIPLIERS: Record<string, number> = {
   b: 1e9,
   bn: 1e9,
   billion: 1e9,
+  ribu: 1e3,
+  juta: 1e6,
+  bilion: 1e9,
 };
 
 // The multiplier must end the word, so "100euro" is 100 of something, not 100 million
 const AMOUNT_RE =
-  /(\d[\d,]*(?:\.\d+)?|\.\d+)(?:\s*(thousand|million|billion|grand|mil|mn|bn|k|m|b)(?!\p{L}))?/u;
+  /(\d[\d,]*(?:\.\d+)?|\.\d+)(?:\s*(thousand|million|billion|bilion|grand|ribu|juta|mil|mn|bn|k|m|b)(?!\p{L}))?/u;
+// English, then Malay: "bahagi 3", "bahagi kepada 3", "untuk 4 orang", "bagi 4 orang"
 const SPLIT_RE =
-  /\b(?:split|divided?)\s*(?:by|between|among|in(?:to)?)?\s*(\d+)(?:\s*ways?)?|\bfor\s+(\d+)\s*(?:people|persons|pax|of us)\b|\/\s*(\d+)\s*(?:ways?|people)\b/;
-const CONNECTOR_RE = /\s(?:in|to|into|as|=|->|→)\s|\s(?:in|to|into)$/;
+  /\b(?:split|divided?)\s*(?:by|between|among|in(?:to)?)?\s*(\d+)(?:\s*ways?)?|\bfor\s+(\d+)\s*(?:people|persons|pax|of us)\b|\/\s*(\d+)\s*(?:ways?|people)\b|\bbahagi\s*(?:kepada\s*|dengan\s*)?(\d+)(?:\s*orang)?|\b(?:untuk|bagi)\s+(\d+)\s*orang\b/;
+const CONNECTOR_RE =
+  /\s(?:in|to|into|as|ke|kepada|dalam|=|->|→)\s|\s(?:in|to|into|ke|kepada|dalam)$/;
 
 interface Mention {
   code: string;
@@ -218,7 +251,7 @@ export function parseCommand(input: string): ParsedCommand | null {
   // "split 3 ways" first, so its number isn't mistaken for the amount
   const split = text.match(SPLIT_RE);
   if (split) {
-    const n = parseInt(split[1] ?? split[2] ?? split[3], 10);
+    const n = parseInt(split[1] ?? split[2] ?? split[3] ?? split[4] ?? split[5], 10);
     if (n >= 2 && n <= 100) result.splitBy = n;
     text = text.replace(split[0], ' ');
   }

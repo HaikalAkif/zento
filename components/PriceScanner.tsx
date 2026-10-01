@@ -6,6 +6,7 @@ import { scanPrices, type ScanResponse } from '@/lib/api';
 import { CURRENCIES, getCurrency } from '@/lib/currencies';
 import { formatAmount } from '@/lib/format';
 import { useCurrencyRate } from '@/hooks/useCurrencyRate';
+import { useLang } from './LangProvider';
 
 interface Props {
   /** Converter's current pair, used as defaults */
@@ -71,6 +72,7 @@ function Results({
   onTarget: (v: string) => void;
   onPick: (price: number) => void;
 }) {
+  const { t } = useLang();
   const { data, isLoading } = useCurrencyRate(source, target);
   const rate = source === target ? 1 : data?.rates[target];
   const src = getCurrency(source);
@@ -79,23 +81,16 @@ function Results({
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-baseline gap-2 text-sm text-ink-2">
-        <span>Prices in</span>
-        <SourceSelect label="Currency on the photo" value={source} onChange={onSource} />
-        <span>shown in</span>
-        <SourceSelect label="Convert into" value={target} onChange={onTarget} />
+        <span>{t.scanner.pricesIn}</span>
+        <SourceSelect label={t.scanner.sourceLabel} value={source} onChange={onSource} />
+        <span>{t.scanner.shownIn}</span>
+        <SourceSelect label={t.scanner.targetLabel} value={target} onChange={onTarget} />
       </div>
       {scan.printed && (
-        <p className="mb-3 text-xs text-ink-3">
-          Read &ldquo;{scan.printed}&rdquo; on the photo
-          {scan.currency
-            ? ` as ${scan.currency}`
-            : ', which we could not match. Pick the currency above.'}
-        </p>
+        <p className="mb-3 text-xs text-ink-3">{t.scanner.read(scan.printed, scan.currency)}</p>
       )}
       {scan.items.length === 0 ? (
-        <p className="py-6 text-center text-sm text-ink-2">
-          No prices found. Try a closer, straighter shot with good light.
-        </p>
+        <p className="py-6 text-center text-sm text-ink-2">{t.scanner.none}</p>
       ) : (
         <ul className="-mx-3 max-h-[45dvh] overflow-y-auto">
           {scan.items.map((item, i) => (
@@ -134,6 +129,7 @@ function Results({
 }
 
 export default function PriceScanner({ from, to, localCurrency, onApply }: Props) {
+  const { t } = useLang();
   const inputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [photo, setPhoto] = useState<string | null>(null);
@@ -176,7 +172,7 @@ export default function PriceScanner({ from, to, localCurrency, onApply }: Props
       setTarget(dst);
       setScan(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not read that photo.');
+      setError(err instanceof Error ? err.message : t.scanner.failed);
     }
   };
 
@@ -185,8 +181,8 @@ export default function PriceScanner({ from, to, localCurrency, onApply }: Props
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        aria-label="Scan prices with your camera"
-        title="Scan a menu or price tag"
+        aria-label={t.scanner.button}
+        title={t.scanner.buttonTitle}
         className="hit shrink-0 p-1 text-ink-3 transition-colors hover:text-ink"
       >
         <CameraIcon className="h-5 w-5" />
@@ -208,15 +204,15 @@ export default function PriceScanner({ from, to, localCurrency, onApply }: Props
       <dialog
         ref={dialogRef}
         onClose={reset}
-        aria-label="Price scanner"
+        aria-label={t.scanner.title}
         className="m-0 mt-auto max-h-[90dvh] w-full max-w-none rounded-t-2xl bg-paper-2 p-0 text-ink backdrop:bg-black/60 sm:m-auto sm:w-[30rem] sm:rounded-2xl"
       >
         <div className="flex items-center justify-between px-5 pt-4">
-          <h2 className="t-label text-ink-3">Price scanner</h2>
+          <h2 className="t-label text-ink-3">{t.scanner.title}</h2>
           <button
             type="button"
             onClick={close}
-            aria-label="Close scanner"
+            aria-label={t.scanner.close}
             className="hit p-1 text-ink-3 hover:text-ink"
           >
             <XMarkIcon className="h-5 w-5" />
@@ -227,13 +223,17 @@ export default function PriceScanner({ from, to, localCurrency, onApply }: Props
           {photo && (
             <div className="relative mb-5 overflow-hidden rounded-xl bg-paper">
               {/* oxlint-disable-next-line nextjs/no-img-element -- a local data URL, nothing for next/image to optimise */}
-              <img src={photo} alt="What you scanned" className="max-h-56 w-full object-contain" />
+              <img
+                src={photo}
+                alt={t.scanner.photoAlt}
+                className="max-h-56 w-full object-contain"
+              />
               {!scan && !error && (
                 // Sweeping scan line while the model reads the photo
                 <div className="pointer-events-none absolute inset-0">
                   <div className="absolute inset-x-0 h-16 animate-[scan_1.6s_ease-in-out_infinite] bg-linear-to-b from-transparent via-accent/25 to-transparent motion-reduce:hidden" />
                   <p className="absolute right-0 bottom-2 left-0 text-center text-xs text-ink">
-                    Reading prices…
+                    {t.scanner.reading}
                   </p>
                 </div>
               )}
@@ -259,15 +259,13 @@ export default function PriceScanner({ from, to, localCurrency, onApply }: Props
           ) : null}
 
           <div className="mt-5 flex items-baseline justify-between gap-4">
-            <p className="t-label text-ink-3">
-              Tap a price to open it in the converter. Zento doesn&apos;t keep your photos.
-            </p>
+            <p className="t-label text-ink-3">{t.scanner.footnote}</p>
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
               className="shrink-0 t-label text-ink-2 hover:text-ink"
             >
-              New photo
+              {t.scanner.again}
             </button>
           </div>
         </div>

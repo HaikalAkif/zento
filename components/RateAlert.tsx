@@ -12,6 +12,7 @@ import {
   subscribe,
   type PushSupport,
 } from '@/lib/push';
+import { useLang } from './LangProvider';
 
 interface Props {
   base: string;
@@ -26,15 +27,14 @@ function suggest(rate: number, direction: AlertDirection): string {
   return formatRate(value).replace(/,/g, '');
 }
 
-const SUPPORT_MESSAGE: Record<Exclude<PushSupport, 'supported'>, string> = {
-  unsupported: "This browser can't receive push notifications.",
-  'ios-needs-install':
-    'On iPhone and iPad, add Zento to your Home Screen (Share → Add to Home Screen), then open it from there to set alerts.',
-  denied:
-    'Notifications are blocked for this site. Allow them in your browser settings to set alerts.',
-};
-
 export default function RateAlert({ base, target, rate }: Props) {
+  const { t } = useLang();
+  const copy = t.alert;
+  const supportMessage: Record<Exclude<PushSupport, 'supported'>, string> = {
+    unsupported: copy.unsupported,
+    'ios-needs-install': copy.iosInstall,
+    denied: copy.denied,
+  };
   const [support, setSupport] = useState<PushSupport | null>(null);
   const [direction, setDirection] = useState<AlertDirection>('above');
   const [threshold, setThreshold] = useState(() => suggest(rate, 'above'));
@@ -60,7 +60,7 @@ export default function RateAlert({ base, target, rate }: Props) {
     e.preventDefault();
     const value = parseFloat(threshold);
     if (!isFinite(value) || value <= 0) {
-      setMessage({ tone: 'error', text: 'Enter a rate above zero.' });
+      setMessage({ tone: 'error', text: copy.positive });
       return;
     }
     setBusy(true);
@@ -71,13 +71,13 @@ export default function RateAlert({ base, target, rate }: Props) {
       setAlerts((prev) => [...prev, alert]);
       setMessage({
         tone: 'ok',
-        text: `We'll notify you once when 1 ${base} goes ${direction} ${formatRate(value)} ${target}.`,
+        text: copy.done(base, copy[direction], formatRate(value), target),
       });
     } catch (err) {
       setSupport(pushSupport());
       setMessage({
         tone: 'error',
-        text: err instanceof Error ? err.message : 'Could not set the alert.',
+        text: err instanceof Error ? err.message : copy.failed,
       });
     } finally {
       setBusy(false);
@@ -94,8 +94,7 @@ export default function RateAlert({ base, target, rate }: Props) {
       // Keep it in the list: it still exists on the server and would still fire
       setMessage({
         tone: 'error',
-        text:
-          err instanceof Error ? `Couldn't delete: ${err.message}` : "Couldn't delete the alert.",
+        text: err instanceof Error ? copy.deleteFailed(err.message) : copy.deleteGeneric,
       });
     }
   };
@@ -103,14 +102,14 @@ export default function RateAlert({ base, target, rate }: Props) {
   return (
     <div className="mt-8 text-[15px]">
       {support && support !== 'supported' ? (
-        <p className="text-ink-2">{SUPPORT_MESSAGE[support]}</p>
+        <p className="text-ink-2">{supportMessage[support]}</p>
       ) : (
         <form
           onSubmit={submit}
           className="flex flex-wrap items-baseline gap-x-2 gap-y-3 text-ink-2"
         >
-          <span>Tell me when 1 {base} goes</span>
-          <span role="group" aria-label="Direction" className="inline-flex gap-2">
+          <span>{copy.sentence(base)}</span>
+          <span role="group" aria-label={copy.direction} className="inline-flex gap-2">
             {(['above', 'below'] as const).map((d) => (
               <button
                 key={d}
@@ -123,12 +122,12 @@ export default function RateAlert({ base, target, rate }: Props) {
                     : 'text-ink-3 hover:text-ink-2'
                 }`}
               >
-                {d}
+                {copy[d]}
               </button>
             ))}
           </span>
           <label className="inline-flex items-baseline gap-1.5">
-            <span className="sr-only">Threshold rate in {target}</span>
+            <span className="sr-only">{copy.threshold(target)}</span>
             <input
               type="number"
               inputMode="decimal"
@@ -145,7 +144,7 @@ export default function RateAlert({ base, target, rate }: Props) {
             disabled={busy}
             className="hit text-accent transition-opacity hover:opacity-80 disabled:opacity-50"
           >
-            {busy ? 'Setting…' : 'Set alert'}
+            {busy ? copy.setting : copy.set}
           </button>
         </form>
       )}
@@ -164,23 +163,23 @@ export default function RateAlert({ base, target, rate }: Props) {
           {alerts.map((a) => (
             <li key={a.id} className="flex items-baseline gap-4 tabular-nums">
               <span>
-                1 {a.base} {a.direction} {formatRate(a.threshold)} {a.target}
+                1 {a.base} {copy[a.direction]} {formatRate(a.threshold)} {a.target}
               </span>
               <button
                 type="button"
                 onClick={() => remove(a.id)}
-                aria-label={`Delete alert for ${a.base} ${a.direction} ${formatRate(a.threshold)} ${a.target}`}
+                aria-label={copy.removeLabel(
+                  `1 ${a.base} ${copy[a.direction]} ${formatRate(a.threshold)} ${a.target}`,
+                )}
                 className="hit text-ink-3 hover:text-down"
               >
-                Remove
+                {copy.remove}
               </button>
             </li>
           ))}
         </ul>
       )}
-      <p className="mt-3 t-label text-ink-3">
-        Checked hourly. Each alert fires once. No account needed.
-      </p>
+      <p className="mt-3 t-label text-ink-3">{copy.footnote}</p>
     </div>
   );
 }

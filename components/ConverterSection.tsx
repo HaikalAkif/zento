@@ -14,6 +14,8 @@ import { getCurrency, hasHistory, pairHasHistory } from '@/lib/currencies';
 import { PAIR_COOKIE, multiTargetsFor } from '@/lib/region';
 import type { RateResponse } from '@/lib/api';
 import { prefersReducedMotion } from '@/lib/motion';
+import { currencyName, localePath } from '@/lib/i18n';
+import { useLang } from './LangProvider';
 import { pairHref, pairPath, parsePairPath } from '@/lib/paths';
 import { interpretQuery } from '@/lib/command';
 
@@ -70,6 +72,7 @@ export default function ConverterSection({
   localCurrency = 'USD',
   seedRates,
 }: Props) {
+  const { lang, t } = useLang();
   const [amount, setAmount] = useState(initialAmount);
   const [fromCurrency, setFromCurrency] = useState(initialFrom);
   const [toCurrency, setToCurrency] = useState(initialTo);
@@ -138,13 +141,13 @@ export default function ConverterSection({
       window.history.replaceState(
         window.history.state,
         '',
-        pairHref(fromCurrency, toCurrency, amount),
+        pairHref(fromCurrency, toCurrency, amount, lang),
       );
       // The URL now names this pair, so the tab should too
-      document.title = `${fromCurrency} to ${toCurrency}: Live Exchange Rate | Zento`;
+      document.title = t.section.docTitle(fromCurrency, toCurrency);
     }, 500);
     return () => clearTimeout(timer);
-  }, [fromCurrency, toCurrency, amount, addToHistory]);
+  }, [fromCurrency, toCurrency, amount, addToHistory, lang, t]);
 
   // Alt+S swaps, outside text fields
   useEffect(() => {
@@ -202,9 +205,9 @@ export default function ConverterSection({
   const globeBase = hasHistory(localCurrency) ? localCurrency : 'USD';
   const onPagePair = fromCurrency === initialFrom && toCurrency === initialTo;
   // Pair pages are about one pair; once you've moved off it, say what's on screen
-  const title = details && !onPagePair ? `${fromCurrency} to ${toCurrency} exchange rate` : heading;
+  const title = details && !onPagePair ? t.section.pairHeading(fromCurrency, toCurrency) : heading;
   // The big figure already shows the target, so don't list it again
-  const compareTargets = multiTargets.filter((t) => t !== toCurrency);
+  const compareTargets = multiTargets.filter((code) => code !== toCurrency);
 
   return (
     // Phones: one column. Desktop: the converter pinned in the left half, context
@@ -237,7 +240,7 @@ export default function ConverterSection({
 
       <CurrencyPicker
         open={picking !== null}
-        title={picking === 'from' ? 'Convert from' : 'Convert to'}
+        title={picking === 'from' ? t.picker.from : t.picker.to}
         value={picking === 'from' ? fromCurrency : toCurrency}
         recent={recentCodes}
         onSelect={(code) =>
@@ -249,7 +252,7 @@ export default function ConverterSection({
       <div className="lg:pt-32">
         <Block
           id="compare"
-          title={`${numAmount.toLocaleString('en-US')} ${fromCurrency} elsewhere`}
+          title={t.section.elsewhere(numAmount.toLocaleString('en-US'), fromCurrency)}
         >
           <MultiCurrencyResults
             fromCurrency={fromCurrency}
@@ -261,32 +264,32 @@ export default function ConverterSection({
 
         {pairHasHistory(fromCurrency, toCurrency) && (
           <>
-            <Block id="trend" title={`${fromCurrency} to ${toCurrency} over time`}>
+            <Block id="trend" title={t.section.overTime(fromCurrency, toCurrency)}>
               <RateTrendChart fromCurrency={fromCurrency} toCurrency={toCurrency} />
             </Block>
-            <Block id="then-and-now" title="Then and now">
+            <Block id="then-and-now" title={t.section.thenAndNow}>
               <TimeMachine fromCurrency={fromCurrency} toCurrency={toCurrency} amount={amount} />
             </Block>
           </>
         )}
 
-        <Block id="globe" title={`Where ${getCurrency(globeBase)?.name ?? globeBase} goes further`}>
+        <Block id="globe" title={t.section.goesFurther(currencyName(globeBase, lang))}>
           <CurrencyGlobe base={globeBase} onSelect={(from, to) => select(from, to)} />
         </Block>
 
         {details &&
           (onPagePair ? (
-            <Block id="details" title={`${initialFrom} to ${initialTo} in detail`}>
+            <Block id="details" title={t.section.detail(initialFrom, initialTo)}>
               {details}
             </Block>
           ) : (
             <p className="mt-24 t-label text-ink-3">
               {/* Details are server-rendered for the page's own pair, so link to the new one */}
               <a
-                href={pairPath(fromCurrency, toCurrency)}
+                href={localePath(lang, pairPath(fromCurrency, toCurrency))}
                 className="text-ink-2 underline decoration-line-strong underline-offset-4 hover:text-ink"
               >
-                Rates, tables and history for {fromCurrency} to {toCurrency}
+                {t.section.otherDetails(fromCurrency, toCurrency)}
               </a>
             </p>
           ))}

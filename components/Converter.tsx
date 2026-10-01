@@ -6,9 +6,10 @@ import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { QuestionMarkCircleIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import type { RateResponse } from '@/lib/api';
 import { interpretQuery, parseCommand } from '@/lib/command';
-import { getCurrency } from '@/lib/currencies';
 import { decimalsFor, formatAmount, formatDate, formatPlain, formatRate } from '@/lib/format';
 import { pairHref } from '@/lib/paths';
+import { currencyName, localePath } from '@/lib/i18n';
+import { useLang } from './LangProvider';
 import { prefersReducedMotion } from '@/lib/motion';
 import { useCurrencyRate } from '@/hooks/useCurrencyRate';
 import { useRateChange } from '@/hooks/useRateChange';
@@ -35,21 +36,6 @@ interface Props {
   /** Extra control at the end of the input, e.g. the price scanner */
   trailing?: ReactNode;
 }
-
-function examplesFor(local: string): string[] {
-  const own = local === 'USD' ? '100 usd in euros' : `100 usd in ${local.toLowerCase()}`;
-  return [
-    own,
-    '150 euro in ringgit',
-    '¥30k to sgd',
-    'hotel ¥45,000 split 3 ways',
-    '100 euro to argentina',
-    '1.5m idr in usd',
-  ];
-}
-
-/** Tappable examples under the input: one tap fills and runs it */
-const TRY = ['150 euro in yen', '¥30k to sgd', 'dinner 120 aud split 3 ways'];
 
 /** Show a confirmation ("Copied") briefly. */
 function flash(set: (v: boolean) => void): void {
@@ -101,6 +87,7 @@ export default function Converter({
   onSwap,
   trailing,
 }: Props) {
+  const { lang, t } = useLang();
   const inputRef = useRef<HTMLInputElement>(null);
   const [focused, setFocused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(true);
@@ -112,7 +99,7 @@ export default function Converter({
     setReducedMotion(prefersReducedMotion()); // oxlint-disable-line react/set-state-in-effect -- matchMedia is client-only
   }, []);
 
-  const examples = useMemo(() => examplesFor(localCurrency), [localCurrency]);
+  const examples = useMemo(() => t.converter.examples(localCurrency), [t, localCurrency]);
   const showTyped = !focused && query === '' && !reducedMotion;
 
   const numAmount = parseFloat(amount) || 0;
@@ -151,7 +138,7 @@ export default function Converter({
   const resultText = result != null ? formatAmount(result) : '';
   // Loaded, but the provider has no rate for this target: an error, not a wait
   const missingRate = !isSame && !isLoading && data != null && rate == null;
-  const toName = getCurrency(to)?.name ?? to;
+  const toName = currencyName(to, lang);
   const unparsed = query.trim() !== '' && !parsed;
 
   const copy = useCallback(async () => {
@@ -166,10 +153,10 @@ export default function Converter({
 
   const share = useCallback(async () => {
     // Built from what's on screen: the address bar only catches up after a debounce
-    const url = `${window.location.origin}${pairHref(from, to, amount)}`;
+    const url = `${window.location.origin}${pairHref(from, to, amount, lang)}`;
     try {
       if (navigator.share && window.matchMedia('(pointer: coarse)').matches) {
-        await navigator.share({ title: `${from} to ${to} on Zento`, url });
+        await navigator.share({ title: t.converter.shareTitle(from, to), url });
         return;
       }
       await navigator.clipboard.writeText(url);
@@ -177,7 +164,7 @@ export default function Converter({
     } catch {
       // Share sheet dismissed or clipboard blocked
     }
-  }, [from, to, amount]);
+  }, [from, to, amount, lang, t]);
 
   const action = 'hit text-ink-3 transition-colors hover:text-ink disabled:opacity-40';
 
@@ -186,7 +173,7 @@ export default function Converter({
     <div className="@container">
       {/* ── The one input ── */}
       <label htmlFor="converter-input" className="mb-2 block t-label text-ink-3">
-        Type an amount, a currency or a question
+        {t.converter.label}
       </label>
       <form
         role="search"
@@ -216,7 +203,7 @@ export default function Converter({
             }}
             // Nothing once active; the typed overlay stands in while idle, or a static
             // hint with reduced motion (and before hydration).
-            placeholder={reducedMotion && !focused ? '150 euro in yen' : ''}
+            placeholder={reducedMotion && !focused ? t.converter.staticPlaceholder : ''}
             aria-describedby="converter-hint"
             autoComplete="off"
             autoCorrect="off"
@@ -229,9 +216,9 @@ export default function Converter({
         </div>
         {trailing}
         <Link
-          href="/guide"
-          aria-label="What can I type? Open the guide"
-          title="What can I type?"
+          href={localePath(lang, '/guide')}
+          aria-label={t.converter.guideButton}
+          title={t.converter.guideTitle}
           className="hit shrink-0 p-1 text-ink-3 transition-colors hover:text-ink"
         >
           <QuestionMarkCircleIcon className="h-5 w-5" />
@@ -239,13 +226,13 @@ export default function Converter({
       </form>
       <p id="converter-hint" aria-live="polite" className="mt-3 min-h-5 t-label text-ink-3">
         {unparsed ? (
-          'Try an amount and a currency, like "50 pounds in yen"'
+          t.converter.unparsed
         ) : parsed?.splitBy && result != null ? (
-          `Split ${parsed.splitBy} ways: ${formatAmount(result / parsed.splitBy)} ${to} each`
+          t.converter.split(parsed.splitBy, formatAmount(result / parsed.splitBy), to)
         ) : query === '' ? (
           <>
-            Try{' '}
-            {TRY.map((example, i) => (
+            {t.converter.tryWord}{' '}
+            {t.converter.tryExamples.map((example, i) => (
               <span key={example}>
                 {i > 0 && <span aria-hidden="true"> · </span>}
                 <button
@@ -273,7 +260,7 @@ export default function Converter({
           <button
             type="button"
             onClick={() => onPick('from')}
-            aria-label={`Convert from ${getCurrency(from)?.name ?? from}. Change`}
+            aria-label={t.converter.pickFrom(currencyName(from, lang))}
             className="hit inline-flex items-baseline gap-0.5 text-ink underline decoration-line-strong decoration-dotted underline-offset-4 hover:decoration-ink-2"
           >
             {from}
@@ -285,9 +272,7 @@ export default function Converter({
         <div className="mt-3 min-h-[1em]" aria-live="polite" aria-atomic="true">
           {(isError && !data) || missingRate ? (
             <p className="text-lg text-down">
-              {missingRate
-                ? `There's no live rate for ${from} to ${to} right now.`
-                : 'Rates are unavailable right now. Try again shortly.'}
+              {missingRate ? t.converter.noRate(from, to) : t.converter.unavailable}
             </p>
           ) : result == null || isLoading ? (
             <span
@@ -309,7 +294,7 @@ export default function Converter({
           <button
             type="button"
             onClick={() => onPick('to')}
-            aria-label={`Convert to ${toName}. Change`}
+            aria-label={t.converter.pickTo(toName)}
             className="hit inline-flex items-baseline gap-0.5 text-ink underline decoration-line-strong decoration-dotted underline-offset-4 hover:decoration-ink-2"
           >
             {to}
@@ -329,24 +314,24 @@ export default function Converter({
                 <span className={change.direction === 'up' ? 'text-up' : 'text-down'}>
                   {' '}
                   {change.direction === 'up' ? '+' : '−'}
-                  {Math.abs(change.percent).toFixed(2)}% today
+                  {Math.abs(change.percent).toFixed(2)}% {t.converter.today}
                 </span>
               )}
-              <span> · {formatDate(data.date)}</span>
+              <span> · {formatDate(data.date, lang)}</span>
             </>
           ) : (
             ' '
           )}
         </p>
         <div className="flex gap-5">
-          <button type="button" onClick={onSwap} className={action} title="Swap (Alt+S)">
-            Swap
+          <button type="button" onClick={onSwap} className={action} title={t.converter.swapTitle}>
+            {t.converter.swap}
           </button>
           <button type="button" onClick={copy} className={action} disabled={result == null}>
-            {copied ? 'Copied' : 'Copy'}
+            {copied ? t.converter.copied : t.converter.copy}
           </button>
           <button type="button" onClick={share} className={action}>
-            {shared ? 'Link copied' : 'Share'}
+            {shared ? t.converter.linkCopied : t.converter.share}
           </button>
           <button
             type="button"
@@ -355,7 +340,7 @@ export default function Converter({
             disabled={isSame || !rate}
             className={`${action} ${alertOpen ? '!text-ink' : ''}`}
           >
-            Alert
+            {t.converter.alert}
           </button>
         </div>
       </div>

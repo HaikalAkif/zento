@@ -4,18 +4,15 @@ import { useState, useId } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useHistoricalRates, Period } from '@/hooks/useHistoricalRates';
 import { getCurrency } from '@/lib/currencies';
+import { LANG_META } from '@/lib/i18n';
+import { useLang } from './LangProvider';
 
 interface Props {
   fromCurrency: string;
   toCurrency: string;
 }
 
-const PERIODS: { label: string; value: Period }[] = [
-  { label: '3D', value: '3D' },
-  { label: '7D', value: '7D' },
-  { label: '30D', value: '30D' },
-  { label: '1Y', value: '1Y' },
-];
+const PERIODS: Period[] = ['3D', '7D', '30D', '1Y'];
 
 // Parse "YYYY-MM-DD" as local date to avoid UTC-offset day shift
 function parseLocalDate(dateStr: string): Date {
@@ -23,14 +20,16 @@ function parseLocalDate(dateStr: string): Date {
   return new Date(y, m - 1, d);
 }
 
-function formatXTick(dateStr: string, period: Period): string {
+function formatXTick(dateStr: string, period: Period, locale: string): string {
   const d = parseLocalDate(dateStr);
-  if (period === '1Y') return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-  if (period === '3D') return d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  if (period === '1Y') return d.toLocaleDateString(locale, { month: 'short', year: '2-digit' });
+  if (period === '3D') return d.toLocaleDateString(locale, { weekday: 'short', day: 'numeric' });
+  return d.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
 }
 
 export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
+  const { lang, t } = useLang();
+  const locale = LANG_META[lang].date;
   const uid = useId();
   const gradientId = `areaGradient-${uid}`;
 
@@ -63,7 +62,7 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
                 {isPositive ? '+' : '−'}
                 {Math.abs(changePercent).toFixed(2)}%
               </span>{' '}
-              over {period}
+              {t.chart.over} {t.chart.periods[period]}
               {last && (
                 <>
                   {' '}
@@ -76,8 +75,8 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
           )}
         </p>
 
-        <div role="group" aria-label="Chart period" className="flex gap-4">
-          {PERIODS.map(({ label, value }) => (
+        <div role="group" aria-label={t.chart.period} className="flex gap-4">
+          {PERIODS.map((value) => (
             <button
               key={value}
               type="button"
@@ -87,7 +86,7 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
                 period === value ? 'text-ink' : 'text-ink-3 hover:text-ink-2'
               }`}
             >
-              {label}
+              {t.chart.periods[value]}
             </button>
           ))}
         </div>
@@ -97,7 +96,7 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
         <div className="h-56 animate-pulse rounded-xl bg-paper-2" />
       ) : isError ? (
         <div className="flex h-56 items-center justify-center t-label text-ink-3">
-          Chart unavailable for this pair right now
+          {t.chart.unavailable}
         </div>
       ) : data && data.length > 0 ? (
         <ResponsiveContainer width="100%" height={224}>
@@ -110,7 +109,7 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
             </defs>
             <XAxis
               dataKey="date"
-              tickFormatter={(v: string) => formatXTick(v, period)}
+              tickFormatter={(v: string) => formatXTick(v, period, locale)}
               tick={axis}
               axisLine={false}
               tickLine={false}
@@ -142,7 +141,7 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
                 `1 ${fromCurrency}`,
               ]}
               labelFormatter={(label) =>
-                parseLocalDate(label as string).toLocaleDateString('en-GB', {
+                parseLocalDate(label as string).toLocaleDateString(locale, {
                   weekday: 'short',
                   day: 'numeric',
                   month: 'short',
@@ -162,10 +161,7 @@ export default function RateTrendChart({ fromCurrency, toCurrency }: Props) {
           </AreaChart>
         </ResponsiveContainer>
       ) : (
-        <p className="py-10 t-label text-ink-3">
-          No rate history for this pair. The European Central Bank publishes about 30 major
-          currencies; live conversion still works.
-        </p>
+        <p className="py-10 t-label text-ink-3">{t.chart.noHistory}</p>
       )}
     </div>
   );

@@ -28,6 +28,20 @@ for architecture.
 - Phones get one column; 1024px+ splits into a pinned converter (left) and scrolling
   context (right).
 
+## Languages
+
+- English at the root, Malay under `/ms` (`/ms/usd-to-myr`). Two root layouts,
+  `app/(en)/layout.tsx` and `app/(ms)/layout.tsx`, so `<html lang>` is right for each.
+- Page bodies live once in `app/_views/*` and take `lang`; the files under `app/(en)`
+  and `app/(ms)/ms` are thin wrappers. Add a new page to both.
+- UI strings live in `lib/dict.ts` (`ms` is typed against `en`, so a missing key fails
+  type-checking); page copy sits in a `COPY = { en, ms }` object in its view.
+  Currency and country names in Malay come from `Intl.DisplayNames` via `lib/i18n.ts`.
+- Links inside the site go through `localePath(lang, path)`. Metadata goes through
+  `pageMetadata` (`app/_views/shared.tsx`), which sets the canonical and hreflang.
+- The command bar understands Malay alongside English in every language (`ke`,
+  `dalam`, `bahagi 3`, `5 ribu`, Malay currency and country names).
+
 ## Workflow
 
 - `pnpm type-check`, `pnpm lint` (oxlint), `pnpm fmt:check` (oxfmt) and `pnpm build`

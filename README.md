@@ -45,8 +45,13 @@ A fast, minimal currency converter with live exchange rates, built with Next.js 
 - `/[from]-to-[to]`: pair pages with live rate, stats, tables and FAQ. Indexable for
   pairs among 20 majors and anything against USD (`lib/seo.ts`); the rest are
   `noindex, follow`.
+  Each links to about 8 related indexable pairs and both currency profiles.
+- `/currency/[code]`: a profile for each of the 152 currencies: symbol, where it is
+  used, its value against the majors today and its move over the past year.
 - `/guide`: everything the input understands, plus every supported currency.
 - `/about`, `/llms.txt`, `/mcp` (Model Context Protocol), `/sitemap.xml`.
+- Every page above also exists in Malay under `/ms` (`/ms/usd-to-myr`,
+  `/ms/currency/myr`), with hreflang between the two. See CLAUDE.md, Languages.
 
 Icons are generated from one mark (`lib/mark.ts`): `app/icon.svg`, `app/apple-icon.tsx`
 and `/pwa-icon/192|512|maskable`.

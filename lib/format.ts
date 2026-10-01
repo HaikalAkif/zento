@@ -1,3 +1,5 @@
+import { LANG_META, type Lang } from './i18n';
+
 /** Rate with precision that suits its size: 4,081.23 · 4.0810 · 0.02847 */
 export function formatRate(rate: number): string {
   if (rate >= 100)
@@ -12,10 +14,10 @@ export function formatAmount(value: number): string {
   return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-/** "2026-09-30" → "30 Sep 2026", without timezone drift. */
-export function formatDate(isoDate: string): string {
+/** "2026-09-30" → "30 Sep 2026" (or "30 Sep 2026" in Malay), without timezone drift. */
+export function formatDate(isoDate: string, lang: Lang = 'en'): string {
   const [y, m, d] = isoDate.split('-').map(Number);
-  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-GB', {
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(LANG_META[lang].date, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
